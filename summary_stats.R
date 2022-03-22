@@ -29,6 +29,7 @@ driest_year_nmp <-
 
 driest_nmp <- aggregate(ppt~year,length,data=driest_year_nmp)
 #2012, 2017, and 2020
+driest_nmp$perc <- driest_nmp$ppt/nrow(driest_year_nmp)*100
 
 
 #-------------------------------------------------------------------------------
