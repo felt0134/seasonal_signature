@@ -2,161 +2,8 @@
 
 #http://uop.whoi.edu/UOPinstruments/frodo/aer/julian-day-table.html
 
-# Get 16 day sums for precip and GPP ------
-
-
-get_16_day_sums <- function(x) {
-  #third column (precip) is specifically tailored to the dataset in the loop
-  fac <- (seq_len(nrow(x[c(3)])) - 1) %/% 16
-  summed_precip <-
-    data.frame(apply(x[c(3)], 2, function(v)
-      tapply(v, fac, sum)))
-  
-  return(summed_precip)
-  
-}
-
-
-get_16_day_sums_gpp <- function(x) {
-  #third column (precip) is specifically tailored to the dataset in the loop
-  fac <- (seq_len(nrow(x[c(4)])) - 1) %/% 2
-  summed_gpp <-
-    data.frame(apply(x[c(4)], 2, function(v)
-      tapply(v, fac, sum)))
-  
-  return(summed_gpp)
-  
-}
-
-
-
-get_16_day_averages_temp <- function(x) {
-  #third column (precip) is specifically tailored to the dataset in the loop
-  fac <- (seq_len(nrow(x[c(3)])) - 1) %/% 16
-  mean_temp <-
-    data.frame(apply(x[c(3)], 2, function(v)
-      tapply(v, fac, mean)))
-  
-  return(mean_temp)
-  
-}
-
 #-------------------------------------------------------------------------------
-# import daymet precipitation data -----
-
-#use this one for full import
-get_daymet <- function(i) {
-  temp_lat <- sgs.1000[i,] %>% pull(y)
-  temp_lon <- sgs.1000[i,] %>% pull(x)
-  
-  
-  test <- download_daymet(
-    lat = temp_lat,
-    lon = temp_lon,
-    start = year_value,
-    end = year_value
-  ) %>%
-    #--- just get the data part ---#
-    .$data #%>%
-  # #--- convert to tibble (not strictly necessary) ---#
-  # as_tibble() %>%
-  # #--- assign site_id so you know which record is for which site_id ---#
-  # mutate(site_id = temp_site) %>%
-  # #--- get date from day of the year ---#
-  # mutate(date = as.Date(paste(year, yday, sep = "-"), "%Y-%j"))
-  
-  test <- test %>%
-    dplyr::filter(yday > 57) %>%
-    dplyr::filter(yday < 297)
-  
-  
-  # summary(test)
-  # head(test)
-  
-  #subset to precip
-  test <- test[c(1, 2, 4)]
-  
-  #get 16-day sums of precip for each year for the given pixel
-  #year_test <- unique(test$year)
-  
-  summed_precip <- get_16_day_sums(test)
-  
-  #add period ID
-  summed_precip$period <- rownames(summed_precip)
-  summed_precip$period <- as.numeric(summed_precip$period) + 1
-  
-  #add in year and coordinate columns
-  summed_precip$year <- year_value
-  summed_precip$x <- temp_lon
-  summed_precip$y <- temp_lat
-  
-  return(summed_precip)
-  
-}
-
-
-
-#-------------------------------------------------------------------------------
-# import MODIS GPP data ------
-
-#use this one for full import
-get_modis_gpp_period_3 <- function(i) {
-  temp_lat <- sgs.1000[i,] %>% pull(y)
-  temp_lon <- sgs.1000[i,] %>% pull(x)
-  
-  #get GPP data
-  site_gpp <- mt_subset(
-    product = "MYD17A2H",
-    lat = temp_lat,
-    lon =  temp_lon,
-    band = 'Gpp_500m',
-    start = start_date,
-    end = end_date,
-    km_lr = 5,
-    km_ab = 5,
-    site_name = Ecoregion,
-    internal = TRUE,
-    progress = TRUE
-  )
-  
-  #filter out bad values, get day of year, take median value for coordinate, and rescale GPP units to g/m^2
-  site_gpp_2  <- site_gpp  %>%
-    #filter(value <= X) %>% if there is a threshold value to filter by
-    group_by(calendar_date) %>%
-    summarize(doy = as.numeric(format(as.Date(calendar_date)[1], "%j")),
-              gpp_mean = median(value * as.double(scale))) %>%
-    filter(doy > 60) %>%
-    filter(doy < 300)
-  
-  #get gpp in grams
-  site_gpp_2$gpp_mean <- site_gpp_2$gpp_mean * 1000
-  
-  #get year column
-  site_gpp_2$year <- substr(site_gpp_2$calendar_date, 1, 4)
-  
-  #filter out years with incomplete data
-  site_length = aggregate(doy ~ year, length, data = site_gpp_2)
-  colnames(site_length) = c('year', 'length')
-  site_gpp_2 = merge(site_gpp_2, site_length, by = 'year')
-  site_gpp_2 = site_gpp_2 %>%
-    dplyr::filter(length > 29)
-  
-  site_gpp_3 <- get_16_day_sums_gpp(site_gpp_2)
-  site_gpp_3$period <- as.numeric(rownames(site_gpp_3))
-  site_gpp_3$period = (site_gpp_3$period + 1)
-  
-  site_gpp_3$x <- temp_lat
-  site_gpp_3$y <- temp_lon
-  site_gpp_3 <- site_gpp_3[c(3, 4, 1, 2)]
-  
-  
-  
-  return(site_gpp_3)
-  
-}
-
-#-------------------------------------------------------------------------------
-# function to help with converting each GPP raster into a dataframe -----
+# function to help with converting each GPP raster into a dataframe (unclear if used) -----
 
 format_gpp_df <- function(x) {
   #convert to raster
@@ -180,7 +27,7 @@ format_gpp_df <- function(x) {
 
 
 #-------------------------------------------------------------------------------
-# function to help with converting each PPT raster into a dataframe ----
+# function to help with converting each PPT raster into a dataframe (unclear if used) ----
 
 format_ppt_df <- function(x) {
   #convert to raster
@@ -201,7 +48,7 @@ format_ppt_df <- function(x) {
 
 
 #-------------------------------------------------------------------------------
-# calculate day of X% growth (% of cumulative GPP) for all years ------
+# calculate day of 25%, 50%, and 90% growth (% of cumulative GPP) for all years ------
 
 #day of 90% growth
 get_90_gpp <- function(i) {
@@ -364,7 +211,7 @@ get_25_gpp <- function(i) {
   
 }
 #-------------------------------------------------------------------------------
-# calculate day of X% of growth for drought years ------
+# calculate day of 25%, 50%, and 90% of growth for drought years ------
 
 #90%
 get_90_gpp_drought <- function(i) {
@@ -574,55 +421,7 @@ list_to_df <- function(x) {
 
 
 #-------------------------------------------------------------------------------
-# import daymet temperature data ------
-
-
-get_daymet_temp <- function(i) {
-  temp_lat <- sgs.1000[i,] %>% pull(y)
-  temp_lon <- sgs.1000[i,] %>% pull(x)
-  
-  test <- download_daymet(
-    lat = temp_lat,
-    lon = temp_lon,
-    start = year_value,
-    end = year_value
-  ) %>%
-    #--- just get the data part ---#
-    .$data
-  
-  test <- test %>%
-    dplyr::filter(yday > 57) %>%
-    dplyr::filter(yday < 297)
-  
-  #subset to temp
-  test_tmax <- test[c(1, 2, 7)]
-  test_tmin <- test[c(1, 2, 8)]
-  
-  #get 16-day sums of precip for each year for the given pixel
-  #year_test <- unique(test$year)
-  
-  mean_tmax <- get_16_day_averages_temp(test_tmax)
-  colnames(mean_tmax) <- 'tmax_c'
-  mean_tmin <- get_16_day_averages_temp(test_tmin)
-  colnames(mean_tmin) <- 'tmin_c'
-  
-  mean_t <- cbind(mean_tmax, mean_tmin)
-  
-  mean_t$tmean_c <- (mean_t$tmax_c + mean_t$tmin_c) / 2
-  
-  mean_t <- summarise_all(mean_t, mean)
-  
-  #add in year and coordinate columns
-  mean_t$year <- year_value
-  mean_t$x <- temp_lon
-  mean_t$y <- temp_lat
-  
-  return(mean_t)
-  
-}
-
-#-------------------------------------------------------------------------------
-# import and format temp raster into dataframe ------
+# import and format temp raster into dataframe (unclear if used) ------
 
 #format the temp rasters
 format_temp_df <- function(x, max_min) {
@@ -675,119 +474,6 @@ import_temp <- function(Ecoregion, temp, value) {
   
   return(test)
   
-  
-}
-
-#-------------------------------------------------------------------------------
-# get the % of total growth that has ocurred at the day of maximum rainfall sensitivity -----
-
-max_sens_perc_growth <- function(i) {
-  #subset to a given pixel
-  growth_id <- gpp_df %>%
-    dplyr::filter(id_value == i)
-  
-  x <- unique(growth_id %>% pull(x))
-  y <- unique(growth_id %>% pull(y))
-  
-  growth_id <- aggregate(gpp ~ doy, mean, data = growth_id)
-  
-  #for that pixel, get cumulative GPP throughout the year
-  growth_id_cmulative <-
-    data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
-  growth_id_cmulative$gpp_3 <-
-    100 * (growth_id_cmulative$gpp_2 / max(growth_id_cmulative$gpp_2))
-  
-  rm(growth_id)
-  
-  #create spline model of growth curve
-  gpp.doy.spl <-
-    with(growth_id_cmulative, smooth.spline(doy, gpp_3))
-  
-  #plot(gpp_3~doy,data=growth_id_cmulative)
-  #lines(gpp.doy.spl, col = "blue")
-  
-  rm(growth_id_cmulative)
-  
-  #run model through a sequence of days
-  doy <- data.frame(seq(from = 65, to = 297, by = 1))
-  gpp_predicted <- data.frame(predict(gpp.doy.spl, doy))
-  colnames(gpp_predicted) <- c('day', 'gpp_perc')
-  
-  #plot(gpp_perc ~ day,data=gpp_predicted)
-  
-  gpp_predicted <- data.frame(gpp_predicted)
-  gpp_predicted$x <- x
-  gpp_predicted$y <- y
-  
-  merged_df <- merge(gpp_predicted,max_sens_doy_df,by=c('x','y','day'))
-  colnames(merged_df) <-c('x','y','day','gpp_end')
-  
-  #get beginning of maximum period of sensitivity and merge with merged_df to
-  # get the range of typical growth that ocurrs during this period
-  day_begin <- merged_df$day - 16
-  gpp_predicted_begin <- gpp_predicted %>% filter(day==day_begin)
-  merged_df$gpp_begin <- gpp_predicted_begin$gpp_perc
-
-  
-  return(merged_df)
-  
-}
-
-#-------------------------------------------------------------------------------
-
-# get MODIS NDVI for year-by-period combinations ------
-
-
-get_modis_ndvi <- function(i) {
-  
-  temp_lat <- sgs.1000[i,] %>% pull(y)
-  temp_lon <- sgs.1000[i,] %>% pull(x)
-  
-  #get GPP data
-  site_ndvi <- mt_subset(
-    product = "MYD13Q1",
-    lat = temp_lat,
-    lon =  temp_lon,
-    band = '250m_16_days_NDVI',
-    start = start_date,
-    end = end_date,
-    km_lr = 5,
-    km_ab = 5,
-    site_name = Ecoregion,
-    internal = TRUE,
-    progress = TRUE
-  )
-  
-  #filter out bad values, get day of year, take median value for coordinate, and rescale GPP units to g/m^2
-  site_ndvi_2  <- site_ndvi  %>%
-    #filter(value <= X) %>% if there is a threshold value to filter by
-    group_by(calendar_date) %>%
-    summarize(doy = as.numeric(format(as.Date(calendar_date)[1], "%j")),
-              ndvi_mean = median(value * as.double(scale))) %>%
-    filter(doy > 60) %>%
-    filter(doy < 300)
-  
-  #plot(site_ndvi_mean~doy, data=site_ndvi_2)
-  
-  #get year column
-  site_ndvi_2$year <- substr(site_ndvi_2$calendar_date, 1, 4)
-  
-  #filter out years with incomplete data
-  site_length = aggregate(doy ~ year, length, data = site_ndvi_2)
-  colnames(site_length) = c('year', 'length')
-  site_ndvi_2 = merge(site_ndvi_2, site_length, by = 'year')
-  
-  
-  site_ndvi_2$period <- as.numeric(rownames(site_ndvi_2))
-  
-  site_ndvi_2$x <- temp_lat
-  site_ndvi_2$y <- temp_lon
-  
-  site_ndvi_2 <- site_ndvi_2 %>%
-    select(x,y, ndvi_mean,period)
-  
-  
-  return(site_ndvi_2)
   
 }
 
@@ -1092,7 +778,7 @@ get_drought_growth_curve_absolute_spline <- function(i) {
 
 
 #-------------------------------------------------------------------------------
-# maximum production ------
+# maximum production (unclear if used) ------
 
 #day of max production during a typical year
 get_average_max_production  <- function(i) {
@@ -1200,7 +886,7 @@ get_drought_max_production <- function(i) {
 
 #-------------------------------------------------------------------------------
 
-# % reduction in maximum production during drought -------
+# % reduction in maximum production during drought (unclear if used) -------
 
 
 get_drought_pecent_reduction <- function(i) {
@@ -1336,6 +1022,7 @@ get_drought_years <- function(i) {
 #-------------------------------------------------------------------------------
 # GPP splines ------
 
+#16-day cumulative GPP througout growing season (not the cumulative total GPP growth curve)
 
 gpp_spline  <- function(i) {
   
@@ -1395,160 +1082,7 @@ gpp_spline_drought <- function(i) {
 
 
 #-------------------------------------------------------------------------------
-#get seasonal precipitation and temperature ------
-
-
-get_daymet_spring_temp <- function(i) {
-  
-  #March - May 
-  temp_lat <- sgs.1000[i,] %>% pull(y)
-  temp_lon <- sgs.1000[i,] %>% pull(x)
-  
-  
-  test <- download_daymet(
-    lat = temp_lat,
-    lon = temp_lon,
-    start = year_value,
-    end = year_value
-  ) %>%
-    #--- just get the data part ---#
-    .$data 
-  
-  test <- test %>%
-    dplyr::filter(yday > 59) %>%
-    dplyr::filter(yday < 152)
-  
-  #subset to temp
-  test <- test[c(1, 2, 7, 8)]
-  
-  #average temp
-  test$average_temp <- round(((test$tmax..deg.c. + test$tmin..deg.c.)/2),2)
-  test <- test %>% select(year,yday,average_temp)
-  average_temp <- aggregate(average_temp ~ year, mean, data = test)
-  
-  #add in year and coordinate columns
-  average_temp$x <- temp_lon
-  average_temp$y <- temp_lat
-  
-  average_temp <- average_temp %>% select(x,y,average_temp)
-  
-  return(average_temp)
-  
-}
-
-get_daymet_summer_temp <- function(i) {
-  
-  #June-August 
-  temp_lat <- sgs.1000[i,] %>% pull(y)
-  temp_lon <- sgs.1000[i,] %>% pull(x)
-  
-  
-  test <- download_daymet(
-    lat = temp_lat,
-    lon = temp_lon,
-    start = year_value,
-    end = year_value
-  ) %>%
-    #--- just get the data part ---#
-    .$data #%>%
-  # #--- convert to tibble (not strictly necessary) ---#
-  # as_tibble() %>%
-  # #--- assign site_id so you know which record is for which site_id ---#
-  # mutate(site_id = temp_site) %>%
-  # #--- get date from day of the year ---#
-  # mutate(date = as.Date(paste(year, yday, sep = "-"), "%Y-%j"))
-  
-  test <- test %>%
-    dplyr::filter(yday > 151) %>%
-    dplyr::filter(yday < 244)
-  
-  #subset to temp
-  test <- test[c(1, 2, 7, 8)]
-  
-  #average temp
-  test$average_temp <- round(((test$tmax..deg.c. + test$tmin..deg.c.)/2),2)
-  test <- test %>% select(year,yday,average_temp)
-  average_temp <- aggregate(average_temp ~ year, mean, data = test)
-  
-  #add in year and coordinate columns
-  average_temp$x <- temp_lon
-  average_temp$y <- temp_lat
-  
-  average_temp <- average_temp %>% select(x,y,average_temp)
-  
-  return(average_temp)
-  
-}
-
-#
-
-get_daymet_spring_precip <- function(i) {
-  
-  #March - May
-  temp_lat <- sgs.1000[i,] %>% pull(y)
-  temp_lon <- sgs.1000[i,] %>% pull(x)
-  
-  
-  test <- download_daymet(
-    lat = temp_lat,
-    lon = temp_lon,
-    start = year_value,
-    end = year_value
-  ) %>%
-    #--- just get the data part ---#
-    .$data 
-  
-  test <- test %>%
-    dplyr::filter(yday > 59) %>%
-    dplyr::filter(yday < 152)
-  
-  summed_precip <- aggregate(prcp..mm.day. ~ year, sum, data = test)
-  
-  #add in year and coordinate columns
-  summed_precip$x <- temp_lon
-  summed_precip$y <- temp_lat
-  
-  summed_precip <- summed_precip %>% select(x,y,prcp..mm.day.)
-  
-  return(summed_precip)
-  
-}
-
-get_daymet_summer_precip <- function(i) {
-  
-  #June - August
-  temp_lat <- sgs.1000[i,] %>% pull(y)
-  temp_lon <- sgs.1000[i,] %>% pull(x)
-  
-  
-  test <- download_daymet(
-    lat = temp_lat,
-    lon = temp_lon,
-    start = year_value,
-    end = year_value
-  ) %>%
-    #--- just get the data part ---#
-    .$data 
-  
-  test <- test %>%
-    dplyr::filter(yday > 151) %>%
-    dplyr::filter(yday < 244)
-  
-  summed_precip <- aggregate(prcp..mm.day. ~ year, sum, data = test)
-  
-  #add in year and coordinate columns
-  summed_precip$x <- temp_lon
-  summed_precip$y <- temp_lat
-  
-  summed_precip <- summed_precip %>% select(x,y,prcp..mm.day.)
-  
-  return(summed_precip)
-  
-}
-
-
-#-------------------------------------------------------------------------------
-#wrangle seasonal precip and temperature data------
+# wrangle seasonal precip and temperature data (unclear if used)------
 
 #Precipitation
 summer_precip_function <- function(x){
@@ -1645,3 +1179,4 @@ get_driest_year <- function(i){
 }
 
 #-------------------------------------------------------------------------------
+
