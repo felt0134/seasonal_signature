@@ -24,28 +24,6 @@ source('day_of_50.R')
 source('day_of_25.R')
 
 
-# day of maximum sensitivity to rainfall ----
-
-#Ecoregion = 'shortgrass_steppe'
-#Ecoregion = 'northern_mixed_prairies' 
-Ecoregion = 'nebraska_sandhills'
-
-source('max_sensitivity.R')
-
-
-
-# % growth at day of maximum sensitivity ------
-
-
-#Ecoregion = 'shortgrass_steppe'
-#Ecoregion = 'northern_mixed_prairies' 
-Ecoregion = 'nebraska_sandhills'
-
-
-source('perc_growth_max_sens_overlap.R')
-
-
-
 # growth curves -----
 
 #Ecoregion = 'nebraska_sandhills'

@@ -46,6 +46,24 @@ format_ppt_df <- function(x) {
   
 }
 
+format_temp_df <- function(x) {
+  
+  #convert to raster
+  raster_file <- raster(x)
+  
+  #extract year from the name of the raster
+  year_val <- substr(names(raster_file), 7, 10)
+  
+  #convert to dataframe and add year and period columns
+  df <- data.frame(rasterToPoints(raster_file))
+  df$year <- year_val
+  df$period <-
+    gsub(paste0("Temp_", year_val, '_'), '', names(raster_file))
+  colnames(df) <- c('x', 'y', 'average_temp', 'year', 'period')
+  return(df)
+  
+}
+
 
 #-------------------------------------------------------------------------------
 # calculate day of 25%, 50%, and 90% growth (% of cumulative GPP) for all years ------

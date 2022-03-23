@@ -125,7 +125,8 @@ doy_list <- c(65:297)
 gpp_predicted_list_average <- list()
 gpp_predicted_list_drought <- list()
 gpp_reduction_list <- list()
-test_list <- c(1:10)
+gpp_reduction_list_2 <- list()
+#test_list <- c(1:10)
 
 for(i in doy_list){
   
@@ -164,17 +165,31 @@ for(i in doy_list){
   
   ss <- nrow(gpp_predicted_drought_average)
   
-  gpp_predicted_drought_average$perc_change <- ((gpp_predicted_drought_average$gpp_drought -
-    gpp_predicted_drought_average$gpp_average)/gpp_predicted_drought_average$gpp_average)*100
+  gpp_predicted_drought_average_3 <- gpp_predicted_drought_average #use for absolute
+  
+  #relative
+  # gpp_predicted_drought_average$perc_change <- ((gpp_predicted_drought_average$gpp_drought -
+  #   gpp_predicted_drought_average$gpp_average)/gpp_predicted_drought_average$gpp_average)*100
+  # 
+  # #get median
+  # gpp_predicted_drought_average_2 <- aggregate(perc_change~doy,median,data=gpp_predicted_drought_average)
+  # 
+  # #get and add 99% CI
+  # gpp_predicted_drought_average_2$ci_99 <- std.error(gpp_predicted_drought_average$perc_change)*2.576
+  # gpp_predicted_drought_average_2$sample_size <- ss
+  # gpp_reduction_list[[i]] <- gpp_predicted_drought_average_2
+  
+  #absolute
+  gpp_predicted_drought_average_3$abs_change <- gpp_predicted_drought_average_3$gpp_drought -
+                                                   gpp_predicted_drought_average$gpp_average
   
   #get median
-  gpp_predicted_drought_average_2 <- aggregate(perc_change~doy,median,data=gpp_predicted_drought_average)
+  gpp_predicted_drought_average_4 <- aggregate(abs_change~doy,median,data=gpp_predicted_drought_average_3)
   
   #get and add 99% CI
-  gpp_predicted_drought_average_2$ci_99 <- std.error(gpp_predicted_drought_average$perc_change)*2.576
-  gpp_predicted_drought_average_2$sample_size <- ss
-  gpp_reduction_list[[i]] <- gpp_predicted_drought_average_2
-  
+  gpp_predicted_drought_average_4$ci_99 <- std.error(gpp_predicted_drought_average_3$abs_change)*2.576
+  gpp_predicted_drought_average_4$sample_size <- ss
+  gpp_reduction_list_2[[i]] <- gpp_predicted_drought_average_4
   
 }
 
@@ -184,25 +199,32 @@ head(gpp_reduction_list_df,1)
 filename <- paste0('./../../Data/growth_dynamics/drought_gpp_reduction_',Ecoregion,'.csv')
 write.csv(gpp_reduction_list_df,filename)
 
+gpp_reduction_list_df_2 <- list_to_df(gpp_reduction_list_2)
+head(gpp_reduction_list_df_2,1)
+
+filename <- paste0('./../../Data/growth_dynamics/drought_gpp_reduction_absolute_',Ecoregion,'.csv')
+write.csv(gpp_reduction_list_df_2,filename)
+
 rm(gpp_df_mean,gpp_predicted_average,gpp_predicted_drought,gpp_predicted_drought_average,
    gpp_predicted_drought_average_2,gpp_predicted_list_average,gpp_predicted_list_average_df,
    gpp_predicted_list_drought,gpp_predicted_list_drought_df,gpp_reduction_list,
-   growth_drought_spline_list,growth_spline_list)
+   growth_drought_spline_list,growth_spline_list,gpp_reduction_list_2,gpp_predicted_drought_average_3,
+   gpp_predicted_drought_average_4)
 
 
 #plot this out ------
-str(gpp_reduction_list_df)
-gpp_reduction_list_df$upper <- gpp_reduction_list_df$perc_change + gpp_reduction_list_df$ci_99
-gpp_reduction_list_df$lower <- gpp_reduction_list_df$perc_change - gpp_reduction_list_df$ci_99
-plot(perc_change~doy,data=gpp_reduction_list_df,cex=0.1,
-     xlab='Julian day',ylab='Drought impact (% change in GPP)')
-lines(perc_change~doy,data=gpp_reduction_list_df)
-lines(upper~as.numeric(as.integer(doy)),gpp_reduction_list_df)
-lines(lower~doy,gpp_reduction_list_df)
-abline(h=0)
-
-gpp.doy.spl <-
-  with(gpp_reduction_list_df, smooth.spline(doy, perc_change))
+# str(gpp_reduction_list_df)
+# gpp_reduction_list_df$upper <- gpp_reduction_list_df$perc_change + gpp_reduction_list_df$ci_99
+# gpp_reduction_list_df$lower <- gpp_reduction_list_df$perc_change - gpp_reduction_list_df$ci_99
+# plot(perc_change~doy,data=gpp_reduction_list_df,cex=0.1,
+#      xlab='Julian day',ylab='Drought impact (% change in GPP)')
+# lines(perc_change~doy,data=gpp_reduction_list_df)
+# lines(upper~as.numeric(as.integer(doy)),gpp_reduction_list_df)
+# lines(lower~doy,gpp_reduction_list_df)
+# abline(h=0)
+# 
+# gpp.doy.spl <-
+#   with(gpp_reduction_list_df, smooth.spline(doy, perc_change))
 #lines(gpp.doy.spl, col = "blue")
 
 # #import and merge

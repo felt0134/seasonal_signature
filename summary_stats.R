@@ -4,14 +4,103 @@
 
 # Overview -----
 
-# range of % reduction in precipitation during drought across sites (from mean)
+# range of % reduction in growing season precipitation during drought across sites (from mean)
+Ecoregion <- 'shortgrass_steppe'
+driest_year_sgs <- 
+  read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/growing_season/drought_precip_year_',Ecoregion,'.csv'))
+
+#plot(rasterFromXYZ(driest_year_sgs))
+
+#import annual ppt, merge, and get % reduction during drought years
+mean_precip_sgs <- 
+  raster(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/growing_season/mean_precip_',Ecoregion,'.tif'))
+mean_precip_sgs <- data.frame(rasterToPoints(mean_precip_sgs))
+drought_reduction_sgs <- merge(driest_year_sgs,mean_precip_sgs,by=c('x','y'))
+head(drought_reduction_sgs,1)
+
+drought_reduction_sgs$perc_reduction <- 
+  (drought_reduction_sgs$ppt - drought_reduction_sgs$mean_precip_shortgrass_steppe)/
+  drought_reduction_sgs$mean_precip_shortgrass_steppe
+
+quantile(drought_reduction_sgs$perc_reduction,c(.01,0.5,0.99))
+
+Ecoregion <- 'northern_mixed_prairies'
+driest_year_nmp <- 
+  read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/growing_season/drought_precip_year_',Ecoregion,'.csv'))
+
+#import annual ppt, merge, and get % reduction during drought years
+mean_precip_nmp <- 
+  raster(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/growing_season/mean_precip_',Ecoregion,'.tif'))
+mean_precip_nmp <- data.frame(rasterToPoints(mean_precip_nmp))
+drought_reduction_nmp <- merge(driest_year_nmp,mean_precip_nmp,by=c('x','y'))
+head(drought_reduction_nmp,1)
+
+drought_reduction_nmp$perc_reduction <- 
+  (drought_reduction_nmp$ppt - drought_reduction_nmp$mean_precip_northern_mixed_prairies)/
+  drought_reduction_nmp$mean_precip_northern_mixed_prairies
+
+quantile(drought_reduction_nmp$perc_reduction,c(.01,0.5,0.99))
 
 
-# median % reduction in precipitation during drought for each ecoregion
+# % change in temperature during years of drought #
 
+#import temperature data
 
-# % change in temperature during years of drought
+Ecoregion <- 'shortgrass_steppe'
+filepath_temp <-
+  dir(
+    paste0(
+      './../../Data/Climate/Ecoregion/',
+      Ecoregion,
+      '/Temperature/tmean/'
+  ), full.names = T)
+temp_data_sgs <- lapply(filepath_temp[c(5:22)], format_temp_df) #get 2003 through 2020
+temp_data_sgs <- data.frame(do.call('rbind', temp_data_sgs))
+head(temp_data_sgs,1)
 
+#merge with driest year and trim columns
+temp_drought_sgs <- merge(temp_data_sgs,driest_year_sgs,by=c('x','y','year'))
+temp_drought_sgs <- temp_drought_sgs %>%
+  select(x,y,average_temp)
+
+#get average temp, merge with driest year temp, and get % change during drought
+average_temp_sgs <- aggregate(average_temp ~ x + y,mean,data=temp_data_sgs)
+colnames(average_temp_sgs) <- c('x','y','long_term_temp')
+temp_drought_sgs <- merge(average_temp_sgs,temp_drought_sgs,by=c('x','y'))
+
+temp_drought_sgs$perc_change <- 
+  ((temp_drought_sgs$average_temp - temp_drought_sgs$long_term_temp)/temp_drought_sgs$long_term_temp)*100
+
+quantile(temp_drought_sgs$perc_change,c(0.01,0.5,0.99))
+
+#
+
+Ecoregion <- 'northern_mixed_prairies'
+filepath_temp <-
+  dir(
+    paste0(
+      './../../Data/Climate/Ecoregion/',
+      Ecoregion,
+      '/Temperature/tmean/'
+    ), full.names = T)
+temp_data_nmp <- lapply(filepath_temp[c(14:31)], format_temp_df) #get 2003 through 2020
+temp_data_nmp <- data.frame(do.call('rbind', temp_data_nmp))
+head(temp_data_nmp,1)
+
+#merge with driest year and trim columns
+temp_drought_nmp <- merge(temp_data_nmp,driest_year_nmp,by=c('x','y','year'))
+temp_drought_nmp <- temp_drought_nmp %>%
+  select(x,y,average_temp)
+
+#get average temp, merge with driest year temp, and get % change during drought
+average_temp_nmp <- aggregate(average_temp ~ x + y,mean,data=temp_data_nmp)
+colnames(average_temp_nmp) <- c('x','y','long_term_temp')
+temp_drought_nmp <- merge(average_temp_nmp,temp_drought_nmp,by=c('x','y'))
+
+temp_drought_nmp$perc_change <- 
+  ((temp_drought_nmp$average_temp - temp_drought_nmp$long_term_temp)/temp_drought_nmp$long_term_temp)*100
+
+quantile(temp_drought_nmp$perc_change,c(0.01,0.5,0.99))
 
 # 3 most common drought years for each ecoregion (% and number of pixels)
 
@@ -89,8 +178,13 @@ Ecoregion <- 'shortgrass_steppe'
 drought_growth_impact_sgs <- read.csv(paste0('./../../Data/growth_dynamics/drought_gpp_reduction_',Ecoregion,'.csv'))
 drought_growth_impact_sgs %>% filter(perc_change == min(drought_growth_impact_sgs$perc_change))
 
-#look at absolute differences in addition to relative (%) differences
+#look at absolute differences in GOO through time
 
+Ecoregion <- 'shortgrass_steppe'
+drought_growth_impact_absolute_sgs <- 
+  read.csv(paste0('./../../Data/growth_dynamics/drought_gpp_reduction_absolute_',Ecoregion,'.csv'))
+drought_growth_impact_absolute_sgs %>% filter(abs_change == min(drought_growth_impact_absolute_sgs$abs_change))
+plot(abs_change~doy,data=drought_growth_impact_absolute_sgs)
 
 #-------------------------------------------------------------------------------
 # climate seasonality -------
