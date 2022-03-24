@@ -189,6 +189,89 @@ plot(abs_change~doy,data=drought_growth_impact_absolute_sgs)
 #-------------------------------------------------------------------------------
 # climate seasonality -------
 
+#shortgrass steppe
+Ecoregion <- 'shortgrass_steppe'
+source('seasonal_precip_temp_analysis.R')
 
+#abs and relative change in spring ppt
+quantile(test_spring_ppt_drought$perc_decrease,c(0.01,0.5,0.99))
+#50th = 70.8% reduction
 
+quantile(test_spring_ppt_drought$abs_decrease,c(0.01,0.5,0.99))
+# 50th = 75.4 mm
 
+#abs and relative decline in spring ppt
+quantile(test_summer_ppt_drought$perc_decrease,c(0.01,0.5,0.99))
+#50th = 59.2% reduction
+
+quantile(test_summer_ppt_drought$abs_decrease,c(0.01,0.5,0.99))
+#50th = 106.22 mm 
+
+#abs and relative change in spring temp
+quantile(test_spring_temp_drought$perc_change,c(0.01,0.5,0.99))
+#50th = 7.7%
+
+quantile(test_spring_temp_drought$abs_change,c(0.01,0.5,0.99))
+#50th = 1 degree
+
+#abs and relative change in summer temp
+quantile(test_summer_temp_drought$perc_change,c(0.01,0.5,0.99))
+#50th = 9.1%
+
+quantile(test_summer_temp_drought$abs_change,c(0.01,0.5,0.99))
+#50th = 2 degree
+
+#filter summer and spring abs and relative for VPD
+vpd_change %>%
+  filter(season=='summer') %>%
+  summarise(quantile(perc_change,c(0.01,0.50,0.99)))
+#50th = 28
+
+vpd_change %>%
+  filter(season=='spring') %>%
+  summarise(quantile(perc_change,c(0.01,0.50,0.99)))
+#50th = 22
+
+vpd_change %>%
+  filter(season=='summer') %>%
+  summarise(quantile(abs_change,c(0.01,0.50,0.99)))
+#50th = 9.7
+
+vpd_change %>%
+  filter(season=='spring') %>%
+  summarise(quantile(abs_change,c(0.01,0.50,0.99)))
+#50th = 4.4
+
+##
+
+#northern mixed prairies
+Ecoregion = 'northern_mixed_prairies'
+source('seasonal_precip_temp_analysis.R')
+
+vpd_change %>%
+  filter(season=='summer') %>%
+  summarise(quantile(perc_change,c(0.01,0.50,0.99)))
+#50th = 22
+
+vpd_change %>%
+  filter(season=='spring') %>%
+  summarise(quantile(perc_change,c(0.01,0.50,0.99)))
+#50th = 14
+
+vpd_change %>%
+  filter(season=='summer') %>%
+  summarise(quantile(abs_change,c(0.01,0.50,0.99)))
+#50th = 6.2
+
+vpd_change %>%
+  filter(season=='spring') %>%
+  summarise(quantile(abs_change,c(0.01,0.50,0.99)))
+#50th=1.5
+
+6.2/1.5
+
+rm(driest_year, test_spring_ppt_drought, test_spring_temp_drought,
+   test_summer_ppt_drought, test_summer_temp_drought,vpd_change)
+
+?summarise
+#-------------------------------------------------------------------------------
