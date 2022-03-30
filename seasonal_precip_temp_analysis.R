@@ -369,7 +369,53 @@ vpd_change <-
                          '/PRISM/VPD_change.csv'
                        ))
 
-head(vpd_change)
+#head(vpd_change)
 
 
+
+#look at the % of summer and spring precip during dry and normal years ------
+
+#merge spring and summer precip
+head(test_spring_ppt_drought)
+spring_summer_precip_drought <- 
+  merge(test_spring_ppt_drought[c(1:6)],test_summer_ppt_drought[c(1:6)],
+        by=c('x','y','year','annual_precip'))
+head(spring_summer_precip_drought,1)
+
+#get % spring during normal year and dry year
+spring_summer_precip_drought$perc_spring_normal <-
+  ((spring_summer_precip_drought$spring_precip)/
+     (spring_summer_precip_drought$spring_precip + spring_summer_precip_drought$summer_precip))*100
+
+spring_summer_precip_drought$perc_spring_drought <-
+  ((spring_summer_precip_drought$spring_precip_drought)/
+     (spring_summer_precip_drought$spring_precip_drought + spring_summer_precip_drought$summer_precip_drought))*100
+
+spring_summer_precip_drought$perc_spring_normal <-
+  ((spring_summer_precip_drought$spring_precip)/
+     (spring_summer_precip_drought$spring_precip + spring_summer_precip_drought$summer_precip))*100
+
+#get % summer precip during normal and dry year
+spring_summer_precip_drought$perc_summer_drought <-
+  ((spring_summer_precip_drought$summer_precip_drought)/
+     (spring_summer_precip_drought$spring_precip_drought + spring_summer_precip_drought$summer_precip_drought))*100
+
+spring_summer_precip_drought$perc_summer_normal <-
+  ((spring_summer_precip_drought$summer_precip)/
+     (spring_summer_precip_drought$spring_precip + spring_summer_precip_drought$summer_precip))*100
+
+#changes in seasonality of spring precip
+spring_summer_precip_drought$change_in_perc_spring <-
+  spring_summer_precip_drought$perc_spring_drought - 
+  spring_summer_precip_drought$perc_spring_normal
+
+#changes in seasonality of summer precip
+spring_summer_precip_drought$change_in_perc_summer <-
+  spring_summer_precip_drought$perc_summer_drought - 
+  spring_summer_precip_drought$perc_summer_normal
+
+spring_summer_precip_drought$ecoregion <- Ecoregion
+
+# write.csv(spring_summer_precip_drought,
+#           paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/seasonal_change_PPT.csv'))
 

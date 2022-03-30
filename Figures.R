@@ -8,6 +8,8 @@ library(sp)
 #julian day
 #http://uop.whoi.edu/UOPinstruments/frodo/aer/julian-day-table.html
 
+#color schemes
+#https://www.data-imaginist.com/2018/scico-and-the-colour-conundrum/
 
 #prep ------
 
@@ -437,43 +439,43 @@ day_50_sgs_nmp <-projectRaster(day_50_sgs_nmp, crs='+proj=aea +lat_1=29.5 +lat_2
 day_50_sgs_nmp_df <- data.frame(rasterToPoints(day_50_sgs_nmp))
 
 
-day_50_sgs_nmp_map <- ggplot() +
-  geom_polygon(data=states_all_sites_tidy, mapping=aes(x = long, y = lat,group=group),
-               color = "black", size = 0.1,fill=NA) +
-  geom_raster(data=day_50_sgs_nmp_df, mapping=aes(x = x, y = y, fill = layer)) + 
-  coord_equal() +
-  scale_fill_scico('Day of 50% growth',palette = 'batlow',direction=1) +
-  xlab('') +
-  ylab('') +
-  scale_x_continuous(expand=c(0,0)) +
-  scale_y_continuous(expand=c(0,0)) +
-  theme(
-    axis.text.x = element_blank(), #angle=25,hjust=1),
-    axis.text.y = element_blank(),
-    axis.title.x = element_text(color='black',size=10),
-    axis.title.y = element_text(color='black',size=10),
-    axis.ticks = element_blank(),
-    legend.key = element_blank(),
-    #legend.title = element_blank(),
-    #legend.text = element_text(size=2),
-    #legend.position = c(0.7,0.1),
-    #legend.margin =margin(r=5,l=5,t=5,b=5),
-    #legend.position = c(0.0,0.1),
-    legend.position = 'top',
-    strip.background =element_rect(fill="white"),
-    strip.text = element_text(size=10),
-    panel.background = element_rect(fill=NA),
-    panel.border = element_blank(), #make the borders clear in prep for just have two axes
-    axis.line.x = element_blank(),
-    axis.line.y = element_blank())
-
-
-#save to file
-png(height = 1500,width=920,res=300,'./../../Figures/day_50_growth_map.png')
-
-print(day_50_sgs_nmp_map)
-
-dev.off()
+# day_50_sgs_nmp_map <- ggplot() +
+#   geom_polygon(data=states_all_sites_tidy, mapping=aes(x = long, y = lat,group=group),
+#                color = "black", size = 0.1,fill=NA) +
+#   geom_raster(data=day_50_sgs_nmp_df, mapping=aes(x = x, y = y, fill = layer)) + 
+#   coord_equal() +
+#   scale_fill_scico('Day of 50% growth',palette = 'batlow',direction=1) +
+#   xlab('') +
+#   ylab('') +
+#   scale_x_continuous(expand=c(0,0)) +
+#   scale_y_continuous(expand=c(0,0)) +
+#   theme(
+#     axis.text.x = element_blank(), #angle=25,hjust=1),
+#     axis.text.y = element_blank(),
+#     axis.title.x = element_text(color='black',size=10),
+#     axis.title.y = element_text(color='black',size=10),
+#     axis.ticks = element_blank(),
+#     legend.key = element_blank(),
+#     #legend.title = element_blank(),
+#     #legend.text = element_text(size=2),
+#     #legend.position = c(0.7,0.1),
+#     #legend.margin =margin(r=5,l=5,t=5,b=5),
+#     #legend.position = c(0.0,0.1),
+#     legend.position = 'top',
+#     strip.background =element_rect(fill="white"),
+#     strip.text = element_text(size=10),
+#     panel.background = element_rect(fill=NA),
+#     panel.border = element_blank(), #make the borders clear in prep for just have two axes
+#     axis.line.x = element_blank(),
+#     axis.line.y = element_blank())
+# 
+# 
+# #save to file
+# png(height = 1500,width=920,res=300,'./../../Figures/day_50_growth_map.png')
+# 
+# print(day_50_sgs_nmp_map)
+# 
+# dev.off()
 
 
 #impact of drought on the 50% day of growth
@@ -494,7 +496,7 @@ summary(day_50_drought_sgs_2)
 #median = -22
 #179-22
 
-plot(layer~y,data=rasterToPoints(day_50_drought_sgs_2))
+#plot(layer~y,data=rasterToPoints(day_50_drought_sgs_2))
 
 #nmp
 day_50_drought_nmp <-
@@ -522,7 +524,7 @@ day_50_drought_df <- data.frame(rasterToPoints(day_50_drought))
 (day_50_drought_df %>%
   filter(layer < 0) %>%
   summarise(length(layer)))/(length(day_50_drought_df$layer))
-#0.90
+#0.90 of pixels see day of 50% growth occurr earlier during drought
   
 
 day_50_sgs_nmp_drought_map <-
@@ -531,7 +533,7 @@ day_50_sgs_nmp_drought_map <-
                color = "black", size = 0.1,fill=NA) +
   geom_raster(data=day_50_drought_df, mapping=aes(x = x, y = y, fill = layer)) + 
   coord_equal() +
-  scale_fill_scico('Drought impact to day \n of 50% growth (days)',palette = 'batlow',direction=-1) +
+  scale_fill_scico('Drought impact to day \n of 50% total growth (days)',palette = 'roma',direction=-1) +
   xlab('') +
   ylab('') +
   scale_x_continuous(expand=c(0,0)) +
@@ -556,17 +558,17 @@ day_50_sgs_nmp_drought_map <-
     axis.line.x = element_blank(),
     axis.line.y = element_blank())
 
-#save to file
-png(
-  height = 1500,
-  width = 2000,
-  res = 300,
-  './../../Figures/day_50_drought_growth_map.png'
-)
-
-print(day_50_sgs_nmp_drought_map)
-
-dev.off()
+# #save to file
+# png(
+#   height = 1500,
+#   width = 2000,
+#   res = 300,
+#   './../../Figures/day_50_drought_growth_map.png'
+# )
+# 
+# print(day_50_sgs_nmp_drought_map)
+# 
+# dev.off()
 
 #PDF of drought impact to 50% growth
 
@@ -585,17 +587,14 @@ head(day_50_drought_nmp_sgs_2_df)
 #plot it
 drought_day50_pdf <- ggplot(day_50_drought_nmp_sgs_2_df, aes(x = layer, fill = region)) +
   scale_y_continuous(expand = c(0,0)) +
-  #scale_x_continuous(expand = c(0,0),limits = c(-1.5,0.6)) +
   scale_y_continuous(expand = c(0, 0), limits = c(0, 1.02)) +
-  #scale_x_continuous(expand = c(0, 0), limits = c(230, 281)) +
-  #geom_histogram(color='black',binwidth = 1) +
   geom_density(color = 'black', alpha = 0.5, aes(y = ..scaled..)) +
   scale_fill_manual(values = c(
     'Northern mixed prairies' = 'grey70',
     'Shortgrass steppe' = 'white'
   )) +
   geom_vline(xintercept = 0,color='red') +
-  xlab('Drought impact to day of 50% growth (days)') +
+  xlab('Drought impact to day of 50% of total growth (days)') +
   ylab('Probability density') +
   theme(
     axis.text.x = element_text(color = 'black', size = 7),
@@ -618,11 +617,11 @@ drought_day50_pdf <- ggplot(day_50_drought_nmp_sgs_2_df, aes(x = layer, fill = r
   )
 
 #save to file
-png(height = 1700,width=2000,res=300,'./../../Figures/day50_drought_distributions.png')
-
-print(drought_day50_pdf)
-
-dev.off()
+# png(height = 1700,width=2000,res=300,'./../../Figures/day50_drought_distributions.png')
+# 
+# print(drought_day50_pdf)
+# 
+# dev.off()
 
 #try to make inset
 library(grid)
@@ -639,7 +638,7 @@ full <- function() {
 }
 
 
-png(height = 1700,width=2000,res=300,'./../../Figures/day50_drought_inset_plot.png')
+png(height = 1700,width=2000,res=300,'Figures/day50_drought_inset_plot.png')
 
 full()
 
@@ -1107,5 +1106,125 @@ print(vpd_change)
 dev.off()
 
 #-------------------------------------------------------------------------------
+# Change in proportion of spring precipiation during drought ------
 
+#import
+seasonal_change_spring_sgs_df <- 
+  read.csv(paste0('./../../Data/Climate/Ecoregion/shortgrass_steppe/Precipitation/seasonal_change_PPT.csv'))
+seasonal_change_spring_sgs_df$Ecoregion <- 'Shortgrass steppe'
+seasonal_change_spring_sgs <- seasonal_change_spring_sgs_df %>% select(x,y,change_in_perc_spring)
+seasonal_change_spring_sgs <- rasterFromXYZ(seasonal_change_spring_sgs)
+
+seasonal_change_spring_nmp_df <- 
+  read.csv(paste0('./../../Data/Climate/Ecoregion/northern_mixed_prairies/Precipitation/seasonal_change_PPT.csv'))
+seasonal_change_spring_nmp_df$Ecoregion <- 'Northern mixed prairies'
+seasonal_change_spring_nmp <- seasonal_change_spring_nmp_df %>% select(x,y,change_in_perc_spring)
+seasonal_change_spring_nmp <- rasterFromXYZ(seasonal_change_spring_nmp)
+#some pixels missing for NMP, need to check this...
+
+seasonal_change_spring_ppt <- raster::merge(seasonal_change_spring_nmp,seasonal_change_spring_sgs,
+                                            tolerance=0.2)
+plot(seasonal_change_spring_ppt)
+
+# seasonal_change_spring_ppt <- rbind(seasonal_change_sgs,seasonal_change_nmp)
+# head(seasonal_change_spring_ppt,1)
+# rm(seasonal_change_sgs,seasonal_change_nmp)
+# 
+# seasonal_change_spring_ppt <- seasonal_change_spring_ppt %>%
+#   select(x,y,change_in_perc_spring)
+
+#turn to raster and fix projection, and then back to dataframe for plotting
+seasonal_change_spring_ppt  <- rasterFromXYZ(seasonal_change_spring_ppt)
+proj4string(seasonal_change_spring_ppt ) <- CRS("+proj=longlat")
+seasonal_change_spring_ppt  <-projectRaster(seasonal_change_spring_ppt , 
+crs='+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96
++        +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs')
+seasonal_change_spring_ppt_df <- data.frame(rasterToPoints(seasonal_change_spring_ppt))
+#plot(seasonal_change_spring_ppt)
+
+spring_ppt_map <- ggplot() +
+  geom_polygon(data=states_all_sites_tidy, mapping=aes(x = long, y = lat,group=group),
+               color = "black", size = 0.1,fill=NA) +
+  geom_raster(data=seasonal_change_spring_ppt_df, mapping=aes(x = x, y = y, fill = layer)) + 
+  coord_equal() +
+  scale_fill_scico('Change in % of spring precipitation',palette = 'roma',direction=1) +
+  xlab('') +
+  ylab('') +
+  scale_x_continuous(expand=c(0,0)) +
+  scale_y_continuous(expand=c(0,0)) +
+  theme(
+    axis.text.x = element_blank(), #angle=25,hjust=1),
+    axis.text.y = element_blank(),
+    axis.title.x = element_text(color='black',size=10),
+    axis.title.y = element_text(color='black',size=10),
+    axis.ticks = element_blank(),
+    legend.key = element_blank(),
+    #legend.title = element_blank(),
+    #legend.text = element_text(size=2),
+    #legend.position = c(0.7,0.1),
+    #legend.margin =margin(r=5,l=5,t=5,b=5),
+    #legend.position = c(0.0,0.1),
+    legend.position = 'top',
+    strip.background =element_rect(fill="white"),
+    strip.text = element_text(size=10),
+    panel.background = element_rect(fill=NA),
+    panel.border = element_blank(), #make the borders clear in prep for just have two axes
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank())
+
+#inset plot
+spring_ppt_binded <- rbind(seasonal_change_spring_sgs_df,seasonal_change_spring_nmp_df)
+
+spring_ppt_pdf <- ggplot(spring_ppt_binded, aes(x = change_in_perc_spring, fill = Ecoregion)) +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1.02)) +
+  geom_density(color = 'black', alpha = 0.5, aes(y = ..scaled..)) +
+  scale_fill_manual(values = c(
+    'Northern mixed prairies' = 'grey70',
+    'Shortgrass steppe' = 'white'
+  )) +
+  geom_vline(xintercept = 0,color='red') +
+  xlab('Change in spring PPT (%)') +
+  ylab('Probability density') +
+  theme(
+    axis.text.x = element_text(color = 'black', size = 7),
+    #angle=25,hjust=1),
+    axis.text.y = element_text(color = 'black', size = 7),
+    axis.title = element_text(color = 'black', size = 10),
+    axis.ticks = element_line(color = 'black'),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 5),
+    legend.position = c(0.82, 0.81),
+    #legend.position = 'none',
+    strip.background = element_rect(fill = "white"),
+    strip.text = element_text(size = 15),
+    panel.background = element_rect(fill = NA),
+    panel.border = element_blank(),
+    #make the borders clear in prep for just have two axes
+    axis.line.x = element_line(colour = "black"),
+    axis.line.y = element_line(colour = "black")
+  )
+
+
+#make and save the inset plot
+library(grid)
+vp <- viewport(width = 0.44, height = 0.39, x = 0.23,y=0.27)
+# y = unit(0.7, "lines"), just = c("right",
+#                                  "bottom")
+
+#executing the inset, you create a function the utlizes all the previous code
+library(grid)
+
+full <- function() {
+  print(spring_ppt_map)
+  print(spring_ppt_pdf , vp = vp)
+}
+
+
+png(height = 1700,width=2000,res=300,'Figures/change_in_perc_spring_PPT_drought.png')
+
+full()
+
+dev.off()
 
