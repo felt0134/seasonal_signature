@@ -1027,31 +1027,71 @@ dev.off()
 #-------------------------------------------------------------------------------
 # points used for randomized VPD subset ------
 
-gplot() +
-  geom_polygon(data=states_all_sites_tidy, mapping=aes(x = long, y = lat,group=group),
-               color = "black", size = 0.1,fill=NA) +
-  ggplot(data=seasonal_vpd_sgs, aes(x = y, y = x)) + 
-  geom_point()
-  coord_equal() +
-  scale_fill_scico('Drought impact to day \n of 90% growth (days)',palette = 'roma',direction=1) +
-  xlab('') +
-  ylab('') +
-  scale_x_continuous(expand=c(0,0)) +
-  scale_y_continuous(expand=c(0,0)) +
-  theme(
-    axis.text.x = element_blank(), #angle=25,hjust=1),
-    axis.text.y = element_blank(),
-    axis.title.x = element_text(color='black',size=10),
-    axis.title.y = element_text(color='black',size=10),
-    axis.ticks = element_blank(),
-    legend.key = element_blank(),
-    legend.position = 'top',
-    strip.background =element_rect(fill="white"),
-    strip.text = element_text(size=10),
-    panel.background = element_rect(fill=NA),
-    panel.border = element_blank(), #make the borders clear in prep for just have two axes
-    axis.line.x = element_blank(),
-    axis.line.y = element_blank())
+#load file (will need to update workign directory)
+rangeland_npp_covariates<-readRDS(file.path(test_wd, "Dryland_NPP.rds")) #loads file and name it annualSWA_OctDec I guess
+
+nm_sgs<-rangeland_npp_covariates %>%
+  dplyr::filter(region==c('northern_mixed_prairies','shortgrass_steppe')) 
+
+mean_production_raster<-rasterFromXYZ(mean_npp)
+#plot(mean_production_raster)
+
+#import shapefules
+
+#SGS
+SGS.shape<-readOGR(dsn="/Volumes/GoogleDrive/My Drive/range-resilience/scope/study-area-shapefiles/SGS",layer="SGS")
+#plot(SGS.shape)
+SGS.shape@bbox <- as.matrix(extent(mean_production_raster))
+#plot(SGS.shape)
+SGS.shape.2 <- sp::spTransform(SGS.shape, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+
+#NMP
+NorthernMixedSubset.shape<-readOGR(dsn="/Volumes/GoogleDrive/My Drive/range-resilience/scope/study-area-shapefiles/NorthernMixedSubset",layer="NorthernMixedSubset")
+#plot(NorthernMixedSubset.shape)
+NorthernMixedSubset.shape@bbox <- as.matrix(extent(mean_production_raster))
+plot(NorthernMixedSubset.shape)
+#step 2:
+NorthernMixedSubset.shape.2 <- sp::spTransform(NorthernMixedSubset.shape, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+#plot(NorthernMixedSubset.shape.2)
+crop(NorthernMixedSubset.shape.2,mean_production_raster)
+
+#combine
+sgs_nmp_combined<-NorthernMixedSubset.shape.2 +SGS.shape.2
+
+#import VPD dataset
+Ecoregion <- 'shortgrass_steppe'
+seasonal_vpd_sgs <- read.csv(paste0(
+  './../../Data/Climate/Ecoregion/',
+  Ecoregion,
+  '/PRISM/VPD_change.csv'
+)) 
+seasonal_vpd_sgs$ecoregion <- 'Shortgrass steppe'
+
+Ecoregion <- 'northern_mixed_prairies'
+seasonal_vpd_nmp <- read.csv(paste0(
+  './../../Data/Climate/Ecoregion/',
+  Ecoregion,
+  '/PRISM/VPD_change.csv'
+)) 
+seasonal_vpd_nmp$ecoregion <- 'Northern mixed prairies'
+
+seasonal_vpd_sgs_nmp <- rbind(seasonal_vpd_nmp,seasonal_vpd_sgs)
+head(seasonal_vpd_sgs_nmp,1)
+
+png(height = 2000,width=2000,res=300,'Figures/VPD_sites.png')
+plot(test,lwd=0.1)
+plot(NorthernMixedSubset.shape.2,col='steelblue2', lwd = .1,add=TRUE)
+plot(SGS.shape.2, lwd = 0.1,col='green4', lwd = .1,add=TRUE)
+points(y~x,data=seasonal_vpd_sgs_nmp,col='black',cex=.25)
+legend(-120, 38, legend=c("Shortgrass steppe", "Northern mixed prairies"),         #alpha legend: 0.015, 150
+       col=c("green4", "steelblue2"), lty=1.1,lwd=4,cex=1,box.lty=0)
+dev.off()
+
+
+
+
+#-------------------------------------------------------------------------------
+# ecoregion distributions (to do) ------
 
 
 
