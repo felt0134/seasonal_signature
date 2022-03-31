@@ -416,6 +416,6 @@ spring_summer_precip_drought$change_in_perc_summer <-
 
 spring_summer_precip_drought$ecoregion <- Ecoregion
 
-# write.csv(spring_summer_precip_drought,
-#           paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/seasonal_change_PPT.csv'))
+write.csv(spring_summer_precip_drought,
+          paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/seasonal_change_PPT.csv'))
 

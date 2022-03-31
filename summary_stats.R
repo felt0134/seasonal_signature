@@ -169,6 +169,12 @@ drought_growth_impact_nmp <- read.csv(paste0('./../../Data/growth_dynamics/droug
 drought_growth_impact_nmp %>% filter(perc_change == max(drought_growth_impact_nmp$perc_change))
 #day 87 68.4%
 
+drought_growth_impact_absolute_nmp <- read.csv( paste0('./../../Data/growth_dynamics/drought_gpp_reduction_absolute_',Ecoregion,'.csv'))
+drought_growth_impact_absolute_nmp %>% filter(abs_change == max(drought_growth_impact_absolute_nmp$abs_change))
+#day 129 5.3
+
+drought_growth_impact_absolute_nmp %>% filter(abs_change == min(drought_growth_impact_absolute_nmp$abs_change))
+#day 185 -21.2
 
 #maximum GPP reduction for SGS and NMP (% and absolute) and when this happens (day)
 drought_growth_impact_nmp %>% filter(perc_change == min(drought_growth_impact_nmp$perc_change))
@@ -178,7 +184,7 @@ Ecoregion <- 'shortgrass_steppe'
 drought_growth_impact_sgs <- read.csv(paste0('./../../Data/growth_dynamics/drought_gpp_reduction_',Ecoregion,'.csv'))
 drought_growth_impact_sgs %>% filter(perc_change == min(drought_growth_impact_sgs$perc_change))
 
-#look at absolute differences in GOO through time
+#look at absolute differences in GPP through time
 
 Ecoregion <- 'shortgrass_steppe'
 drought_growth_impact_absolute_sgs <- 
@@ -256,37 +262,37 @@ source('seasonal_precip_temp_analysis.R')
 
 #abs and relative change in spring ppt
 quantile(test_spring_ppt_drought$perc_decrease,c(0.01,0.5,0.99))
-#50th = -55.8% reduction
+#50th = -47.9% reduction
 
 quantile(test_spring_ppt_drought$abs_decrease,c(0.01,0.5,0.99))
-# 50th = -79.4 mm
+# 50th = -71.2 mm
 
 #shift in proportion of spring precip
 quantile(spring_summer_precip_drought$change_in_perc_spring,c(0.01,0.5,0.99),na.rm=T)
-# 50th = 3.1
+# 50th = 6.5
 #hist(spring_summer_precip_drought$change_in_perc_spring)
 
 #abs and relative decline in spring ppt
 quantile(test_summer_ppt_drought$perc_decrease,c(0.01,0.5,0.99))
-#50th = -58.6% reduction
+#50th = -57.6% reduction
 
 quantile(test_summer_ppt_drought$abs_decrease,c(0.01,0.5,0.99))
-#50th = -91.5 mm 
-#91.5 - 79.4
+#50th = -80.9 mmm
+#80.9 - 71.2 = 9.7 mm
 
 #abs and relative change in spring temp
 quantile(test_spring_temp_drought$perc_change,c(0.01,0.5,0.99))
-#50th = 7.7%
+#50th = 21.4%
 
 quantile(test_spring_temp_drought$abs_change,c(0.01,0.5,0.99))
-#50th = 1 degree
+#50th = 1.2 degree
 
 #abs and relative change in summer temp
 quantile(test_summer_temp_drought$perc_change,c(0.01,0.5,0.99))
-#50th = 9.1%
+#50th = 6.8%
 
 quantile(test_summer_temp_drought$abs_change,c(0.01,0.5,0.99))
-#50th = 2 degree
+#50th = 1.3 degree
 
 vpd_change %>%
   filter(season=='summer') %>%
