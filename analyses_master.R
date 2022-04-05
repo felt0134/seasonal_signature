@@ -58,8 +58,20 @@ source('day_of_max_gpp.R')
 
 
 #------------------------
-#seasonal climate ------
+# seasonal climate ------
 
 Ecoregion = 'northern_mixed_prairies'
 
 source('seasonal_precip_temp_analysis.R')
+
+#------------------------
+# 1km subset analyses ------
+
+
+#Ecoregion = 'shortgrass_steppe'
+#Ecoregion = 'northern_mixed_prairies' 
+
+
+source('drought_reduction_spline_1km_subset.R')
+source('growth_curve_splines_1km_subset.R')
+

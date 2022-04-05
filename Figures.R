@@ -1092,6 +1092,95 @@ dev.off()
 
 #-------------------------------------------------------------------------------
 # ecoregion distributions (to do) ------
+#-------------------------------------------------------------------------------
+# 1 km subset of gpp dynamics during drought (to do) --------
+#-------------------------------------------------------------------------------
+# drought years map and barchart ------
 
 
+
+Ecoregion <- 'shortgrass_steppe'
+driest_year_sgs <- 
+  read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/growing_season/drought_precip_year_',Ecoregion,'.csv'))
+driest_year_sgs$ecoregion <- 'Shortgrass steppe'
+driest_year_sgs_count <- aggregate(ppt~year + ecoregion,length,data=driest_year_sgs)
+driest_year_sgs_count <- driest_year_sgs_count %>% filter(ppt > 99)
+
+Ecoregion <- 'northern_mixed_prairies'
+driest_year_nmp <- 
+  read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/growing_season/drought_precip_year_',Ecoregion,'.csv'))
+driest_year_nmp$ecoregion <- 'Northern mixed prairies'
+driest_year_nmp_count <- aggregate(ppt~year + ecoregion,length,data=driest_year_nmp)
+driest_year_nmp_count <- driest_year_nmp_count %>% filter(ppt > 99)
+
+driest_year <- rbind(driest_year_sgs_count,driest_year_nmp_count)
+
+head(driest_year_sgs,1)
+
+driest_year_count <- aggregate(ppt~year + ecoregion,length,data=driest_year)
+driest_year_count$year <- as.factor(driest_year_count$year)
+
+  ggplot(driest_year_count_filtered,aes(reorder(year,-ppt),ppt,fill=ecoregion)) +
+    stat_summary(fun='mean',geom='bar') +
+    ylab('Number of sites') +
+    xlab('Driest year (2003-2020)') +
+    #scale_x_continuous(expand=c(0,0)) +
+    scale_y_continuous(expand=c(0,0)) +
+    theme(
+      axis.text.x = element_text(size=10), #angle=25,hjust=1),
+      axis.text.y = element_text(size=10),
+      axis.title.x = element_text(color='black',size=20),
+      axis.title.y = element_text(color='black',size=20),
+      #axis.ticks = element_blank(),
+      #legend.key = element_blank(),
+      legend.title = element_blank(),
+      #legend.text = element_text(size=2),
+      legend.position = c(0.5,0.5),
+      #legend.margin =margin(r=5,l=5,t=5,b=5),
+      #legend.position = c(0.0,0.1),
+      #legend.position = 'top',
+      #strip.background =element_rect(fill="white"),
+      strip.text = element_text(size=10),
+      panel.background = element_rect(fill=NA),
+      panel.border = element_blank(), #make the borders clear in prep for just have two axes
+      axis.line.x = element_rect(color='black'),
+      axis.line.y = element_rect(color='black'))
+
+
+#raster is acting weird
+
+driest_year_map <- driest_year %>%
+  select(x,y,year)
+
+driest_year_map <- rasterFromXYZ(driest_year_map)
+proj4string(driest_year_map) <- CRS("+proj=longlat")
+driest_year_map <-projectRaster(driest_year_map, crs='+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96
++        +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs')
+driest_year_map_df <- data.frame(rasterToPoints(driest_year_map))
+  plot(driest_year_map)
+  day_90_sgs_nmp_drought_map <-
+    ggplot() +
+    geom_polygon(data=states_all_sites_tidy, mapping=aes(x = long, y = lat,group=group),
+                 color = "black", size = 0.1,fill=NA) +
+    geom_raster(data=driest_year_map_df, mapping=aes(x = x, y = y, fill = year)) + 
+    coord_equal() +
+    scale_fill_scico('Drought impact to day \n of 90% growth (days)',palette = 'roma',direction=1) +
+    xlab('') +
+    ylab('') +
+    scale_x_continuous(expand=c(0,0)) +
+    scale_y_continuous(expand=c(0,0)) +
+    theme(
+      axis.text.x = element_blank(), #angle=25,hjust=1),
+      axis.text.y = element_blank(),
+      axis.title.x = element_text(color='black',size=10),
+      axis.title.y = element_text(color='black',size=10),
+      axis.ticks = element_blank(),
+      legend.key = element_blank(),
+      legend.position = 'top',
+      strip.background =element_rect(fill="white"),
+      strip.text = element_text(size=10),
+      panel.background = element_rect(fill=NA),
+      panel.border = element_blank(), #make the borders clear in prep for just have two axes
+      axis.line.x = element_blank(),
+      axis.line.y = element_blank())
 
