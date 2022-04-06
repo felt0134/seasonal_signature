@@ -731,12 +731,12 @@ dev.off()
 #import SGS
 #mean
 growth_curve_absolute_mean_sgs <- 
-  read_csv('./../../Data/CDD/growth_curves/growth_curve_absolute_shortgrass_steppe.csv')
+  read_csv('./../../Data/growth_curves/average_growth_curve_shortgrass_steppe.csv')
 head(growth_curve_absolute_mean_sgs,1)
 
 #drought
 growth_curve_drought_absolute_mean_sgs <- 
-  read_csv('./../../Data/CDD/growth_curves/drought_growth_curve_absolute_shortgrass_steppe.csv')
+  read_csv('./../../Data/growth_curves/drought_growth_curve_shortgrass_steppe.csv')
 head(growth_curve_drought_absolute_mean_sgs,1)
 
 #growth dynamics
@@ -748,12 +748,12 @@ head(growth_drynamics_sgs,1)
 #import NMP
 #mean
 growth_curve_absolute_mean_nmp <- 
-  read_csv('./../../Data/CDD/growth_curves/growth_curve_absolute_northern_mixed_prairies.csv')
+  read_csv('./../../Data/growth_curves/average_growth_curve_northern_mixed_prairies.csv')
 head(growth_curve_absolute_mean_nmp,1)
 
 #drought
 growth_curve_drought_absolute_mean_nmp <- 
-  read_csv('./../../Data/CDD/growth_curves/drought_growth_curve_absolute_northern_mixed_prairies.csv')
+  read_csv('./../../Data/growth_curves/drought_growth_curve_northern_mixed_prairies.csv')
 head(growth_curve_drought_absolute_mean_nmp,1)
 
 #growth dynamics
@@ -762,20 +762,25 @@ growth_drynamics_nmp <-
 head(growth_drynamics_nmp,1)
 
 #SGS growth curve figure
-png(height = 1500,width=3000,res=300,'./../../Figures/multi_panel_growth_curves')
+png(height = 1500,width=3000,res=300,'Figures/multi_panel_growth_curves')
 
 
 par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,2,1,1),mar = c(3,3,3,3))
 
 # plot it out panel A: sgs
-plot(gpp ~ day, growth_curve_absolute_mean_sgs,col='grey',pch=19,cex=0.1,
+plot(mean ~ doy, growth_curve_absolute_mean_sgs,col='grey',pch=19,cex=0.01,
      ylab='',
      xlab='')
-lines(gpp ~ day, growth_curve_drought_absolute_mean_sgs,col='red',pch=19,lwd=5)
-lines(gpp ~ day, growth_curve_absolute_mean_sgs,col='grey',pch=19,lwd=5)
+polygon(c(growth_curve_absolute_mean_sgs$doy,rev(growth_curve_absolute_mean_sgs$doy)),
+        c(growth_curve_absolute_mean_sgs$lower,rev(growth_curve_absolute_mean_sgs$upper)),
+        col = "grey75", border = T)
+polygon(c(growth_curve_drought_absolute_mean_sgs$doy,rev(growth_curve_drought_absolute_mean_sgs$doy)),
+        c(growth_curve_drought_absolute_mean_sgs$lower,rev(growth_curve_drought_absolute_mean_sgs$upper)),
+        col = "red", border = T)
+#lines(mean ~ doy, growth_curve_drought_absolute_mean_sgs,col='black',pch=19,lwd=1)
 #abline(v=155)
 text(160, 176, "June 28th",cex=1)
-points(176, 176,pch=19,cex=3)
+points(178, 176,pch=19,cex=3)
 text(172, 97, "June 6th",cex=1)
 points(157,102,pch=19,cex=3)
 legend(175, 50, legend=c("Average year", "Drought year"),         #alpha legend: 0.015, 150
@@ -787,12 +792,19 @@ mtext('Cumulative GPP',side=2,line=2.5,cex=1.5)
 mtext('Shortgrass steppe',side=3,line=0.5,cex=1.5)
 
 # plot it out panel B: nmp
-plot(gpp ~ day, growth_curve_absolute_mean_nmp,col='grey',pch=19,
+plot(mean ~ doy, growth_curve_absolute_mean_nmp,col='grey',pch=19,cex=0.1,
      ylab='',
      xlab='')
-points(gpp ~ day, growth_curve_drought_absolute_mean_nmp,col='red',pch=19)
-lines(gpp ~ day, growth_curve_drought_absolute_mean_nmp,col='red',pch=19,lwd=5)
-lines(gpp ~ day, growth_curve_absolute_mean_nmp,col='grey',pch=19,lwd=5)
+polygon(c(growth_curve_absolute_mean_nmp$doy,rev(growth_curve_absolute_mean_nmp$doy)),
+        c(growth_curve_absolute_mean_nmp$lower,rev(growth_curve_absolute_mean_nmp$upper)),
+        col = "grey75", border = T)
+polygon(c(growth_curve_drought_absolute_mean_nmp$doy,rev(growth_curve_drought_absolute_mean_nmp$doy)),
+        c(growth_curve_drought_absolute_mean_nmp$lower,rev(growth_curve_drought_absolute_mean_nmp$upper)),
+        col = "red", border = T)
+
+# points(gpp ~ day, growth_curve_drought_absolute_mean_nmp,col='red',pch=19)
+# lines(gpp ~ day, growth_curve_drought_absolute_mean_nmp,col='red',pch=19,lwd=5)
+# lines(gpp ~ day, growth_curve_absolute_mean_nmp,col='grey',pch=19,lwd=5)
 #abline(v=155)
 text(158, 210, "June 23rd",cex=1)
 points(174, 210,pch=19,cex=3)
@@ -894,7 +906,7 @@ vpd_change <- ggplot(seasonal_vpd_sgs_nmp, aes(x = abs_change, fill = season)) +
   )
 
 #save to file
-png(height = 1700,width=2700,res=300,'Figures/vpd_change.png')
+png(height = 1700,width=3000,res=300,'Figures/vpd_change.png')
 
 print(vpd_change)
 
@@ -1092,8 +1104,180 @@ dev.off()
 
 #-------------------------------------------------------------------------------
 # ecoregion distributions (to do) ------
+
+library(rgdal)
+
+#shapefile referecne for state outlines. This will results in a sp file being downloaded...
+us<-getData("GADM", country='USA', level=1,download=TRUE)
+states_all_sites <- us[us$NAME_1 %in% c(
+  'Colorado','Wyoming',
+  'Montana','Texas','Kansas','New Mexico',
+  'North Dakota','South Dakota','Nebraska',
+  'Oklahoma'),]
+
+states_all_sites <- sp::spTransform(states_all_sites, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+states_all_sites <- spTransform(states_all_sites, crs(Albers))
+plot(states_all_sites)
+
+#set directory
+test_wd<-"/Volumes/GoogleDrive/My Drive/range-resilience/Sensitivity/Processing NPP Data/NPP Data processing"
+
+#load file (will need to update working directory)
+rangeland_npp_covariates<-readRDS(file.path(test_wd, "Dryland_NPP.rds")) #loads file and name it annualSWA_OctDec I guess
+
+nm_sgs<-rangeland_npp_covariates %>%
+  dplyr::filter(region==c('northern_mixed_prairies','shortgrass_steppe')) 
+
+mean_npp<-aggregate(npp~x+y,mean,data=nm_sgs)
+
+mean_production_raster<-rasterFromXYZ(mean_npp)
+#plot(mean_production_raster)
+
+#import shapefules
+
+#SGS
+SGS.shape<-readOGR(dsn="/Volumes/GoogleDrive/My Drive/range-resilience/scope/study-area-shapefiles/SGS",layer="SGS")
+#plot(SGS.shape)
+SGS.shape@bbox <- as.matrix(extent(mean_production_raster))
+#plot(SGS.shape)
+SGS.shape.2 <- sp::spTransform(SGS.shape, crs("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+SGS.shape.3 <- sp::spTransform(SGS.shape.2, crs(Albers))
+plot(SGS.shape.3)
+
+#NMP
+NorthernMixedSubset.shape<-readOGR(dsn="/Volumes/GoogleDrive/My Drive/range-resilience/scope/study-area-shapefiles/NorthernMixedSubset",layer="NorthernMixedSubset")
+#plot(NorthernMixedSubset.shape)
+NorthernMixedSubset.shape@bbox <- as.matrix(extent(mean_production_raster))
+plot(NorthernMixedSubset.shape)
+#step 2:
+NorthernMixedSubset.shape.2 <- sp::spTransform(NorthernMixedSubset.shape, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+#plot(NorthernMixedSubset.shape.2)
+NorthernMixedSubset.shape.3 <- sp::spTransform(NorthernMixedSubset.shape.2, crs(Albers))
+plot(NorthernMixedSubset.shape.3)
+crop(NorthernMixedSubset.shape.2,mean_production_raster)
+
+#combine
+test<-NorthernMixedSubset.shape.3 + SGS.shape.3
+
+png(height = 2000,width=2100,res=300,'Figures/ecoregions.png')
+plot(test,lwd=0.1)
+plot(NorthernMixedSubset.shape.3,col='steelblue2', lwd = .1,add=TRUE)
+plot(SGS.shape.3, lwd = 0.1,col='green4', lwd = .1,add=TRUE)
+legend(-2090000, 1916791.1, legend=c("Shortgrass steppe", "Northern mixed prairies"),         #alpha legend: 0.015, 150
+       col=c("green4", "steelblue2"), pch=19,cex=1,box.lty=0)
+ plot(states_all_sites,add=TRUE,lwd=0.5)
+
+dev.off()
+
 #-------------------------------------------------------------------------------
 # 1 km subset of gpp dynamics during drought (to do) --------
+
+
+#import SGS
+#mean
+growth_curve_absolute_mean_sgs_1km <- 
+  read_csv('./../../Data/CDD/growth_curves/one_km_subset/growth_curve_absolute_shortgrass_steppe.csv')
+head(growth_curve_absolute_mean_sgs_1km,1)
+
+#drought
+growth_curve_drought_absolute_mean_sgs <- 
+  read_csv('./../../Data/CDD/growth_curves/drought_growth_curve_absolute_shortgrass_steppe.csv')
+head(growth_curve_drought_absolute_mean_sgs,1)
+
+#growth dynamics
+growth_drynamics_sgs <- 
+  read_csv('./../../Data/growth_dynamics/drought_gpp_reduction_shortgrass_steppe.csv')
+head(growth_drynamics_sgs,1)
+
+
+#import NMP
+#mean
+growth_curve_absolute_mean_nmp <- 
+  read_csv('./../../Data/CDD/growth_curves/growth_curve_absolute_northern_mixed_prairies.csv')
+head(growth_curve_absolute_mean_nmp,1)
+
+#drought
+growth_curve_drought_absolute_mean_nmp <- 
+  read_csv('./../../Data/CDD/growth_curves/drought_growth_curve_absolute_northern_mixed_prairies.csv')
+head(growth_curve_drought_absolute_mean_nmp,1)
+
+#growth dynamics
+growth_drynamics_nmp <- 
+  read_csv('./../../Data/growth_dynamics/drought_gpp_reduction_northern_mixed_prairies.csv')
+head(growth_drynamics_nmp,1)
+
+#SGS growth curve figure
+png(height = 1500,width=3000,res=300,'Figures/multi_panel_growth_curves')
+
+
+par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,2,1,1),mar = c(3,3,3,3))
+
+# plot it out panel A: sgs
+plot(gpp ~ day, growth_curve_absolute_mean_sgs,col='grey',pch=19,cex=0.1,
+     ylab='',
+     xlab='')
+lines(gpp ~ day, growth_curve_drought_absolute_mean_sgs,col='red',pch=19,lwd=5)
+lines(gpp ~ day, growth_curve_absolute_mean_sgs,col='grey',pch=19,lwd=5)
+#abline(v=155)
+text(160, 176, "June 28th",cex=1)
+points(178, 176,pch=19,cex=3)
+text(172, 97, "June 6th",cex=1)
+points(157,102,pch=19,cex=3)
+legend(175, 50, legend=c("Average year", "Drought year"),         #alpha legend: 0.015, 150
+       col=c("grey", "red"), lty=1.1,lwd=4,cex=2,box.lty=0)
+legend(175, 75, legend=c("50% of total production"),         #alpha legend: 0.015, 150
+       col=c("black"), pch=19,box.lty=0,cex=2)
+mtext('Julian day of year',side=1,line=3.0,cex=1.5)
+mtext('Cumulative GPP',side=2,line=2.5,cex=1.5)
+mtext('Shortgrass steppe',side=3,line=0.5,cex=1.5)
+
+# plot it out panel B: nmp
+plot(gpp ~ day, growth_curve_absolute_mean_nmp,col='grey',pch=19,
+     ylab='',
+     xlab='')
+points(gpp ~ day, growth_curve_drought_absolute_mean_nmp,col='red',pch=19)
+lines(gpp ~ day, growth_curve_drought_absolute_mean_nmp,col='red',pch=19,lwd=5)
+lines(gpp ~ day, growth_curve_absolute_mean_nmp,col='grey',pch=19,lwd=5)
+#abline(v=155)
+text(158, 210, "June 23rd",cex=1)
+points(174, 210,pch=19,cex=3)
+text(180, 170, "June 12th",cex=1)
+points(163,170,pch=19,cex=3)
+mtext('Julian day of year',side=1,line=3.0,cex=1.5)
+#mtext('GPP',side=2,line=2.5,cex=1.5)
+mtext('Northern mixed prairies',side=3,line=0.5,cex=1.5)
+
+#dev.off()
+
+#inset SGS
+panel.first = rect(c(1,7), -1e6, c(3,10), 1e6, col='green', border=NA)
+par(fig = c(0.05,0.30,0.60,0.95), new = TRUE)
+plot(perc_change~doy,data=growth_drynamics_sgs,cex=0.1,
+     xlab='Julian day',ylab='Drought impact (% change in GPP)')
+lines(perc_change~doy,data=growth_drynamics_sgs)
+lines(upper~as.numeric(as.integer(doy)),growth_drynamics_sgs)
+lines(lower~doy,growth_drynamics_sgs)
+abline(h=0)
+mtext('Julian day of year',side=1,line=2.35,cex=0.75)
+mtext('GPP impact (%)',side=2,line=2.0,cex=0.75)
+
+#inset NMP
+par(fig = c(0.55,0.80,0.60,0.95), new = TRUE)
+plot(perc_change~doy,data=growth_drynamics_nmp,cex=0.1,
+     xlab='Julian day',ylab='Drought impact (% change in GPP)')
+lines(perc_change~doy,data=growth_drynamics_nmp)
+lines(upper~as.numeric(as.integer(doy)),growth_drynamics_nmp)
+lines(lower~doy,growth_drynamics_nmp)
+abline(h=0)
+mtext('Julian day of year',side=1,line=2.25,cex=0.75)
+mtext('GPP impact (%)',side=2,line=2.35,cex=0.75)
+
+
+dev.off()
+
+
+
+
 #-------------------------------------------------------------------------------
 # drought years map and barchart ------
 
@@ -1103,68 +1287,86 @@ Ecoregion <- 'shortgrass_steppe'
 driest_year_sgs <- 
   read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/growing_season/drought_precip_year_',Ecoregion,'.csv'))
 driest_year_sgs$ecoregion <- 'Shortgrass steppe'
+
+#select five most common years
 driest_year_sgs_count <- aggregate(ppt~year + ecoregion,length,data=driest_year_sgs)
-driest_year_sgs_count <- driest_year_sgs_count %>% filter(ppt > 99)
+driest_year_sgs_count <- driest_year_sgs_count %>% arrange(desc(ppt)) %>%
+  dplyr::filter(ppt >34)
+  
 
 Ecoregion <- 'northern_mixed_prairies'
 driest_year_nmp <- 
   read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/growing_season/drought_precip_year_',Ecoregion,'.csv'))
 driest_year_nmp$ecoregion <- 'Northern mixed prairies'
+
+#select five most common years
 driest_year_nmp_count <- aggregate(ppt~year + ecoregion,length,data=driest_year_nmp)
-driest_year_nmp_count <- driest_year_nmp_count %>% filter(ppt > 99)
+driest_year_nmp_count <- driest_year_nmp_count %>% arrange(desc(ppt)) %>%
+  filter(ppt > 872)
 
-driest_year <- rbind(driest_year_sgs_count,driest_year_nmp_count)
+five_driest_years <- rbind(driest_year_sgs_count,driest_year_nmp_count)
 
-head(driest_year_sgs,1)
+head(five_driest_years,1)
 
-driest_year_count <- aggregate(ppt~year + ecoregion,length,data=driest_year)
-driest_year_count$year <- as.factor(driest_year_count$year)
+five_driest_years$year <- as.factor(five_driest_years$year)
 
-  ggplot(driest_year_count_filtered,aes(reorder(year,-ppt),ppt,fill=ecoregion)) +
-    stat_summary(fun='mean',geom='bar') +
+  driest_years_barchat <- ggplot(five_driest_years,aes(reorder(year,-ppt),ppt,fill=ecoregion)) +
+    stat_summary(fun='mean',geom='bar',color='black') +
     ylab('Number of sites') +
     xlab('Driest year (2003-2020)') +
+    scale_fill_manual(values = c(
+      'Northern mixed prairies' = 'grey70',
+      'Shortgrass steppe' = 'white'
+    )) +
     #scale_x_continuous(expand=c(0,0)) +
     scale_y_continuous(expand=c(0,0)) +
     theme(
-      axis.text.x = element_text(size=10), #angle=25,hjust=1),
-      axis.text.y = element_text(size=10),
-      axis.title.x = element_text(color='black',size=20),
-      axis.title.y = element_text(color='black',size=20),
-      #axis.ticks = element_blank(),
-      #legend.key = element_blank(),
+      axis.text.x = element_text(color = 'black', size = 7),
+      #angle=25,hjust=1),
+      axis.text.y = element_text(color = 'black', size = 7),
+      axis.title = element_text(color = 'black', size = 10),
+      axis.ticks = element_line(color = 'black'),
+      legend.key = element_blank(),
       legend.title = element_blank(),
-      #legend.text = element_text(size=2),
-      legend.position = c(0.5,0.5),
-      #legend.margin =margin(r=5,l=5,t=5,b=5),
-      #legend.position = c(0.0,0.1),
-      #legend.position = 'top',
-      #strip.background =element_rect(fill="white"),
-      strip.text = element_text(size=10),
-      panel.background = element_rect(fill=NA),
-      panel.border = element_blank(), #make the borders clear in prep for just have two axes
-      axis.line.x = element_rect(color='black'),
-      axis.line.y = element_rect(color='black'))
+      legend.text = element_text(size = 6),
+      legend.position = c(0.65, 0.8),
+      #legend.position = 'none',
+      strip.background = element_rect(fill = "white"),
+      strip.text = element_text(size = 15),
+      panel.background = element_rect(fill = NA),
+      panel.border = element_blank(),
+      #make the borders clear in prep for just have two axes
+      axis.line.x = element_line(colour = "black"),
+      axis.line.y = element_line(colour = "black")
+    )
 
 
 #raster is acting weird
+  str(driest_year_sgs)
+  driest_year_sgs$year <- as.factor(driest_year_sgs$year)
+driest_year_sgs_raster <- rasterFromXYZ(driest_year_sgs[c(1,2,4)])
+driest_year_nmp_raster <- rasterFromXYZ(driest_year_nmp[c(1,2,4)])
 
-driest_year_map <- driest_year %>%
-  select(x,y,year)
+driest_year_raster <- 
+  raster::merge(driest_year_sgs_raster,driest_year_nmp_raster,
+                tolerance=0.75)
+plot(driest_year_raster)
 
-driest_year_map <- rasterFromXYZ(driest_year_map)
-proj4string(driest_year_map) <- CRS("+proj=longlat")
-driest_year_map <-projectRaster(driest_year_map, crs='+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96
+driest_year_map <- rasterFromXYZ(driest_year_raster)
+proj4string(driest_year_raster) <- CRS("+proj=longlat")
+driest_year_raster <-projectRaster(driest_year_raster, crs='+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96
 +        +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs')
-driest_year_map_df <- data.frame(rasterToPoints(driest_year_map))
-  plot(driest_year_map)
-  day_90_sgs_nmp_drought_map <-
+
+driest_year_map_df <- data.frame(rasterToPoints(driest_year_raster))
+driest_year_map_df$layer <- round(driest_year_map_df$layer)
+
+  driest_year_map_plot <-
     ggplot() +
     geom_polygon(data=states_all_sites_tidy, mapping=aes(x = long, y = lat,group=group),
                  color = "black", size = 0.1,fill=NA) +
-    geom_raster(data=driest_year_map_df, mapping=aes(x = x, y = y, fill = year)) + 
+    geom_raster(data=driest_year_map_df, mapping=aes(x = x, y = y, fill =layer)) + 
     coord_equal() +
-    scale_fill_scico('Drought impact to day \n of 90% growth (days)',palette = 'roma',direction=1) +
+    scale_fill_scico('Driest year (2003-2020)',palette = 'batlow',direction=1) +
     xlab('') +
     ylab('') +
     scale_x_continuous(expand=c(0,0)) +
@@ -1176,6 +1378,8 @@ driest_year_map_df <- data.frame(rasterToPoints(driest_year_map))
       axis.title.y = element_text(color='black',size=10),
       axis.ticks = element_blank(),
       legend.key = element_blank(),
+      legend.text = element_text(size=7),
+      legend.title = element_blank(),
       legend.position = 'top',
       strip.background =element_rect(fill="white"),
       strip.text = element_text(size=10),
@@ -1183,4 +1387,31 @@ driest_year_map_df <- data.frame(rasterToPoints(driest_year_map))
       panel.border = element_blank(), #make the borders clear in prep for just have two axes
       axis.line.x = element_blank(),
       axis.line.y = element_blank())
+  
+  
+  #make the inset
+  
+  vp <- viewport(width = 0.44, height = 0.39, x = 0.23,y=0.27)
+  # y = unit(0.7, "lines"), just = c("right",
+  #                                  "bottom")
+  
+  #executing the inset, you create a function the utlizes all the previous code
+  full <- function() {
+    print(driest_year_map_plot)
+    print(driest_years_barchat , vp = vp)
+  }
+  
+  
+  png(height = 1700,width=2000,res=300,'Figures/driest_years.png')
+  
+  full()
+  
+  dev.off()
+  
+  
 
+
+#-------------------------------------------------------------------------------
+  
+  
+  
