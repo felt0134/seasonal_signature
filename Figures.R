@@ -744,6 +744,8 @@ growth_drynamics_sgs <-
   read_csv('./../../Data/growth_dynamics/drought_gpp_reduction_shortgrass_steppe.csv')
 head(growth_drynamics_sgs,1)
 
+growth_drynamics_sgs$upper <- growth_drynamics_sgs$perc_change + growth_drynamics_sgs$ci_99
+growth_drynamics_sgs$lower <- growth_drynamics_sgs$perc_change - growth_drynamics_sgs$ci_99
 
 #import NMP
 #mean
@@ -768,15 +770,15 @@ png(height = 1500,width=3000,res=300,'Figures/multi_panel_growth_curves')
 par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,2,1,1),mar = c(3,3,3,3))
 
 # plot it out panel A: sgs
-plot(mean ~ doy, growth_curve_absolute_mean_sgs,col='grey',pch=19,cex=0.01,
+plot(mean ~ doy, growth_curve_absolute_mean_sgs,col='black',type='l',
      ylab='',
      xlab='')
 polygon(c(growth_curve_absolute_mean_sgs$doy,rev(growth_curve_absolute_mean_sgs$doy)),
         c(growth_curve_absolute_mean_sgs$lower,rev(growth_curve_absolute_mean_sgs$upper)),
-        col = "grey75", border = T)
+        col = "black", border = F)
 polygon(c(growth_curve_drought_absolute_mean_sgs$doy,rev(growth_curve_drought_absolute_mean_sgs$doy)),
         c(growth_curve_drought_absolute_mean_sgs$lower,rev(growth_curve_drought_absolute_mean_sgs$upper)),
-        col = "red", border = T)
+        col = "red", border = F)
 #lines(mean ~ doy, growth_curve_drought_absolute_mean_sgs,col='black',pch=19,lwd=1)
 #abline(v=155)
 text(160, 176, "June 28th",cex=1)
@@ -787,20 +789,20 @@ legend(175, 50, legend=c("Average year", "Drought year"),         #alpha legend:
        col=c("grey", "red"), lty=1.1,lwd=4,cex=2,box.lty=0)
 legend(175, 75, legend=c("50% of total production"),         #alpha legend: 0.015, 150
        col=c("black"), pch=19,box.lty=0,cex=2)
-mtext('Julian day of year',side=1,line=3.0,cex=1.5)
-mtext('Cumulative GPP',side=2,line=2.5,cex=1.5)
-mtext('Shortgrass steppe',side=3,line=0.5,cex=1.5)
+mtext('Julian day of year',side=1,line=3.0,cex=1.25)
+mtext(expression("Cumulative GPP " (g/m^2)),side=2,line=2,cex=1.25)
+mtext('Shortgrass steppe',side=3,line=0.5,cex=1.25)
 
 # plot it out panel B: nmp
-plot(mean ~ doy, growth_curve_absolute_mean_nmp,col='grey',pch=19,cex=0.1,
+plot(mean ~ doy, growth_curve_absolute_mean_nmp,col='black',type='l',
      ylab='',
      xlab='')
 polygon(c(growth_curve_absolute_mean_nmp$doy,rev(growth_curve_absolute_mean_nmp$doy)),
         c(growth_curve_absolute_mean_nmp$lower,rev(growth_curve_absolute_mean_nmp$upper)),
-        col = "grey75", border = T)
+        col = "black", border = F)
 polygon(c(growth_curve_drought_absolute_mean_nmp$doy,rev(growth_curve_drought_absolute_mean_nmp$doy)),
         c(growth_curve_drought_absolute_mean_nmp$lower,rev(growth_curve_drought_absolute_mean_nmp$upper)),
-        col = "red", border = T)
+        col = "red", border = F)
 
 # points(gpp ~ day, growth_curve_drought_absolute_mean_nmp,col='red',pch=19)
 # lines(gpp ~ day, growth_curve_drought_absolute_mean_nmp,col='red',pch=19,lwd=5)
@@ -810,32 +812,38 @@ text(158, 210, "June 23rd",cex=1)
 points(174, 210,pch=19,cex=3)
 text(180, 170, "June 12th",cex=1)
 points(163,170,pch=19,cex=3)
-mtext('Julian day of year',side=1,line=3.0,cex=1.5)
+mtext('Julian day of year',side=1,line=3.0,cex=1.25)
 #mtext('GPP',side=2,line=2.5,cex=1.5)
-mtext('Northern mixed prairies',side=3,line=0.5,cex=1.5)
+mtext('Northern mixed prairies',side=3,line=0.5,cex=1.25)
 
 #dev.off()
 
-#inset SGS
+#inset SGS (add the polygons for uncertainty)
 panel.first = rect(c(1,7), -1e6, c(3,10), 1e6, col='green', border=NA)
 par(fig = c(0.05,0.30,0.60,0.95), new = TRUE)
-plot(perc_change~doy,data=growth_drynamics_sgs,cex=0.1,
+plot(perc_change~doy,data=growth_drynamics_sgs,type='l',
      xlab='Julian day',ylab='Drought impact (% change in GPP)')
-lines(perc_change~doy,data=growth_drynamics_sgs)
-lines(upper~as.numeric(as.integer(doy)),growth_drynamics_sgs)
-lines(lower~doy,growth_drynamics_sgs)
-abline(h=0)
+polygon(c(growth_drynamics_sgs$doy,rev(growth_drynamics_sgs$doy)),
+        c(growth_drynamics_sgs$lower,rev(growth_drynamics_sgs$upper)),
+        col = "black", border = F)
+# lines(perc_change~doy,data=growth_drynamics_sgs)
+# lines(upper~as.numeric(as.integer(doy)),growth_drynamics_sgs)
+# lines(lower~doy,growth_drynamics_sgs)
+abline(h=0,col='black',lty='dashed')
 mtext('Julian day of year',side=1,line=2.35,cex=0.75)
 mtext('GPP impact (%)',side=2,line=2.0,cex=0.75)
 
 #inset NMP
 par(fig = c(0.55,0.80,0.60,0.95), new = TRUE)
-plot(perc_change~doy,data=growth_drynamics_nmp,cex=0.1,
+plot(perc_change~doy,data=growth_drynamics_nmp,type='l',
      xlab='Julian day',ylab='Drought impact (% change in GPP)')
-lines(perc_change~doy,data=growth_drynamics_nmp)
-lines(upper~as.numeric(as.integer(doy)),growth_drynamics_nmp)
-lines(lower~doy,growth_drynamics_nmp)
-abline(h=0)
+polygon(c(growth_drynamics_nmp$doy,rev(growth_drynamics_nmp$doy)),
+        c(growth_drynamics_nmp$lower,rev(growth_drynamics_nmp$upper)),
+        col = "black", border = F)
+# lines(perc_change~doy,data=growth_drynamics_nmp)
+# lines(upper~as.numeric(as.integer(doy)),growth_drynamics_nmp)
+# lines(lower~doy,growth_drynamics_nmp)
+abline(h=0,col='black',lty='dashed')
 mtext('Julian day of year',side=1,line=2.25,cex=0.75)
 mtext('GPP impact (%)',side=2,line=2.35,cex=0.75)
 
