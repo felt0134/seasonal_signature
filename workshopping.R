@@ -85,3 +85,114 @@ gpp_df <- merge(gpp_df, gpp_df_mean[c(1, 2, 4)], by = c('x', 'y'))
 
 #create a vector of unique sites IDs
 id_list <- unique(gpp_df$id_value)
+# ecoregion distributions (add to main figure script) ------
+
+library(rgdal)
+
+#shapefile referecne for state outlines. This will results in a sp file being downloaded...
+us<-getData("GADM", country='USA', level=1,download=TRUE)
+states_all_sites <- us[us$NAME_1 %in% c(
+  'Colorado','Wyoming',
+  'Montana','Texas','Kansas','New Mexico',
+  'North Dakota','South Dakota','Nebraska',
+  'Oklahoma'),]
+
+states_all_sites <- sp::spTransform(states_all_sites, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+states_all_sites <- spTransform(states_all_sites, crs(Albers))
+plot(states_all_sites)
+
+#set directory
+test_wd<-"/Volumes/GoogleDrive/My Drive/range-resilience/Sensitivity/Processing NPP Data/NPP Data processing"
+
+#load file (will need to update working directory)
+rangeland_npp_covariates<-readRDS(file.path(test_wd, "Dryland_NPP.rds")) #loads file and name it annualSWA_OctDec I guess
+
+nm_sgs<-rangeland_npp_covariates %>%
+  dplyr::filter(region==c('northern_mixed_prairies','shortgrass_steppe')) 
+
+mean_npp<-aggregate(npp~x+y,mean,data=nm_sgs)
+
+mean_production_raster<-rasterFromXYZ(mean_npp)
+#plot(mean_production_raster)
+
+#import shapefiles
+library(rgdal)
+
+#SGS
+SGS.shape<-readOGR(dsn="/Volumes/GoogleDrive/My Drive/range-resilience/scope/study-area-shapefiles/SGS",layer="SGS")
+#plot(SGS.shape)
+SGS.shape@bbox <- as.matrix(extent(mean_production_raster))
+#plot(SGS.shape)
+SGS.shape.2 <- sp::spTransform(SGS.shape, crs("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+SGS.shape.3 <- sp::spTransform(SGS.shape.2, crs(Albers))
+sgs_shape_df_tidy <- tidy(SGS.shape.3)
+sgs_shape_df_tidy <- left_join(sgs_shape_df_tidy, SGS.shape.3@data)
+#plot(SGS.shape.3)
+
+#NMP
+NorthernMixedSubset.shape<-readOGR(dsn="/Volumes/GoogleDrive/My Drive/range-resilience/scope/study-area-shapefiles/NorthernMixedSubset",layer="NorthernMixedSubset")
+#plot(NorthernMixedSubset.shape)
+NorthernMixedSubset.shape@bbox <- as.matrix(extent(mean_production_raster))
+plot(NorthernMixedSubset.shape)
+#step 2:
+NorthernMixedSubset.shape.2 <- sp::spTransform(NorthernMixedSubset.shape, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+#plot(NorthernMixedSubset.shape.2)
+NorthernMixedSubset.shape.3 <- sp::spTransform(NorthernMixedSubset.shape.2, crs(Albers))
+plot(NorthernMixedSubset.shape.3)
+#crop(NorthernMixedSubset.shape.2,mean_production_raster)
+
+nmp_shape_df_tidy <- tidy(NorthernMixedSubset.shape.3)
+nmp_shape_df_tidy$ecoregion <- 'Northern mixed prairies'
+sgs_shape_df_tidy$ecoregion <- 'Shortgrass steppe'
+
+# Recategorizes data as required for plotting
+#nmp_shape_df_tidy <- left_join(nmp_shape_df_tidy, NorthernMixedSubset.shape.3@data)
+
+distributions <- ggplot() +
+  geom_polygon(data=states_all_sites_tidy, mapping=aes(x = long, y = lat,group=group),
+               color = "black", size = 0.1,fill=NA) +
+  geom_polygon(data=nmp_shape_df_tidy, mapping=aes(x = long, y = lat,group=group,fill=ecoregion),
+               color = "black", size = 0.1) + #fill='steelblue2'
+  geom_polygon(data=sgs_shape_df_tidy, mapping=aes(x = long, y = lat,group=group,fill=ecoregion),
+               color = "black", size = 0.1) + #fill='green4'
+  scale_fill_manual(values = c(
+    'Shortgrass steppe' = 'green4',
+    'Northern mixed prairies' = 'steelblue2'
+  )) +
+  coord_equal() +
+  xlab('') +
+  ylab('') +
+  scale_x_continuous(expand=c(0,0)) +
+  scale_y_continuous(expand=c(0,0)) +
+  coord_fixed(xlim=c(-1500000,0), ylim=c(9e+05,3100000)) + #crop 
+  theme(
+    axis.text.x = element_blank(), #angle=25,hjust=1),
+    axis.text.y = element_blank(),
+    axis.title.x = element_text(color='black',size=10),
+    axis.title.y = element_text(color='black',size=10),
+    axis.ticks = element_blank(),
+    plot.margin = margin(0.0,1,0.0,0.0,"cm"),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    legend.position = 'top',
+    strip.background =element_rect(fill="white"),
+    strip.text = element_text(size=10),
+    panel.background = element_rect(fill=NA),
+    panel.border = element_blank(), #make the borders clear in prep for just have two axes
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank())
+
+
+library(patchwork)
+
+png(height = 1500,width=3000,res=300,'Figures/driest_years_V2.png')
+
+
+#p123 <- (distributions/ driest_years_barchat)|driest_year_map_plot
+p123 <- distributions + driest_years_barchat + driest_year_map_plot
+p123 + plot_annotation(tag_levels = "a")
+
+dev.off()
+
+
+

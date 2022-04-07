@@ -30,10 +30,9 @@ Albers <-
 #get shapefiles of states and update projection
 us<-getData("GADM", country='USA', level=1,download=TRUE)
 states_all_sites <- us[us$NAME_1 %in% c(
-  'Wyoming',#'Colorado'
-  'Montana','Kansas',#'New Mexico',
-  'North Dakota','South Dakota','Nebraska',
-  'Oklahoma'),]
+  'Wyoming','Colorado','Oklahoma','Kansas',
+  'Montana','New Mexico','Texas',
+  'North Dakota','South Dakota','Nebraska'),]
 
 #states_all_sites <- sp::spTransform(states_all_sites, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
 states_all_sites <- sp::spTransform(states_all_sites, 
@@ -269,8 +268,8 @@ day_50_pdf <- ggplot(day_50_df, aes(x = doy, fill = Ecoregion)) +
   scale_x_continuous(expand = c(0, 0), limits = c(130, 281)) +
   geom_density(color = 'black', alpha = 0.5, aes(y = ..scaled..)) +
   scale_fill_manual(values = c(
-    'Northern mixed prairies' = 'black',
-    'Shortgrass steppe' = 'white'
+    'Northern mixed prairies' = 'steelblue2',
+    'Shortgrass steppe' = 'green4'
   )) +
   xlab('Day of 50% growth') +
   ylab('Probability density') +
@@ -294,12 +293,6 @@ day_50_pdf <- ggplot(day_50_df, aes(x = doy, fill = Ecoregion)) +
     axis.line.y = element_line(colour = "black")
   )
 
-#save to file
-png(height = 1700,width=2000,res=300,'./../../Figures/day50_distributions.png')
-
-print(day_50_pdf)
-
-dev.off()
 
 
 # nmp_look <- stack(day_50_nmp,max_sens_doy_nmp)
@@ -382,14 +375,12 @@ day_50_sgs_nmp_df <- data.frame(rasterToPoints(day_50_sgs_nmp))
 #sgs
 day_50_drought_sgs <-
   raster('./../../Data/CDD/day_of_50/day_50_droughtshortgrass_steppe.tif')
-plot(day_50_drought_sgs)
 day_50_drought_sgs <- stack(day_50_drought_sgs, day_50_sgs)
-plot(day_50_drought_sgs)
 day_50_drought_sgs_2 <-
   day_50_drought_sgs$day_50_droughtshortgrass_steppe -
   day_50_drought_sgs$day_50_shortgrass_steppe
-plot(day_50_drought_sgs_2)
-summary(day_50_drought_sgs_2)
+# plot(day_50_drought_sgs_2)
+# summary(day_50_drought_sgs_2)
 #median = -22
 #179-22
 
@@ -398,16 +389,13 @@ summary(day_50_drought_sgs_2)
 #nmp
 day_50_drought_nmp <-
   raster('./../../Data/CDD/day_of_50/day_50_droughtnorthern_mixed_prairies.tif')
-plot(day_50_drought_nmp)
 day_50_drought_nmp <- stack(day_50_drought_nmp, day_50_nmp)
-plot(day_50_drought_nmp)
 day_50_drought_nmp_2 <-
   day_50_drought_nmp$day_50_droughtnorthern_mixed_prairies -
   day_50_drought_nmp$day_50_northern_mixed_prairies
-plot(day_50_drought_nmp_2)
 summary(day_50_drought_nmp_2)
 #median = -11
-hist(day_50_drought_nmp_2$layer)
+
 
 #combine
 day_50_drought <-
@@ -430,11 +418,12 @@ day_50_sgs_nmp_drought_map <-
                color = "black", size = 0.1,fill=NA) +
   geom_raster(data=day_50_drought_df, mapping=aes(x = x, y = y, fill = layer)) + 
   coord_equal() +
-  scale_fill_scico('Drought impact to day \n of 50% total growth (days)',palette = 'roma',direction=-1) +
+  scale_fill_scico('Drought impact to day\nof 50% total growth (days)',palette = 'roma',direction=-1) +
   xlab('') +
   ylab('') +
   scale_x_continuous(expand=c(0,0)) +
   scale_y_continuous(expand=c(0,0)) +
+  coord_fixed(xlim=c(-1500000,0), ylim=c(9e+05,3100000)) + #crop 
   theme(
     axis.text.x = element_blank(), #angle=25,hjust=1),
     axis.text.y = element_blank(),
@@ -442,11 +431,6 @@ day_50_sgs_nmp_drought_map <-
     axis.title.y = element_text(color='black',size=10),
     axis.ticks = element_blank(),
     legend.key = element_blank(),
-    #legend.title = element_blank(),
-    #legend.text = element_text(size=2),
-    #legend.position = c(0.7,0.1),
-    #legend.margin =margin(r=5,l=5,t=5,b=5),
-    #legend.position = c(0.0,0.1),
     legend.position = 'top',
     strip.background =element_rect(fill="white"),
     strip.text = element_text(size=10),
@@ -479,7 +463,7 @@ day_50_drought_sgs_2_df$region <- 'Shortgrass steppe'
 
 #join
 day_50_drought_nmp_sgs_2_df <- rbind(day_50_drought_nmp_2_df,day_50_drought_sgs_2_df)
-head(day_50_drought_nmp_sgs_2_df)
+#head(day_50_drought_nmp_sgs_2_df,1)
 
 #plot it
 drought_day50_pdf <- ggplot(day_50_drought_nmp_sgs_2_df, aes(x = layer, fill = region)) +
@@ -487,11 +471,11 @@ drought_day50_pdf <- ggplot(day_50_drought_nmp_sgs_2_df, aes(x = layer, fill = r
   scale_y_continuous(expand = c(0, 0), limits = c(0, 1.02)) +
   geom_density(color = 'black', alpha = 0.5, aes(y = ..scaled..)) +
   scale_fill_manual(values = c(
-    'Northern mixed prairies' = 'grey70',
-    'Shortgrass steppe' = 'white'
+    'Northern mixed prairies' = 'steelblue2',
+    'Shortgrass steppe' = 'green4'
   )) +
-  geom_vline(xintercept = 0,color='red') +
-  xlab('Drought impact to day of 50% of total growth (days)') +
+  geom_vline(xintercept = 0,color='black') +
+  xlab('Drought impact to day of\n50% of total growth (days)') +
   ylab('Probability density') +
   theme(
     axis.text.x = element_text(color = 'black', size = 7),
@@ -766,13 +750,12 @@ head(growth_drynamics_nmp,1)
 #SGS growth curve figure
 png(height = 1500,width=3000,res=300,'Figures/multi_panel_growth_curves')
 
-
-par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,2,1,1),mar = c(3,3,3,3))
-
+par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,6,1,1),mar = c(3,1.25,3,3))
+#?par
 # plot it out panel A: sgs
 plot(mean ~ doy, growth_curve_absolute_mean_sgs,col='black',type='l',
      ylab='',
-     xlab='')
+     xlab='',las=1,cex.axis=1.5)
 polygon(c(growth_curve_absolute_mean_sgs$doy,rev(growth_curve_absolute_mean_sgs$doy)),
         c(growth_curve_absolute_mean_sgs$lower,rev(growth_curve_absolute_mean_sgs$upper)),
         col = "black", border = F)
@@ -781,22 +764,24 @@ polygon(c(growth_curve_drought_absolute_mean_sgs$doy,rev(growth_curve_drought_ab
         col = "red", border = F)
 #lines(mean ~ doy, growth_curve_drought_absolute_mean_sgs,col='black',pch=19,lwd=1)
 #abline(v=155)
-text(160, 176, "June 28th",cex=1)
+text(162, 176, "June 28th",cex=1)
 points(178, 176,pch=19,cex=3)
-text(172, 97, "June 6th",cex=1)
+text(170, 97, "June 6th",cex=1)
 points(157,102,pch=19,cex=3)
 legend(175, 50, legend=c("Average year", "Drought year"),         #alpha legend: 0.015, 150
        col=c("grey", "red"), lty=1.1,lwd=4,cex=2,box.lty=0)
 legend(175, 75, legend=c("50% of total production"),         #alpha legend: 0.015, 150
        col=c("black"), pch=19,box.lty=0,cex=2)
-mtext('Julian day of year',side=1,line=3.0,cex=1.25)
-mtext(expression("Cumulative GPP " (g/m^2)),side=2,line=2,cex=1.25)
+mtext('Julian day of year',side=1,line=3.75,cex=1.5)
+mtext(expression("Cumulative GPP " (gm^-2)),side=2,line=3.5,cex=1.5)
 mtext('Shortgrass steppe',side=3,line=0.5,cex=1.25)
+mtext('a',side=3,line=0.5,cex=1.5,adj=-0.05)
+#?mtext
 
 # plot it out panel B: nmp
 plot(mean ~ doy, growth_curve_absolute_mean_nmp,col='black',type='l',
      ylab='',
-     xlab='')
+     xlab='',las=1,cex.axis=1.5)
 polygon(c(growth_curve_absolute_mean_nmp$doy,rev(growth_curve_absolute_mean_nmp$doy)),
         c(growth_curve_absolute_mean_nmp$lower,rev(growth_curve_absolute_mean_nmp$upper)),
         col = "black", border = F)
@@ -810,19 +795,18 @@ polygon(c(growth_curve_drought_absolute_mean_nmp$doy,rev(growth_curve_drought_ab
 #abline(v=155)
 text(158, 210, "June 23rd",cex=1)
 points(174, 210,pch=19,cex=3)
-text(180, 170, "June 12th",cex=1)
+text(179, 170, "June 12th",cex=1)
 points(163,170,pch=19,cex=3)
-mtext('Julian day of year',side=1,line=3.0,cex=1.25)
+mtext('Julian day of year',side=1,line=3.75,cex=1.5)
 #mtext('GPP',side=2,line=2.5,cex=1.5)
 mtext('Northern mixed prairies',side=3,line=0.5,cex=1.25)
-
-#dev.off()
+mtext('b',side=3,line=0.5,cex=1.5,adj=-0.05)
 
 #inset SGS (add the polygons for uncertainty)
 panel.first = rect(c(1,7), -1e6, c(3,10), 1e6, col='green', border=NA)
 par(fig = c(0.05,0.30,0.60,0.95), new = TRUE)
 plot(perc_change~doy,data=growth_drynamics_sgs,type='l',
-     xlab='Julian day',ylab='Drought impact (% change in GPP)')
+     xlab='Julian day',ylab='Drought impact (% change in GPP)',las=1)
 polygon(c(growth_drynamics_sgs$doy,rev(growth_drynamics_sgs$doy)),
         c(growth_drynamics_sgs$lower,rev(growth_drynamics_sgs$upper)),
         col = "black", border = F)
@@ -831,12 +815,12 @@ polygon(c(growth_drynamics_sgs$doy,rev(growth_drynamics_sgs$doy)),
 # lines(lower~doy,growth_drynamics_sgs)
 abline(h=0,col='black',lty='dashed')
 mtext('Julian day of year',side=1,line=2.35,cex=0.75)
-mtext('GPP impact (%)',side=2,line=2.0,cex=0.75)
+mtext('GPP impact (%)',side=2,line=2.5,cex=-0.075)
 
 #inset NMP
 par(fig = c(0.55,0.80,0.60,0.95), new = TRUE)
 plot(perc_change~doy,data=growth_drynamics_nmp,type='l',
-     xlab='Julian day',ylab='Drought impact (% change in GPP)')
+     xlab='Julian day',ylab='Drought impact (% change in GPP)',las=1)
 polygon(c(growth_drynamics_nmp$doy,rev(growth_drynamics_nmp$doy)),
         c(growth_drynamics_nmp$lower,rev(growth_drynamics_nmp$upper)),
         col = "black", border = F)
@@ -845,13 +829,10 @@ polygon(c(growth_drynamics_nmp$doy,rev(growth_drynamics_nmp$doy)),
 # lines(lower~doy,growth_drynamics_nmp)
 abline(h=0,col='black',lty='dashed')
 mtext('Julian day of year',side=1,line=2.25,cex=0.75)
-mtext('GPP impact (%)',side=2,line=2.35,cex=0.75)
+mtext('GPP impact (%)',side=2,line=2.5,cex=0.75)
 
 
 dev.off()
-
-#stopped here
-
 
 
 #174-11
@@ -880,7 +861,7 @@ seasonal_vpd_sgs_nmp <- rbind(seasonal_vpd_nmp,seasonal_vpd_sgs)
 head(seasonal_vpd_sgs_nmp,1)
 
 vpd_change <- ggplot(seasonal_vpd_sgs_nmp, aes(x = abs_change, fill = season)) +
-  facet_wrap(~ecoregion,scales='free') +
+  facet_wrap(~ecoregion,ncol=1) +
   #scale_y_continuous(expand = c(0,0),limits = c(0,1.02)) +
   #scale_x_continuous(expand = c(0,0),limits = c(-1.5,0.6)) +
   scale_y_continuous(expand = c(0, 0), limits = c(0, 1.02)) +
@@ -897,12 +878,12 @@ vpd_change <- ggplot(seasonal_vpd_sgs_nmp, aes(x = abs_change, fill = season)) +
     axis.text.x = element_text(color = 'black', size = 13),
     #angle=25,hjust=1),
     axis.text.y = element_text(color = 'black', size = 13),
-    axis.title = element_text(color = 'black', size = 16),
+    axis.title = element_text(color = 'black', size = 25),
     axis.ticks = element_line(color = 'black'),
     legend.key = element_blank(),
     legend.title = element_blank(),
-    legend.text = element_text(size = 10),
-    legend.position = c(0.4, 0.75),
+    legend.text = element_text(size = 15),
+    legend.position = c(0.6, 0.8),
     #legend.position = 'none',
     strip.background = element_rect(fill = "white"),
     strip.text = element_text(size = 15),
@@ -914,7 +895,7 @@ vpd_change <- ggplot(seasonal_vpd_sgs_nmp, aes(x = abs_change, fill = season)) +
   )
 
 #save to file
-png(height = 1700,width=3000,res=300,'Figures/vpd_change.png')
+png(height = 3000,width=2500,res=300,'Figures/vpd_change.png')
 
 print(vpd_change)
 
@@ -949,8 +930,7 @@ plot(seasonal_change_spring_ppt)
 #   select(x,y,change_in_perc_spring)
 
 #turn to raster and fix projection, and then back to dataframe for plotting
-seasonal_change_spring_ppt  <- rasterFromXYZ(seasonal_change_spring_ppt)
-proj4string(seasonal_change_spring_ppt ) <- CRS("+proj=longlat")
+proj4string(seasonal_change_spring_ppt) <- CRS("+proj=longlat")
 seasonal_change_spring_ppt  <-projectRaster(seasonal_change_spring_ppt , 
 crs='+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96
 +        +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs')
@@ -962,11 +942,12 @@ spring_ppt_map <- ggplot() +
                color = "black", size = 0.1,fill=NA) +
   geom_raster(data=seasonal_change_spring_ppt_df, mapping=aes(x = x, y = y, fill = layer)) + 
   coord_equal() +
-  scale_fill_scico('Change in % of spring precipitation',palette = 'roma',direction=1) +
+  scale_fill_scico('Change in % of\nspring precipitation',palette = 'roma',direction=1) +
   xlab('') +
   ylab('') +
   scale_x_continuous(expand=c(0,0)) +
   scale_y_continuous(expand=c(0,0)) +
+  coord_fixed(xlim=c(-1500000,0), ylim=c(9e+05,3100000)) + #crop 
   theme(
     axis.text.x = element_blank(), #angle=25,hjust=1),
     axis.text.y = element_blank(),
@@ -974,11 +955,6 @@ spring_ppt_map <- ggplot() +
     axis.title.y = element_text(color='black',size=10),
     axis.ticks = element_blank(),
     legend.key = element_blank(),
-    #legend.title = element_blank(),
-    #legend.text = element_text(size=2),
-    #legend.position = c(0.7,0.1),
-    #legend.margin =margin(r=5,l=5,t=5,b=5),
-    #legend.position = c(0.0,0.1),
     legend.position = 'top',
     strip.background =element_rect(fill="white"),
     strip.text = element_text(size=10),
@@ -995,11 +971,11 @@ spring_ppt_pdf <- ggplot(spring_ppt_binded, aes(x = change_in_perc_spring, fill 
   scale_y_continuous(expand = c(0, 0), limits = c(0, 1.02)) +
   geom_density(color = 'black', alpha = 0.5, aes(y = ..scaled..)) +
   scale_fill_manual(values = c(
-    'Northern mixed prairies' = 'grey70',
-    'Shortgrass steppe' = 'white'
+    'Northern mixed prairies' = 'steelblue2',
+    'Shortgrass steppe' = 'green4'
   )) +
-  geom_vline(xintercept = 0,color='red') +
-  xlab('Change in % of spring PPT') +
+  geom_vline(xintercept = 0,color='black') +
+  xlab('Change in % of\nspring precipitation') +
   ylab('Probability density') +
   theme(
     axis.text.x = element_text(color = 'black', size = 7),
@@ -1184,7 +1160,7 @@ dev.off()
 #import SGS
 #mean
 growth_curve_absolute_mean_sgs_1km <- 
-  read_csv('./../../Data/CDD/growth_curves/one_km_subset/growth_curve_absolute_shortgrass_steppe.csv')
+  read_csv('./../../Data/growth_curves/one_km_subset/average_growth_curve_shortgrass_steppe.csv')
 head(growth_curve_absolute_mean_sgs_1km,1)
 
 #drought
@@ -1323,21 +1299,22 @@ five_driest_years$year <- as.factor(five_driest_years$year)
     ylab('Number of sites') +
     xlab('Driest year (2003-2020)') +
     scale_fill_manual(values = c(
-      'Northern mixed prairies' = 'grey70',
-      'Shortgrass steppe' = 'white'
+      'Shortgrass steppe' = 'green4',
+      'Northern mixed prairies' = 'steelblue2'
     )) +
     #scale_x_continuous(expand=c(0,0)) +
     scale_y_continuous(expand=c(0,0)) +
     theme(
-      axis.text.x = element_text(color = 'black', size = 7),
+      axis.text.x = element_text(color = 'black', size = 10),
       #angle=25,hjust=1),
-      axis.text.y = element_text(color = 'black', size = 7),
-      axis.title = element_text(color = 'black', size = 10),
+      axis.text.y = element_text(color = 'black', size = 10),
+      axis.title = element_text(color = 'black', size = 15),
       axis.ticks = element_line(color = 'black'),
       legend.key = element_blank(),
       legend.title = element_blank(),
       legend.text = element_text(size = 6),
-      legend.position = c(0.65, 0.8),
+      legend.position = 'none',
+      #legend.position = c(0.65, 0.8),
       #legend.position = 'none',
       strip.background = element_rect(fill = "white"),
       strip.text = element_text(size = 15),
@@ -1351,7 +1328,7 @@ five_driest_years$year <- as.factor(five_driest_years$year)
 
 #raster is acting weird
   str(driest_year_sgs)
-  driest_year_sgs$year <- as.factor(driest_year_sgs$year)
+#driest_year_sgs$year <- as.factor(driest_year_sgs$year)
 driest_year_sgs_raster <- rasterFromXYZ(driest_year_sgs[c(1,2,4)])
 driest_year_nmp_raster <- rasterFromXYZ(driest_year_nmp[c(1,2,4)])
 
@@ -1374,11 +1351,12 @@ driest_year_map_df$layer <- round(driest_year_map_df$layer)
                  color = "black", size = 0.1,fill=NA) +
     geom_raster(data=driest_year_map_df, mapping=aes(x = x, y = y, fill =layer)) + 
     coord_equal() +
-    scale_fill_scico('Driest year (2003-2020)',palette = 'batlow',direction=1) +
+    scale_fill_scico('Driest year\n(2003-2020)',palette = 'batlow',direction=1) +
     xlab('') +
     ylab('') +
     scale_x_continuous(expand=c(0,0)) +
     scale_y_continuous(expand=c(0,0)) +
+    coord_fixed(xlim=c(-1500000,0), ylim=c(9e+05,3100000)) + #crop 
     theme(
       axis.text.x = element_blank(), #angle=25,hjust=1),
       axis.text.y = element_blank(),
@@ -1387,8 +1365,9 @@ driest_year_map_df$layer <- round(driest_year_map_df$layer)
       axis.ticks = element_blank(),
       legend.key = element_blank(),
       legend.text = element_text(size=7),
-      legend.title = element_blank(),
+      #legend.title = element_blank(),
       legend.position = 'top',
+      plot.margin = margin(0.0,1,0.0,0,"cm"),
       strip.background =element_rect(fill="white"),
       strip.text = element_text(size=10),
       panel.background = element_rect(fill=NA),
