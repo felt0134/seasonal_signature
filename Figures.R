@@ -789,10 +789,6 @@ polygon(c(growth_curve_drought_absolute_mean_nmp$doy,rev(growth_curve_drought_ab
         c(growth_curve_drought_absolute_mean_nmp$lower,rev(growth_curve_drought_absolute_mean_nmp$upper)),
         col = "red", border = F)
 
-# points(gpp ~ day, growth_curve_drought_absolute_mean_nmp,col='red',pch=19)
-# lines(gpp ~ day, growth_curve_drought_absolute_mean_nmp,col='red',pch=19,lwd=5)
-# lines(gpp ~ day, growth_curve_absolute_mean_nmp,col='grey',pch=19,lwd=5)
-#abline(v=155)
 text(158, 210, "June 23rd",cex=1)
 points(174, 210,pch=19,cex=3)
 text(179, 170, "June 12th",cex=1)
@@ -806,21 +802,25 @@ mtext('b',side=3,line=0.5,cex=1.5,adj=-0.05)
 panel.first = rect(c(1,7), -1e6, c(3,10), 1e6, col='green', border=NA)
 par(fig = c(0.05,0.30,0.60,0.95), new = TRUE)
 plot(perc_change~doy,data=growth_drynamics_sgs,type='l',
-     xlab='Julian day',ylab='Drought impact (% change in GPP)',las=1)
+     xlab='',ylab='',las=1)
+rect(151,-70,243,350,col = 'grey95')
+rect(60,-70,151,350,col = 'grey')
 polygon(c(growth_drynamics_sgs$doy,rev(growth_drynamics_sgs$doy)),
         c(growth_drynamics_sgs$lower,rev(growth_drynamics_sgs$upper)),
         col = "black", border = F)
-# lines(perc_change~doy,data=growth_drynamics_sgs)
-# lines(upper~as.numeric(as.integer(doy)),growth_drynamics_sgs)
-# lines(lower~doy,growth_drynamics_sgs)
+text(100, -50, "Spring",cex=1)
+text(200, -20, "Summer",cex=1)
+text(275, -20, "Fall",cex=1)
 abline(h=0,col='black',lty='dashed')
 mtext('Julian day of year',side=1,line=2.35,cex=0.75)
-mtext('GPP impact (%)',side=2,line=2.5,cex=-0.075)
+mtext('GPP impact (%)',side=2,line=2.5,cex=0.75)
 
 #inset NMP
 par(fig = c(0.55,0.80,0.60,0.95), new = TRUE)
 plot(perc_change~doy,data=growth_drynamics_nmp,type='l',
-     xlab='Julian day',ylab='Drought impact (% change in GPP)',las=1)
+     xlab='',ylab='',las=1)
+rect(151,-50,243,350,col = 'grey95')
+rect(60,-50,151,350,col = 'grey')
 polygon(c(growth_drynamics_nmp$doy,rev(growth_drynamics_nmp$doy)),
         c(growth_drynamics_nmp$lower,rev(growth_drynamics_nmp$upper)),
         col = "black", border = F)
@@ -828,10 +828,10 @@ polygon(c(growth_drynamics_nmp$doy,rev(growth_drynamics_nmp$doy)),
 # lines(upper~as.numeric(as.integer(doy)),growth_drynamics_nmp)
 # lines(lower~doy,growth_drynamics_nmp)
 abline(h=0,col='black',lty='dashed')
-mtext('Julian day of year',side=1,line=2.25,cex=0.75)
+mtext('Julian day of year',side=1,line=2.35,cex=0.75)
 mtext('GPP impact (%)',side=2,line=2.5,cex=0.75)
 
-
+#?rect
 dev.off()
 
 
