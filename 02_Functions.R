@@ -442,28 +442,28 @@ list_to_df <- function(x) {
 # import and format temp raster into dataframe (unclear if used) ------
 
 #format the temp rasters
-format_temp_df <- function(x, max_min) {
-  #test out what will be the 'format_temp_df' function
-  #convert to raster
-  raster_file <- raster(x)
-  
-  #extract year from the name of the raster to later add to dataframe
-  if (max_min == T) {
-    year_val <- substr(names(raster_file), 6, 9)
-  } else{
-    year_val <- substr(names(raster_file), 7, 10)
-  }
-  
-  #convert to dataframe and add year and period columns
-  df <- data.frame(rasterToPoints(raster_file))
-  df$year <- year_val
-  colnames(df) <- c('x', 'y', 'temp', 'year')
-  
-  #return formatted dataframe
-  return(df)
-  
-  
-}
+# format_temp_df <- function(x, max_min) {
+#   #test out what will be the 'format_temp_df' function
+#   #convert to raster
+#   raster_file <- raster(x)
+#   
+#   #extract year from the name of the raster to later add to dataframe
+#   if (max_min == T) {
+#     year_val <- substr(names(raster_file), 6, 9)
+#   } else{
+#     year_val <- substr(names(raster_file), 7, 10)
+#   }
+#   
+#   #convert to dataframe and add year and period columns
+#   df <- data.frame(rasterToPoints(raster_file))
+#   df$year <- year_val
+#   colnames(df) <- c('x', 'y', 'temp', 'year')
+#   
+#   #return formatted dataframe
+#   return(df)
+#   
+#   
+# }
 
 #import the temp rasters from file, using the format function
 import_temp <- function(Ecoregion, temp, value) {

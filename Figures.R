@@ -139,11 +139,12 @@ day_90_sgs_nmp_drought_map <-
                color = "black", size = 0.1,fill=NA) +
   geom_raster(data=day_90_drought_df, mapping=aes(x = x, y = y, fill = layer)) + 
   coord_equal() +
-  scale_fill_scico('Drought impact to day \n of 90% growth (days)',palette = 'roma',direction=1) +
+  scale_fill_scico('Drought impact to day of\n50% total growth (days)',palette = 'roma',direction=1) +
   xlab('') +
   ylab('') +
   scale_x_continuous(expand=c(0,0)) +
   scale_y_continuous(expand=c(0,0)) +
+  coord_fixed(xlim=c(-1500000,0), ylim=c(9e+05,3100000)) + #crop
   theme(
     axis.text.x = element_blank(), #angle=25,hjust=1),
     axis.text.y = element_blank(),
@@ -172,6 +173,9 @@ day_90_drought_sgs_2_df$region <- 'Shortgrass steppe'
 #join
 day_90_drought_nmp_sgs_2_df <- rbind(day_90_drought_nmp_2_df,day_90_drought_sgs_2_df)
 head(day_90_drought_nmp_sgs_2_df)
+str(day_90_drought_nmp_sgs_2_df)
+cor.test(day_90_drought_nmp_sgs_2_df$y,day_90_drought_nmp_sgs_2_df$layer)
+
 
 #plot it
 drought_day90_pdf <- ggplot(day_90_drought_nmp_sgs_2_df, aes(x = layer, fill = region)) +
@@ -184,7 +188,7 @@ drought_day90_pdf <- ggplot(day_90_drought_nmp_sgs_2_df, aes(x = layer, fill = r
     'Shortgrass steppe' = 'white'
   )) +
   #geom_vline(xintercept = 0,color='red') +
-  xlab('Drought impact to day of 90% of total growth (days)') +
+  xlab('Drought impact to day of\n90% total growth (days)') +
   ylab('Count') +
   theme(
     axis.text.x = element_text(color = 'black', size = 7),
@@ -624,6 +628,7 @@ day_25_sgs_nmp_drought_map <-
   ylab('') +
   scale_x_continuous(expand=c(0,0)) +
   scale_y_continuous(expand=c(0,0)) +
+  coord_fixed(xlim=c(-1500000,0), ylim=c(9e+05,3100000)) + #crop
   theme(
     axis.text.x = element_blank(), #angle=25,hjust=1),
     axis.text.y = element_blank(),
@@ -663,7 +668,7 @@ drought_day25_pdf <- ggplot(day_25_drought_nmp_sgs_2_df, aes(x = layer, fill = r
     'Shortgrass steppe' = 'white'
   )) +
   #geom_vline(xintercept = 0,color='red') +
-  xlab('Drought impact to day of 25% growth') +
+  xlab('Drought impact to day of\n25% total growth') +
   ylab('Probability density') +
   theme(
     axis.text.x = element_text(color = 'black', size = 7),
