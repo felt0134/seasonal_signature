@@ -1404,6 +1404,34 @@ driest_year_map_df$layer <- round(driest_year_map_df$layer)
 
 
 #-------------------------------------------------------------------------------
+# growth curves (impacts through time) NDVI subset -----
   
+  #growth dynamics NDVI
   
+  #SGS
+  growth_drynamics_ndvi_sgs <- 
+    read_csv('./../../Data/growth_dynamics/drought_ndvi_reduction_shortgrass_steppe.csv')
+  head(growth_drynamics_ndvi_sgs,1)
+  
+  growth_drynamics_ndvi_sgs$upper <- growth_drynamics_ndvi_sgs$perc_change + growth_drynamics_ndvi_sgs$ci_99
+  growth_drynamics_ndvi_sgs$lower <- growth_drynamics_ndvi_sgs$perc_change - growth_drynamics_ndvi_sgs$ci_99
+  
+  png(height = 1500,width=3000,res=300,'Figures/multi_panel_growth_curves_NDVI')
+  
+  plot(perc_change~doy,data=growth_drynamics_ndvi_sgs,type='l',
+       xlab='',ylab='',las=1,ylim=c(-35,1))
+  rect(151,-70,243,350,col = 'grey95')
+  rect(60,-70,151,350,col = 'grey')
+  polygon(c(growth_drynamics_ndvi_sgs$doy,rev(growth_drynamics_ndvi_sgs$doy)),
+          c(growth_drynamics_ndvi_sgs$lower,rev(growth_drynamics_ndvi_sgs$upper)),
+          col = "black", border = F)
+  mtext('Shortgrass steppe',side=3,line=0.5,cex=1.25)
+  text(100, -20, "Spring",cex=1)
+  text(200, -20, "Summer",cex=1)
+  text(275, -20, "Fall",cex=1)
+  abline(h=0,col='black',lty='dashed')
+  mtext('Julian day of year',side=1,line=2.35,cex=1.75)
+  mtext('NDVI impact (%)',side=2,line=2.5,cex=1.75)
+  
+  dev.off()
   

@@ -231,6 +231,62 @@ drought_growth_impact_absolute_sgs <-
 drought_growth_impact_absolute_sgs %>% filter(abs_change == min(drought_growth_impact_absolute_sgs$abs_change))
 plot(abs_change~doy,data=drought_growth_impact_absolute_sgs)
 
+
+#split up by season
+
+#SGS
+
+#meteorological spring for GPP
+drought_growth_impact_sgs %>%
+  dplyr::filter(doy > 59) %>%
+  dplyr::filter(doy < 152) %>%
+  summarise(median(perc_change))
+#-6.4%
+
+#summer for GPP
+drought_growth_impact_sgs %>%
+  dplyr::filter(doy > 151) %>%
+  dplyr::filter(doy < 244) %>%
+  summarise(median(perc_change))
+# -62.4%
+
+#NMP
+
+#meteorological spring for GPP
+drought_growth_impact_nmp %>%
+  dplyr::filter(doy > 59) %>%
+  dplyr::filter(doy < 152) %>%
+  summarise(median(perc_change))
+#-26.4%
+
+#summer for GPP
+drought_growth_impact_nmp %>%
+  dplyr::filter(doy > 151) %>%
+  dplyr::filter(doy < 244) %>%
+  summarise(median(perc_change))
+# -62.4%
+
+#Now do NDVI
+
+#SGS
+drought_growth_impact_NDVI_sgs <- 
+  read_csv('./../../Data/growth_dynamics/drought_ndvi_reduction_shortgrass_steppe.csv')
+
+#meteorological spring for NDVI
+drought_growth_impact_NDVI_sgs %>%
+  dplyr::filter(doy > 59) %>%
+  dplyr::filter(doy < 152) %>%
+  summarise(median(perc_change))
+#-12.7%
+
+#meteorological summer for NDVI
+drought_growth_impact_NDVI_sgs %>%
+  dplyr::filter(doy > 151) %>%
+  dplyr::filter(doy < 244) %>%
+  summarise(median(perc_change))
+#-31.2%
+
+
 #-------------------------------------------------------------------------------
 # climate seasonality -------
 

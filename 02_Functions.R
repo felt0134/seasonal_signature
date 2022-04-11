@@ -3,7 +3,7 @@
 #http://uop.whoi.edu/UOPinstruments/frodo/aer/julian-day-table.html
 
 #-------------------------------------------------------------------------------
-# function to help with converting each GPP raster into a dataframe (unclear if used) -----
+# function to help with converting each GPP raster into a dataframe -----
 
 format_gpp_df <- function(x) {
   #convert to raster
@@ -18,6 +18,30 @@ format_gpp_df <- function(x) {
   df$period <-
     gsub(paste0("GPP_", year_val, '_'), '', names(raster_file))
   colnames(df) <- c('x', 'y', 'gpp', 'year', 'period')
+  
+  #return formatted dataframe
+  return(df)
+  
+  
+}
+#-------------------------------------------------------------------------------
+
+#function to help with converting NDVI raster into a dataframe ------
+
+format_ndvi_df <- function(x) {
+  #convert to raster
+  raster_file <- raster(x)
+  
+  #extract year from the name of the raster to later add to dataframe
+  year_val <- substr(names(raster_file), 6, 9)
+  
+  #convert to dataframe and add year and period columns
+  df <- data.frame(rasterToPoints(raster_file))
+  #plot(raster_file)
+  df$year <- year_val
+  df$period <-
+    gsub(paste0("NDVI_", year_val, '_'), '', names(raster_file))
+  colnames(df) <- c('x', 'y', 'ndvi', 'year', 'period')
   
   #return formatted dataframe
   return(df)
@@ -1040,7 +1064,7 @@ get_drought_years <- function(i) {
 #-------------------------------------------------------------------------------
 # GPP splines ------
 
-#16-day cumulative GPP througout growing season (not the cumulative total GPP growth curve)
+#16-day cumulative GPP throughout growing season (not the cumulative total GPP growth curve)
 
 gpp_spline  <- function(i) {
   
@@ -1097,6 +1121,66 @@ gpp_spline_drought <- function(i) {
   
 }
 
+#-------------------------------------------------------------------------------
+
+#NDVI spline  ------
+
+#16-day NDVI throughout growing season 
+
+ndvi_spline  <- function(i) {
+  
+  #subset to a given pixel
+  growth_id <- ndvi_df %>%
+    dplyr::filter(id_value == i)
+  
+  x <- unique(growth_id %>% pull(x))
+  y <- unique(growth_id %>% pull(y))
+  
+  growth_id <- aggregate(ndvi ~ doy, mean, data = growth_id)
+  #plot(gpp~doy,growth_id,ylim=c(0,30))
+  
+  #create spline model of growth curve
+  ndvi.doy.spl <-
+    with(growth_id, smooth.spline(doy, ndvi))
+  #lines(gpp.doy.spl, col = "blue")
+  
+  return(ndvi.doy.spl)
+  
+  
+}
+
+ndvi_spline_drought <- function(i) {
+  
+  ppt_id <- subset(ppt_ndvi, id_value == i)
+  gpp_id <- subset(ndvi_df, id_value == i)
+  
+  ppt_id <- aggregate(ppt ~ x + y + id_value + year, sum, data = ppt_id)
+  
+  x <- unique(ppt_id %>% pull(x))
+  y <- unique(ppt_id %>% pull(y))
+  
+  #identify the quantile of interest
+  quantile_25 <- quantile(ppt_id$ppt, probs = 0.05)
+  
+  #subset to years below this value
+  ppt_id  <- ppt_id %>%
+    filter(ppt < quantile_25)
+  
+  ppt_id  <- merge(ppt_id, gpp_id, by = c('x', 'y', 'id_value', 'year'))
+  
+  ppt_id  <- aggregate(ndvi ~ doy, mean, data = ppt_id)
+  
+  
+  #create spline model of growth curve
+  ndvi.doy.drought.spl <- with(ppt_id, smooth.spline(doy, ndvi))
+  plot(ndvi ~ doy, data = ppt_id)
+  #lines(gpp.doy.drought.spl, col = "red")
+  
+  
+  return(ndvi.doy.drought.spl)
+  
+  
+}
 
 
 #-------------------------------------------------------------------------------
