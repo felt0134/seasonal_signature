@@ -231,3 +231,82 @@ format_ndvi_df <- function(x) {
   
   
 }
+# growth cycle -----
+
+
+#get each 95% CI for each day of the prediction
+doy_list <- c(65:297)
+
+#loop
+gpp_normal_list <- list()
+gpp_drought_list <- list()
+gpp_predicted_list_average <- list()
+gpp_predicted_list_drought <- list()
+#test_list <- c(1:10)
+
+for(i in doy_list){
+  
+  for(j in test_list){
+    
+    #average
+    gpp_predicted_average <- data.frame(predict(growth_spline_list[[j]], i))
+    gpp_predicted_average$id_val <- j
+    gpp_predicted_list_average[[j]] <- gpp_predicted_average
+    
+    #drought
+    gpp_predicted_drought <- data.frame(predict(growth_drought_spline_list[[j]], i))
+    gpp_predicted_drought$id_val <- j
+    gpp_predicted_list_drought[[j]] <- gpp_predicted_drought
+    
+  }
+  
+  #average growth cycle
+  
+  #convert to data frame and remove values below zero
+  gpp_predicted_list_average_df <- list_to_df(gpp_predicted_list_average)
+  colnames(gpp_predicted_list_average_df) <- c('doy','gpp_average','id_val')
+  gpp_predicted_list_average_df <- gpp_predicted_list_average_df %>%
+    filter(gpp_average > 0)
+  
+  #sample size
+  ss <- nrow(gpp_predicted_list_average_df)
+  
+  #get median
+  gpp_predicted_average <- aggregate(gpp_average~doy,median,data=gpp_predicted_list_average_df)
+  
+  #get 95% CI
+  gpp_predicted_average$ci_99 <- std.error(gpp_predicted_list_average_df$gpp_average)*2.576
+  gpp_predicted_average$sample_size <- ss
+  gpp_normal_list[[i]] <- gpp_predicted_average
+
+  
+  #drought growth cycle
+  
+  #convert to data frame and remove values below zero
+  gpp_predicted_list_drought_df <- list_to_df(gpp_predicted_list_drought)
+  colnames(gpp_predicted_list_drought_df) <- c('doy','gpp_drought','id_val')
+  gpp_predicted_list_drought_df <- gpp_predicted_list_drought_df %>%
+    filter(gpp_drought > 0)
+  
+  #sample size
+  ss <- nrow(gpp_predicted_list_drought_df)
+  
+  #get median
+  gpp_predicted_drought <- aggregate(gpp_drought~doy,median,data=gpp_predicted_list_drought_df)
+  
+  #get 95% CI
+  gpp_predicted_drought$ci_99 <- std.error(gpp_predicted_list_drought_df$gpp_drought)*2.576
+  gpp_predicted_drought$sample_size <- ss
+  gpp_drought_list[[i]] <- gpp_predicted_drought
+  
+  
+}
+
+
+gpp_normal_list_df <- list_to_df(gpp_normal_list)
+head(gpp_normal_list_df,1)
+gpp_drought_list_df <- list_to_df(gpp_drought_list)
+
+plot(gpp_average~doy,data=gpp_normal_list_df)
+lines(gpp_drought~doy,data=gpp_drought_list_df,col='red')
+

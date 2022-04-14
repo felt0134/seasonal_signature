@@ -199,7 +199,7 @@ rm(drought_growth_curve_sgs,growth_curve_sgs,drought_growth_curve_nmp,
 
 
 #-------------------------------------------------------------------------------
-#impacts through time ------
+# impacts through time ------
 
 #maximum estimated gpp enhancement for NMP (% and absolute), and when this happens (Julian day)
 
@@ -293,7 +293,7 @@ drought_growth_impact_NDVI_sgs %>%
 #shortgrass steppe
 Ecoregion <- 'shortgrass_steppe'
 source('seasonal_precip_temp_analysis.R')
-942/2
+#942/2
 #abs and relative change in spring ppt
 quantile(test_spring_ppt_drought$perc_decrease,c(0.01,0.5,0.99))
 #50th = 70.8% reduction
@@ -301,7 +301,7 @@ quantile(test_spring_ppt_drought$perc_decrease,c(0.01,0.5,0.99))
 quantile(test_spring_ppt_drought$abs_decrease,c(0.01,0.5,0.99))
 # 50th = 75.4 mm
 
-#abs and relative decline in spring ppt
+#abs and relative decline in summer ppt
 quantile(test_summer_ppt_drought$perc_decrease,c(0.01,0.5,0.99))
 #50th = 59.2% reduction
 
@@ -367,7 +367,7 @@ quantile(spring_summer_precip_drought$change_in_perc_spring,c(0.01,0.5,0.99),na.
 # 50th = 6.5
 #hist(spring_summer_precip_drought$change_in_perc_spring)
 
-#abs and relative decline in spring ppt
+#abs and relative decline in summer ppt
 quantile(test_summer_ppt_drought$perc_decrease,c(0.01,0.5,0.99))
 #50th = -57.6% reduction
 
@@ -477,3 +477,102 @@ rm(driest_year, test_spring_ppt_drought, test_spring_temp_drought,
 
 
 #-------------------------------------------------------------------------------
+# follow-up analysis of amount of GPP by season and max GPP ------
+
+#shortgrass steppe
+
+Ecoregion <- "shortgrass_steppe"
+growth_curve_sgs <- read.csv(paste0('./../../Data/growth_curves/average_growth_curve_',Ecoregion,'.csv'))
+
+#median GPP during spring
+end_spring <- growth_curve_sgs %>%
+  dplyr::filter(doy=='151') #march 6
+#119.2
+spring_gpp = end_spring$mean
+
+end_summer <- growth_curve_sgs %>%
+  dplyr::filter(doy=='243')
+summer_gpp = end_summer$mean - spring_gpp
+(summer_gpp - spring_gpp)/spring_gpp
+#summer GPP 40% higher
+summer_gpp/spring_gpp
+#1.4
+
+drought_growth_curve_sgs <- read.csv(paste0('./../../Data/growth_curves/drought_growth_curve_',Ecoregion,'.csv'))
+end_spring_drought <- drought_growth_curve_sgs %>%
+  dplyr::filter(doy=='151') #march 6
+#95.7
+spring_gpp_drought = end_spring_drought$mean
+
+end_summer_drought <- drought_growth_curve_sgs %>%
+  dplyr::filter(doy=='243')
+summer_gpp_drought = end_summer_drought$mean - spring_gpp_drought
+(spring_gpp_drought - summer_gpp_drought)/summer_gpp_drought
+#summer GPP 40% higher
+summer_gpp_drought/spring_gpp_drought
+
+growth_curve_sgs <- read.csv(paste0('./../../Data/growth_curves/average_growth_curve_',Ecoregion,'.csv'))
+
+#median GPP during spring
+end_spring <- growth_curve_sgs %>%
+  dplyr::filter(doy=='151') #march 6
+#119.2
+spring_gpp = end_spring$mean
+
+end_summer <- growth_curve_sgs %>%
+  dplyr::filter(doy=='243')
+summer_gpp = end_summer$mean - spring_gpp
+(summer_gpp - spring_gpp)/spring_gpp
+#summer GPP 40% higher
+summer_gpp/spring_gpp
+#1.4
+
+#northern mixed prairies
+
+Ecoregion <- "northern_mixed_prairies"
+
+growth_curve_nmp <- read.csv(paste0('./../../Data/growth_curves/average_growth_curve_',Ecoregion,'.csv'))
+
+#median GPP during spring
+end_spring <- growth_curve_nmp %>%
+  dplyr::filter(doy=='151') #march 6
+spring_gpp = end_spring$mean
+#119.3
+
+end_summer <- growth_curve_nmp %>%
+  dplyr::filter(doy=='243')
+summer_gpp = end_summer$mean - spring_gpp
+#266.8
+(summer_gpp - spring_gpp)/spring_gpp
+#summer GPP 124% higher
+summer_gpp/spring_gpp
+#2.2
+
+drought_growth_curve_nmp <- read.csv(paste0('./../../Data/growth_curves/drought_growth_curve_',Ecoregion,'.csv'))
+end_spring_drought <- drought_growth_curve_nmp %>%
+  dplyr::filter(doy=='151') #march 6
+#133
+spring_gpp_drought = end_spring_drought$mean
+
+end_summer_drought <- drought_growth_curve_nmp %>%
+  dplyr::filter(doy=='243')
+summer_gpp_drought = end_summer_drought$mean - spring_gpp_drought
+(summer_gpp_drought - spring_gpp_drought)/spring_gpp_drought
+#summer GPP 40% higher
+summer_gpp_drought/spring_gpp_drought
+
+growth_curve_nmp <- read.csv(paste0('./../../Data/growth_curves/average_growth_curve_',Ecoregion,'.csv'))
+
+#median GPP during spring
+end_spring <- growth_curve_nmp %>%
+  dplyr::filter(doy=='151') #march 6
+#119.2
+spring_gpp = end_spring$mean
+
+end_summer <- growth_curve_nmp %>%
+  dplyr::filter(doy=='243')
+summer_gpp = end_summer$mean - spring_gpp
+(summer_gpp - spring_gpp)/spring_gpp
+#summer GPP 40% higher
+summer_gpp/spring_gpp
+#1.4

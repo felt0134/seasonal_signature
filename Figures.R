@@ -778,7 +778,7 @@ legend(175, 50, legend=c("Average year", "Drought year"),         #alpha legend:
 legend(175, 75, legend=c("50% of total production"),         #alpha legend: 0.015, 150
        col=c("black"), pch=19,box.lty=0,cex=2)
 mtext('Julian day of year',side=1,line=3.75,cex=1.5)
-mtext(expression("Cumulative GPP " (gm^-2)),side=2,line=3.5,cex=1.5)
+mtext(expression("Cumulative GPP " (gCm^-2)),side=2,line=3.5,cex=1.5)
 mtext('Shortgrass steppe',side=3,line=0.5,cex=1.25)
 mtext('a',side=3,line=0.5,cex=1.5,adj=-0.05)
 #?mtext
@@ -1169,99 +1169,111 @@ growth_curve_absolute_mean_sgs_1km <-
 head(growth_curve_absolute_mean_sgs_1km,1)
 
 #drought
-growth_curve_drought_absolute_mean_sgs <- 
-  read_csv('./../../Data/CDD/growth_curves/drought_growth_curve_absolute_shortgrass_steppe.csv')
-head(growth_curve_drought_absolute_mean_sgs,1)
+growth_curve_drought_absolute_mean_sgs_1km <- 
+  read_csv('./../../Data/growth_curves/one_km_subset/drought_growth_curve_shortgrass_steppe.csv')
+head(growth_curve_drought_absolute_mean_sgs_1km,1)
 
 #growth dynamics
-growth_drynamics_sgs <- 
-  read_csv('./../../Data/growth_dynamics/drought_gpp_reduction_shortgrass_steppe.csv')
+growth_drynamics_sgs_1km <- 
+  read_csv('./../../Data/growth_dynamics/one_km_subset/drought_gpp_reduction_1km_shortgrass_steppe.csv')
 head(growth_drynamics_sgs,1)
 
+growth_drynamics_sgs_1km$upper <- growth_drynamics_sgs_1km$perc_change + growth_drynamics_sgs_1km$ci_99
+growth_drynamics_sgs_1km$lower <- growth_drynamics_sgs_1km$perc_change - growth_drynamics_sgs_1km$ci_99
 
 #import NMP
 #mean
-growth_curve_absolute_mean_nmp <- 
-  read_csv('./../../Data/CDD/growth_curves/growth_curve_absolute_northern_mixed_prairies.csv')
-head(growth_curve_absolute_mean_nmp,1)
+growth_curve_absolute_mean_nmp_1km <- 
+  read_csv('./../../Data/growth_curves/one_km_subset/average_growth_curve_northern_mixed_prairies.csv')
+head(growth_curve_absolute_mean_nmp_1km,1)
 
 #drought
-growth_curve_drought_absolute_mean_nmp <- 
-  read_csv('./../../Data/CDD/growth_curves/drought_growth_curve_absolute_northern_mixed_prairies.csv')
-head(growth_curve_drought_absolute_mean_nmp,1)
+growth_curve_drought_absolute_mean_nmp_1km <- 
+  read_csv('./../../Data/growth_curves/one_km_subset/drought_growth_curve_northern_mixed_prairies.csv')
+head(growth_curve_drought_absolute_mean_nmp_1km,1)
 
 #growth dynamics
-growth_drynamics_nmp <- 
-  read_csv('./../../Data/growth_dynamics/drought_gpp_reduction_northern_mixed_prairies.csv')
-head(growth_drynamics_nmp,1)
+growth_drynamics_nmp_1km <- 
+  read_csv('./../../Data/growth_dynamics/one_km_subset/drought_gpp_reduction_1km_northern_mixed_prairies.csv')
+head(growth_drynamics_nmp_1km,1)
+
+growth_drynamics_nmp_1km$upper <- growth_drynamics_nmp_1km$perc_change + growth_drynamics_nmp_1km$ci_99
+growth_drynamics_nmp_1km$lower <- growth_drynamics_nmp_1km$perc_change - growth_drynamics_nmp_1km$ci_99
+
 
 #SGS growth curve figure
-png(height = 1500,width=3000,res=300,'Figures/multi_panel_growth_curves')
+png(height = 1500,width=3000,res=300,'Figures/multi_panel_growth_curves_1km')
 
 
-par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,2,1,1),mar = c(3,3,3,3))
-
+par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,6,1,1),mar = c(3,1.25,3,3))
+#?par
 # plot it out panel A: sgs
-plot(gpp ~ day, growth_curve_absolute_mean_sgs,col='grey',pch=19,cex=0.1,
+plot(mean ~ doy, growth_curve_absolute_mean_sgs_1km,col='black',type='l',
      ylab='',
-     xlab='')
-lines(gpp ~ day, growth_curve_drought_absolute_mean_sgs,col='red',pch=19,lwd=5)
-lines(gpp ~ day, growth_curve_absolute_mean_sgs,col='grey',pch=19,lwd=5)
-#abline(v=155)
-text(160, 176, "June 28th",cex=1)
-points(178, 176,pch=19,cex=3)
-text(172, 97, "June 6th",cex=1)
-points(157,102,pch=19,cex=3)
+     xlab='',las=1,cex.axis=1.5)
+polygon(c(growth_curve_absolute_mean_sgs_1km$doy,rev(growth_curve_absolute_mean_sgs_1km$doy)),
+        c(growth_curve_absolute_mean_sgs_1km$lower,rev(growth_curve_absolute_mean_sgs_1km$upper)),
+        col = "black", border = F)
+polygon(c(growth_curve_drought_absolute_mean_sgs_1km$doy,rev(growth_curve_drought_absolute_mean_sgs_1km$doy)),
+        c(growth_curve_drought_absolute_mean_sgs_1km$lower,rev(growth_curve_drought_absolute_mean_sgs_1km$upper)),
+        col = "red", border = F)
 legend(175, 50, legend=c("Average year", "Drought year"),         #alpha legend: 0.015, 150
        col=c("grey", "red"), lty=1.1,lwd=4,cex=2,box.lty=0)
-legend(175, 75, legend=c("50% of total production"),         #alpha legend: 0.015, 150
-       col=c("black"), pch=19,box.lty=0,cex=2)
-mtext('Julian day of year',side=1,line=3.0,cex=1.5)
-mtext('Cumulative GPP',side=2,line=2.5,cex=1.5)
-mtext('Shortgrass steppe',side=3,line=0.5,cex=1.5)
+# legend(175, 75, legend=c("50% of total production"),         #alpha legend: 0.015, 150
+#        col=c("black"), pch=19,box.lty=0,cex=2)
+mtext('Julian day of year',side=1,line=3.75,cex=1.5)
+mtext(expression("Cumulative GPP " (gm^-2)),side=2,line=3.5,cex=1.5)
+mtext('Shortgrass steppe',side=3,line=0.5,cex=1.25)
+mtext('a',side=3,line=0.5,cex=1.5,adj=-0.05)
+#?mtext
 
 # plot it out panel B: nmp
-plot(gpp ~ day, growth_curve_absolute_mean_nmp,col='grey',pch=19,
+plot(mean ~ doy, growth_curve_absolute_mean_nmp_1km,col='black',type='l',
      ylab='',
-     xlab='')
-points(gpp ~ day, growth_curve_drought_absolute_mean_nmp,col='red',pch=19)
-lines(gpp ~ day, growth_curve_drought_absolute_mean_nmp,col='red',pch=19,lwd=5)
-lines(gpp ~ day, growth_curve_absolute_mean_nmp,col='grey',pch=19,lwd=5)
-#abline(v=155)
-text(158, 210, "June 23rd",cex=1)
-points(174, 210,pch=19,cex=3)
-text(180, 170, "June 12th",cex=1)
-points(163,170,pch=19,cex=3)
-mtext('Julian day of year',side=1,line=3.0,cex=1.5)
+     xlab='',las=1,cex.axis=1.5,ylim=c(0,475))
+polygon(c(growth_curve_absolute_mean_nmp_1km$doy,rev(growth_curve_absolute_mean_nmp_1km$doy)),
+        c(growth_curve_absolute_mean_nmp_1km$lower,rev(growth_curve_absolute_mean_nmp_1km$upper)),
+        col = "black", border = F)
+polygon(c(growth_curve_drought_absolute_mean_nmp_1km$doy,rev(growth_curve_drought_absolute_mean_nmp_1km$doy)),
+        c(growth_curve_drought_absolute_mean_nmp_1km$lower,rev(growth_curve_drought_absolute_mean_nmp_1km$upper)),
+        col = "red", border = F)
+
+mtext('Julian day of year',side=1,line=3.75,cex=1.5)
 #mtext('GPP',side=2,line=2.5,cex=1.5)
-mtext('Northern mixed prairies',side=3,line=0.5,cex=1.5)
+mtext('Northern mixed prairies',side=3,line=0.5,cex=1.25)
+mtext('b',side=3,line=0.5,cex=1.5,adj=-0.05)
 
-#dev.off()
-
-#inset SGS
+#inset SGS (add the polygons for uncertainty)
 panel.first = rect(c(1,7), -1e6, c(3,10), 1e6, col='green', border=NA)
 par(fig = c(0.05,0.30,0.60,0.95), new = TRUE)
-plot(perc_change~doy,data=growth_drynamics_sgs,cex=0.1,
-     xlab='Julian day',ylab='Drought impact (% change in GPP)')
-lines(perc_change~doy,data=growth_drynamics_sgs)
-lines(upper~as.numeric(as.integer(doy)),growth_drynamics_sgs)
-lines(lower~doy,growth_drynamics_sgs)
-abline(h=0)
+plot(perc_change~doy,data=growth_drynamics_sgs,type='l',
+     xlab='',ylab='',las=1,ylim=c(-70,10))
+rect(151,-75,243,350,col = 'grey95')
+rect(60,-75,151,350,col = 'grey')
+polygon(c(growth_drynamics_sgs_1km$doy,rev(growth_drynamics_sgs_1km$doy)),
+        c(growth_drynamics_sgs_1km$lower,rev(growth_drynamics_sgs_1km$upper)),
+        col = "black", border = F)
+text(100, -50, "Spring",cex=1)
+text(200, -20, "Summer",cex=1)
+text(275, -20, "Fall",cex=1)
+abline(h=0,col='black',lty='dashed')
 mtext('Julian day of year',side=1,line=2.35,cex=0.75)
-mtext('GPP impact (%)',side=2,line=2.0,cex=0.75)
+mtext('GPP impact (%)',side=2,line=2.5,cex=0.75)
 
 #inset NMP
 par(fig = c(0.55,0.80,0.60,0.95), new = TRUE)
-plot(perc_change~doy,data=growth_drynamics_nmp,cex=0.1,
-     xlab='Julian day',ylab='Drought impact (% change in GPP)')
-lines(perc_change~doy,data=growth_drynamics_nmp)
-lines(upper~as.numeric(as.integer(doy)),growth_drynamics_nmp)
-lines(lower~doy,growth_drynamics_nmp)
-abline(h=0)
-mtext('Julian day of year',side=1,line=2.25,cex=0.75)
-mtext('GPP impact (%)',side=2,line=2.35,cex=0.75)
+plot(perc_change~doy,data=growth_drynamics_nmp_1km,type='l',
+     xlab='',ylab='',las=1,ylim=c(-50,75))
+rect(151,-60,243,350,col = 'grey95')
+rect(60,-60,151,350,col = 'grey')
+polygon(c(growth_drynamics_nmp_1km$doy,rev(growth_drynamics_nmp_1km$doy)),
+        c(growth_drynamics_nmp_1km$lower,rev(growth_drynamics_nmp_1km$upper)),
+        col = "black", border = F)
+abline(h=0,col='black',lty='dashed')
+mtext('Julian day of year',side=1,line=2.35,cex=0.75)
+mtext('GPP impact (%)',side=2,line=2.5,cex=0.75)
 
-
+#?rect
 dev.off()
 
 
@@ -1434,4 +1446,148 @@ driest_year_map_df$layer <- round(driest_year_map_df$layer)
   mtext('NDVI impact (%)',side=2,line=2.5,cex=1.75)
   
   dev.off()
+  
+#-------------------------------------------------------------------------------
+# growth dynamics absolute ------
+  
+  
+  #growth dynamics
+  growth_drynamics_absolute_sgs <- 
+    read_csv('./../../Data/growth_dynamics/drought_gpp_reduction_absolute_shortgrass_steppe.csv')
+  head(growth_drynamics_absolute_sgs,1)
+  
+  growth_drynamics_absolute_sgs$upper <- growth_drynamics_absolute_sgs$abs_change + growth_drynamics_absolute_sgs$ci_99
+  growth_drynamics_absolute_sgs$lower <- growth_drynamics_absolute_sgs$abs_change - growth_drynamics_absolute_sgs$ci_99
+  
+  #import NMP
+
+  #growth dynamics
+  growth_drynamics_absolute_nmp <- 
+    read_csv('./../../Data/growth_dynamics/drought_gpp_reduction_absolute_northern_mixed_prairies.csv')
+  head(growth_drynamics_absolute_nmp,1)
+  
+  growth_drynamics_absolute_nmp$upper <- growth_drynamics_absolute_nmp$abs_change + growth_drynamics_absolute_nmp$ci_99
+  growth_drynamics_absolute_nmp$lower <- growth_drynamics_absolute_nmp$abs_change - growth_drynamics_absolute_nmp$ci_99
+  
+  png(height = 3000,width=4000,res=300,'Figures/multi_panel_gpp_impacts_absolute.png')
+  
+  #setup
+  par(mfrow=c(2,1),cex = 0.5,lwd = 0.5,oma=c(3.2,9,1,1),mar = c(3,2.25,3,3))
+  #?par
+  
+ #SGS 
+  plot(abs_change~doy,data=growth_drynamics_absolute_sgs,type='l',
+       xlab='',ylab='',las=1,cex.axis=2)
+  rect(151,-70,243,350,col = 'grey95')
+  rect(60,-70,151,350,col = 'grey')
+  polygon(c(growth_drynamics_absolute_sgs$doy,rev(growth_drynamics_absolute_sgs$doy)),
+          c(growth_drynamics_absolute_sgs$lower,rev(growth_drynamics_absolute_sgs$upper)),
+          col = "black", border = F)
+  text(100, -15, "Spring",cex=2.5)
+  text(200, -5, "Summer",cex=2.5)
+  text(275, -15, "Fall",cex=2.5)
+  abline(h=0,col='black',lty='dashed')
+  mtext('Shortgrass steppe',side=3,line=0.5,cex=2)
+  mtext('a',side=3,line=0.5,cex=1.5,adj=0.0)
+
+  
+  #NMP
+  plot(abs_change~doy,data=growth_drynamics_absolute_nmp,type='l',
+       xlab='',ylab='',las=1,cex.axis=2)
+  rect(151,-70,243,350,col = 'grey95')
+  rect(60,-70,151,350,col = 'grey')
+  polygon(c(growth_drynamics_absolute_nmp$doy,rev(growth_drynamics_absolute_nmp$doy)),
+          c(growth_drynamics_absolute_nmp$lower,rev(growth_drynamics_absolute_nmp$upper)),
+          col = "black", border = F)
+  abline(h=0,col='black',lty='dashed')
+  mtext('Northern mixed prairies',side=3,line=0.5,cex=2)
+  mtext('Julian day of year',side=1,line=4,cex=2)
+  mtext(expression("GPP impact "(gCm^-2~'16 days')),side=2,line=4,adj = -15, cex=2)
+  mtext('b',side=3,line=0.5,cex=1.5,adj=0.0)
+  
+  dev.off()
+
+#-------------------------------------------------------------------------------
+# growth cycles -----
+  
+  #growth dynamics
+  
+  #SGS
+  
+  #median
+  growth_cycle_sgs <- 
+    read_csv('./../../Data/Growth_Cycle/average_cycle_shortgrass_steppe.csv')
+  head(growth_cycle_sgs,1)
+  
+  growth_cycle_sgs$upper <- growth_cycle_sgs$gpp_average + growth_cycle_sgs$ci_99
+  growth_cycle_sgs$lower <- growth_cycle_sgs$gpp_average - growth_cycle_sgs$ci_99
+  
+  #drought
+  growth_cycle_drought_sgs <- 
+    read_csv('./../../Data/Growth_Cycle/drought_cycle_shortgrass_steppe.csv')
+  head(growth_cycle_drought_sgs,1)
+  
+  growth_cycle_drought_sgs$upper <- growth_cycle_drought_sgs$gpp_drought + growth_cycle_drought_sgs$ci_99
+  growth_cycle_drought_sgs$lower <- growth_cycle_drought_sgs$gpp_drought - growth_cycle_drought_sgs$ci_99
+  
+  #import NMP
+  
+  #median
+  growth_cycle_nmp <- 
+    read_csv('./../../Data/Growth_Cycle/average_cycle_northern_mixed_prairies.csv')
+  head(growth_cycle_nmp,1)
+  
+  growth_cycle_nmp$upper <- growth_cycle_nmp$gpp_average + growth_cycle_nmp$ci_99
+  growth_cycle_nmp$lower <- growth_cycle_nmp$gpp_average - growth_cycle_nmp$ci_99
+  
+  #drought
+  growth_cycle_drought_nmp <- 
+    read_csv('./../../Data/Growth_Cycle/drought_cycle_northern_mixed_prairies.csv')
+  head(growth_cycle_drought_nmp,1)
+  
+  growth_cycle_drought_nmp$upper <- growth_cycle_drought_nmp$gpp_drought + growth_cycle_drought_nmp$ci_99
+  growth_cycle_drought_nmp$lower <- growth_cycle_drought_nmp$gpp_drought - growth_cycle_drought_nmp$ci_99
+  
+  png(height = 3000,width=4000,res=300,'Figures/multi_panel_gpp_growth_cycle.png')
+  
+  #setup
+  par(mfrow=c(2,1),cex = 0.5,lwd = 0.5,oma=c(3.2,9,1,1),mar = c(3,2.25,3,3))
+  #?par
+  
+  #SGS 
+  plot(gpp_average~doy,data=growth_cycle_sgs,type='l',
+       xlab='',ylab='',las=1,cex.axis=2,ylim=c(0,40))
+  rect(151,-70,243,350,col = 'grey95')
+  rect(60,-70,151,350,col = 'grey')
+  polygon(c(growth_cycle_sgs$doy,rev(growth_cycle_sgs$doy)),
+          c(growth_cycle_sgs$lower,rev(growth_cycle_sgs$upper)),
+          col = "black", border = F)
+  polygon(c(growth_cycle_drought_sgs$doy,rev(growth_cycle_drought_sgs$doy)),
+          c(growth_cycle_drought_sgs$lower,rev(growth_cycle_drought_sgs$upper)),
+          col = "red", border = F)
+  text(100, 35, "Spring",cex=2.5)
+  text(200, 35, "Summer",cex=2.5)
+  text(275, 35, "Fall",cex=2.5)
+  mtext('Shortgrass steppe',side=3,line=0.5,cex=2)
+  mtext('a',side=3,line=0.5,cex=1.5,adj=0.0)
+  
+  
+  #NMP
+  plot(gpp_average~doy,data=growth_cycle_nmp,type='l',
+       xlab='',ylab='',las=1,cex.axis=2)
+  rect(151,-70,243,350,col = 'grey95')
+  rect(60,-70,151,350,col = 'grey')
+  polygon(c(growth_cycle_nmp$doy,rev(growth_cycle_nmp$doy)),
+          c(growth_cycle_nmp$lower,rev(growth_cycle_nmp$upper)),
+          col = "black", border = F)
+  polygon(c(growth_cycle_drought_nmp$doy,rev(growth_cycle_drought_nmp$doy)),
+          c(growth_cycle_drought_nmp$lower,rev(growth_cycle_drought_nmp$upper)),
+          col = "red", border = F)
+  mtext('Northern mixed prairies',side=3,line=0.5,cex=2)
+  mtext('Julian day of year',side=1,line=4,cex=2)
+  mtext(expression("GPP " (gCm^-2~'16 days')),side=2,line=4,adj = 2.5, cex=2)
+  mtext('b',side=3,line=0.5,cex=1.5,adj=0.0)
+  
+  dev.off()
+  
   
