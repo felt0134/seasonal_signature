@@ -1565,9 +1565,9 @@ driest_year_map_df$layer <- round(driest_year_map_df$layer)
   polygon(c(growth_cycle_drought_sgs$doy,rev(growth_cycle_drought_sgs$doy)),
           c(growth_cycle_drought_sgs$lower,rev(growth_cycle_drought_sgs$upper)),
           col = "red", border = F)
-  text(100, 35, "Spring",cex=2.5)
-  text(200, 35, "Summer",cex=2.5)
-  text(275, 35, "Fall",cex=2.5)
+  text(100, 35, "Spring",cex=3)
+  text(200, 35, "Summer",cex=3)
+  text(275, 35, "Fall",cex=3)
   mtext('Shortgrass steppe',side=3,line=0.5,cex=2)
   mtext('a',side=3,line=0.5,cex=1.5,adj=0.0)
   
@@ -1583,6 +1583,8 @@ driest_year_map_df$layer <- round(driest_year_map_df$layer)
   polygon(c(growth_cycle_drought_nmp$doy,rev(growth_cycle_drought_nmp$doy)),
           c(growth_cycle_drought_nmp$lower,rev(growth_cycle_drought_nmp$upper)),
           col = "red", border = F)
+  legend(250, 40, legend=c("Average year", "Drought year"),         #alpha legend: 0.015, 150
+         col=c("grey", "red"), lty=1.1,lwd=4,cex=2,box.lty=0)
   mtext('Northern mixed prairies',side=3,line=0.5,cex=2)
   mtext('Julian day of year',side=1,line=4,cex=2)
   mtext(expression("GPP " (gCm^-2~'16 days')),side=2,line=4,adj = 2.5, cex=2)
