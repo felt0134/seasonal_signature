@@ -78,6 +78,7 @@ day_90_df <- day_90_df %>%
   dplyr::filter(doy < 297) %>%
   dplyr::filter(doy > 65)
 
+
 #combine
 day_90_sgs_nmp <- raster::merge(day_90_sgs,day_90_nmp,tolerance=0.2)
 crs(day_90_sgs_nmp) <- Albers
@@ -210,13 +211,6 @@ drought_day90_pdf <- ggplot(day_90_drought_nmp_sgs_2_df, aes(x = layer, fill = r
     axis.line.y = element_line(colour = "black")
   )
 
-#save to file
-# png(height = 1700,width=2000,res=300,'./../../Figures/day50_drought_distributions.png')
-# 
-# print(drought_day50_pdf)
-# 
-# dev.off()
-
 #try to make inset
 vp <- viewport(width = 0.44, height = 0.39, x = 0.23,y=0.27)
 # y = unit(0.7, "lines"), just = c("right",
@@ -235,6 +229,57 @@ full()
 
 dev.off()
 
+
+#correlation of day 90 impact and latitude 
+day_90_drought_sgs_2_lat <- data.frame(rasterToPoints(day_90_drought_sgs_2))
+day_90_drought_sgs_2_lat$ecoregion = 'Shortgrass steppe'
+
+day_90_drought_nmp_2_lat <- data.frame(rasterToPoints(day_90_drought_nmp_2))
+day_90_drought_nmp_2_lat$ecoregion = 'Northern mixed prairies'
+
+day_90_drought_2_lat <- rbind(day_90_drought_sgs_2_lat,day_90_drought_nmp_2_lat)
+
+cor(day_90_drought_2_lat$y,day_90_drought_2_lat$layer,method='spearman')
+?cor
+
+day_90_lat_plot <- ggplot(day_90_drought_2_lat, aes(x = y, y=layer,color = ecoregion)) +
+  geom_point(alpha=0.5) +
+  scale_colour_manual(values = c(
+    'Shortgrass steppe' = 'green4',
+    'Northern mixed prairies' = 'steelblue2'
+  )) +
+  geom_hline(yintercept = 0,size=2,color='grey') +
+  stat_smooth(method='lm',color='black',size=2) +
+  #geom_vline(xintercept = 0,color='red') +
+  ylab('Effect of drought on day at which\n90% carbon uptake is achieved (days)') +
+  xlab('Latitude') +
+  annotate("text", x=32, y=17, label= "Delayed") +
+  annotate("text", x=32, y=-15, label= "Advanced") +
+  theme(
+    axis.text.x = element_text(color = 'black', size = 15),
+    #angle=25,hjust=1),
+    axis.text.y = element_text(color = 'black', size = 15),
+    axis.title = element_text(color = 'black', size = 18),
+    axis.ticks = element_line(color = 'black'),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    #legend.position = c(0.82, 0.95),
+    legend.position = 'top',
+    strip.background = element_rect(fill = "white"),
+    strip.text = element_text(size = 15),
+    panel.background = element_rect(fill = NA),
+    panel.border = element_blank(),
+    #make the borders clear in prep for just have two axes
+    axis.line.x = element_line(colour = "black"),
+    axis.line.y = element_line(colour = "black")
+  )
+
+png(height = 1500,width=2000,res=300,'Figures/day90_drought_latitude_relationship.png')
+
+day_90_lat_plot
+
+dev.off()
 
 
 #-------------------------------------------------------------------------------

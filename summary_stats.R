@@ -576,3 +576,126 @@ summer_gpp = end_summer$mean - spring_gpp
 #summer GPP 40% higher
 summer_gpp/spring_gpp
 #1.4
+#-------------------------------------------------------------------------------
+#compare distributions of day 90 by ecoregion ------
+
+#sgs
+day_90_sgs <- raster('./../../Data/CDD/day_of_90/day_90_shortgrass_steppe.tif')
+plot(day_90_sgs)
+day_90_sgs_df <- data.frame(rasterToPoints(day_90_sgs))
+day_90_sgs_df$Ecoregion <- 'Shortgrass steppe'
+colnames(day_90_sgs_df) <- c('x','y','doy','Ecoregion')
+median(day_90_sgs_df$doy) #263 = September 20
+
+#nmp
+day_90_nmp <- raster('./../../Data/CDD/day_of_90/day_90_northern_mixed_prairies.tif')
+plot(day_90_nmp)
+day_90_nmp_df <- data.frame(rasterToPoints(day_90_nmp))
+day_90_nmp_df$Ecoregion <- 'Northern mixed prairies'
+colnames(day_90_nmp_df) <- c('x','y','doy','Ecoregion')
+median(day_90_nmp_df$doy) #248 = September 5
+
+#impact of drought on the 90% day of growth
+
+#sgs
+day_90_drought_sgs <-
+  raster('./../../Data/CDD/day_of_90/day_90_droughtshortgrass_steppe.tif')
+#plot(day_90_drought_sgs)
+day_90_drought_sgs <- stack(day_90_drought_sgs, day_90_sgs)
+plot(day_90_drought_sgs)
+day_90_drought_sgs_2 <-
+  day_90_drought_sgs$day_90_droughtshortgrass_steppe -
+  day_90_drought_sgs$day_90_shortgrass_steppe
+#plot(day_90_drought_sgs_2)
+summary(day_90_drought_sgs_2)
+#median = 4
+
+#nmp
+day_90_drought_nmp <-
+  raster('./../../Data/CDD/day_of_90/day_90_droughtnorthern_mixed_prairies.tif')
+#plot(day_90_drought_nmp)
+day_90_drought_nmp <- stack(day_90_drought_nmp, day_90_nmp)
+#plot(day_90_drought_nmp)
+day_90_drought_nmp_2 <-
+  day_90_drought_nmp$day_90_droughtnorthern_mixed_prairies -
+  day_90_drought_nmp$day_90_northern_mixed_prairies
+#plot(day_90_drought_nmp_2)
+summary(day_90_drought_nmp_2)
+#median = 0
+
+#turn each to a dataframe
+day_90_drought_sgs_2_lat <- data.frame(rasterToPoints(day_90_drought_sgs_2))
+day_90_drought_nmp_2_lat <- data.frame(rasterToPoints(day_90_drought_nmp_2))
+
+ks.test(day_90_drought_sgs_2_lat$layer,day_90_drought_nmp_2_lat$layer)
+hist(day_90_drought_nmp_2_lat$layer)
+hist(day_90_drought_sgs_2_lat$layer,add=T,col='blue')
+
+coordinates(day_90_drought_sgs_2_lat) = ~ x+y
+TheVariogram=variogram(layer~1, data=day_90_drought_sgs_2_lat)
+plot(TheVariogram)
+
+
+# data:  day_90_drought_sgs_2_lat$layer and day_90_drought_nmp_2_lat$layer
+# D = 0.42584, p-value < 2.2e-16
+# alternative hypothesis: two-sided
+
+#-------------------------------------------------------------------------------
+# compare distribution of day 50 (to do) ------
+#-------------------------------------------------------------------------------
+# compare distribution of day 25 (to do) ------
+#-------------------------------------------------------------------------------
+# compare distribution of seasonality of precip ------
+
+Ecoregion <- 'shortgrass_steppe'
+source('seasonal_precip_temp_analysis.R')
+
+#ks.test(spring_summer_precip_drought$change_in_perc_spring),'pnorm'))
+
+n_samples <- as.numeric(nrow(spring_summer_precip_drought))
+below_zero <- spring_summer_precip_drought %>%
+  dplyr::filter(change_in_perc_spring < 0)
+  nrow(below_zero)/n_samples
+  
+
+t.test(spring_summer_precip_drought$change_in_perc_summer)
+
+hist(spring_summer_precip_drought$change_in_perc_spring)
+hist(spring_summer_precip_drought$change_in_perc_summer,add=T,col='red')
+
+library(rethinking)
+library(splitstackshape)
+
+
+strat <- stratified()
+
+#stratify 1% of pixels bty latitude
+strat <- stratified(spring_summer_precip_drought, c("x"), 0.01)
+
+#one sides t.test
+t_test <- t.test(strat$change_in_perc_spring)
+t_test$method
+hist(strat$change_in_perc_spring)
+
+plot(y~x,data=strat)
+
+start_raster <- spring_summer_precip_drought %>%
+  select(x,y,change_in_perc_spring)
+start_raster <- na.omit(start_raster)
+
+start_raster <- rasterFromXYZ(start_raster)
+Moran(start_raster, w=matrix(c(1,1,1,1,0,1,1,1,1), 3,3))
+plot(start_raster)
+
+
+#variogram
+coordinates(start_raster)= ~ x+y
+
+# create a bubble plot with the random values
+bubble(start_raster, change_in_perc_spring='change in spring ppt', fill=TRUE, do.sqrt=FALSE, maxsize=3)
+
+library(gstat)
+TheVariogram=variogram(change_in_perc_spring ~1, data=start_raster)
+plot(TheVariogram)
+
+?variogram
