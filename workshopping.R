@@ -310,3 +310,101 @@ gpp_drought_list_df <- list_to_df(gpp_drought_list)
 plot(gpp_average~doy,data=gpp_normal_list_df)
 lines(gpp_drought~doy,data=gpp_drought_list_df,col='red')
 
+
+# growth curev with temporal 95 CI -----
+
+
+get_average_growth_curve_absolute_spline_ci  <- function(i) {
+  
+  #subset to a given pixel
+  growth_id <- gpp_df %>%
+    dplyr::filter(id_value == i)
+  
+  x <- unique(growth_id %>% pull(x))
+  y <- unique(growth_id %>% pull(y))
+  
+  #first get temporal variation
+  year_list <- list()
+  for(j in unique(growth_id$year)){
+    
+    subset <- subset(growth_id,year==j)
+    
+    subset <- subset %>% arrange(doy)
+    
+    subset <-
+      data.frame(subset, gpp_ci = cumsum(subset$gpp))
+    
+    year_list[[j]] <- subset
+    
+    #str(subset)
+    
+  }
+  
+  year_df <- do.call('rbind',year_list)
+  #plot(gpp_2~doy,data=year_df)
+  rm(year_list)
+  
+  growth_id_ci <- aggregate(gpp_ci ~ doy, ci_99, data = year_df)
+  #plot(gpp_2 ~ doy,growth_id_ci)
+  rm(year_df)
+  
+  gpp.doy.spl_ci <-
+    with(growth_id_ci, smooth.spline(doy, gpp_ci))
+  #lines(gpp.doy.spl_ci, col = "blue")
+  
+  #rm(growth_id_cmulative)
+  
+  #run model through a sequence of days
+  # doy <- data.frame(seq(from = 65, to = 297, by = 1))
+  # gpp_predicted_ci <- data.frame(predict(gpp.doy.spl_ci, doy))
+  # colnames(gpp_predicted_ci) <- c('day', 'temporal_ci')
+  # plot(gpp~day,gpp_predicted_ci)
+  # 
+  
+  #now do average growth curve
+  
+  growth_id <- aggregate(gpp ~ doy, mean, data = growth_id)
+  #plot(gpp~doy,growth_id)
+  
+  #for that pixel, get cumulative GPP throughout the year
+  growth_id_cmulative <-
+    data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
+  
+  #str(growth_id_cmulative)
+  #head(growth_id_cmulative)
+  #plot(gpp_2 ~ doy,data= growth_id_cmulative)
+  
+  #rm(growth_id)
+  
+  #create spline model of growth curve
+  gpp.doy.spl <-
+    with(growth_id_cmulative, smooth.spline(doy, gpp_2))
+  #lines(gpp.doy.spl, col = "blue")
+  
+  # rm(growth_id_cmulative)
+  # 
+  # #run model through a sequence of days
+  # doy <- data.frame(seq(from = 65, to = 297, by = 1))
+  # gpp_predicted <- data.frame(predict(gpp.doy.spl, doy))
+  # colnames(gpp_predicted) <- c('day', 'gpp')
+  # #plot(gpp ~ day,gpp_predicted)
+  # 
+  # #rm(gpp_predicted)
+  # 
+  # gpp_predicted$x <- x
+  # gpp_predicted$y <- y
+  # 
+  # gpp_predicted <- gpp_predicted %>%
+  #   select(x,y,day,gpp)
+  # 
+  # gpp_predicted <- merge(gpp_predicted,gpp_predicted_ci,by=c('day'))
+  # 
+  
+  return(list(gpp.doy.spl,gpp.doy.spl_ci))
+  
+  
+  
+}
+
+
+look <- get_average_growth_curve_absolute_ci(100)

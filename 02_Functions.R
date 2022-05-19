@@ -776,6 +776,64 @@ get_average_growth_curve_absolute_spline  <- function(i) {
   
 }
 
+#spline models of both average and the temporal 99CI
+get_average_growth_curve_absolute_spline_ci  <- function(i) {
+  
+  #subset to a given pixel
+  growth_id <- gpp_df %>%
+    dplyr::filter(id_value == i)
+  
+  x <- unique(growth_id %>% pull(x))
+  y <- unique(growth_id %>% pull(y))
+  
+  #first get temporal variation
+  year_list <- list()
+  for(j in unique(growth_id$year)){
+    
+    subset <- subset(growth_id,year==j)
+    
+    subset <- subset %>% arrange(doy)
+    
+    subset <-
+      data.frame(subset, gpp_ci = cumsum(subset$gpp))
+    
+    year_list[[j]] <- subset
+    
+    #str(subset)
+    
+  }
+  
+  year_df <- do.call('rbind',year_list)
+  #plot(gpp_2~doy,data=year_df)
+  rm(year_list)
+  
+  growth_id_ci <- aggregate(gpp_ci ~ doy, ci_99, data = year_df)
+  rm(year_df)
+  
+  gpp.doy.spl_ci <-
+    with(growth_id_ci, smooth.spline(doy, gpp_ci))
+  
+  
+  #now do average growth curve
+  growth_id <- aggregate(gpp ~ doy, mean, data = growth_id)
+  #plot(gpp~doy,growth_id)
+  
+  #for that pixel, get cumulative GPP throughout the year
+  growth_id_cmulative <-
+    data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
+  
+  #create spline model of growth curve
+  gpp.doy.spl <-
+    with(growth_id_cmulative, smooth.spline(doy, gpp_2))
+
+  
+  return(list(gpp.doy.spl,gpp.doy.spl_ci))
+  
+  
+}
+
+
+
 #
 
 #spline model of growth during drought year
@@ -1281,4 +1339,14 @@ get_driest_year <- function(i){
 }
 
 #-------------------------------------------------------------------------------
+
+#95 CI -----
+
+ci_99 <- function(x){
+  
+  ci <- std.error(x)*2.576
+  
+  return(ci)
+  
+}
 
