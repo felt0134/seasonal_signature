@@ -639,15 +639,19 @@ hist(day_90_drought_sgs_2_lat$layer,add=T,col='blue')
 library(gstat)
 #bind them and make into one variogram 
 binded_day_90 <- rbind(day_90_drought_nmp_2_lat,day_90_drought_sgs_2_lat)
-coordinates(binded_day_90) = ~ x+y
-TheVariogram=variogram(layer~1, data=binded_day_90)
+coordinates(day_90_drought_nmp_2_lat) = ~ x+y
+TheVariogram=variogram(layer~1, data=day_90_drought_nmp_2_lat)
 plot(TheVariogram)
-
+summary(TheVariogram)
 #psill = asymptote on y axis
 #nugget = intercept
 #range = asymptote on x axis
-TheVariogramModel <- vgm(psill=0.15, model="Gau", nugget=0.0001, range=5)
-
+TheVariogramModel <- vgm(psill=10, model="Sph", nugget=4, range=5)
+plot(TheVariogram, model=TheVariogramModel,xlab='Distance (km)',cex.lab=5,
+     main='Effect of drought on day at which 90% of carbon uptake occurs') 
+abline(h=5)
+?abline
+summary(TheVariogramModel)
 
 #-------------------------------------------------------------------------------
 # compare distribution of day 50 (to do) ------
