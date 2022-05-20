@@ -458,7 +458,7 @@ day_50_drought_df <- data.frame(rasterToPoints(day_50_drought))
 (day_50_drought_df %>%
   filter(layer < 0) %>%
   summarise(length(layer)))/(length(day_50_drought_df$layer))
-#0.90 of pixels see day of 50% growth occurr earlier during drought
+#0.90 of pixels see day of 50% growth occur earlier during drought
   
 
 day_50_sgs_nmp_drought_map <-
@@ -467,7 +467,7 @@ day_50_sgs_nmp_drought_map <-
                color = "black", size = 0.1,fill=NA) +
   geom_raster(data=day_50_drought_df, mapping=aes(x = x, y = y, fill = layer)) + 
   coord_equal() +
-  scale_fill_scico('Drought impact to day\nof 50% total growth (days)',palette = 'roma',direction=-1) +
+  scale_fill_scico('Effect of drought on day at which\nhalf of total C uptake occurs (days)',palette = 'roma',direction=-1) +
   xlab('') +
   ylab('') +
   scale_x_continuous(expand=c(0,0)) +
@@ -524,7 +524,7 @@ drought_day50_pdf <- ggplot(day_50_drought_nmp_sgs_2_df, aes(x = layer, fill = r
     'Shortgrass steppe' = 'green4'
   )) +
   geom_vline(xintercept = 0,color='black') +
-  xlab('Drought impact to day of\n50% of total growth (days)') +
+  xlab("Effect of drought on day at which\nhalf of total C uptake occurs (days)") +
   ylab('Probability density') +
   theme(
     axis.text.x = element_text(color = 'black', size = 7),
@@ -805,9 +805,12 @@ par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,6,1,1),mar = c(3,1.25,3,3))
 # plot it out panel A: sgs
 plot(mean ~ doy, growth_curve_absolute_mean_sgs,col='black',type='l',
      ylab='',
-     xlab='',las=1,cex.axis=1.5)
+     xlab='',las=1,cex.axis=1.5,ylim=c(0,391))
 polygon(c(growth_curve_absolute_mean_sgs$doy,rev(growth_curve_absolute_mean_sgs$doy)),
-        c(growth_curve_absolute_mean_sgs$lower,rev(growth_curve_absolute_mean_sgs$upper)),
+        c(growth_curve_absolute_mean_sgs$lower_temporal,rev(growth_curve_absolute_mean_sgs$upper_temporal)),
+        col = "grey", border = F)
+polygon(c(growth_curve_absolute_mean_sgs$doy,rev(growth_curve_absolute_mean_sgs$doy)),
+        c(growth_curve_absolute_mean_sgs$lower_spatial,rev(growth_curve_absolute_mean_sgs$upper_spatial)),
         col = "black", border = F)
 polygon(c(growth_curve_drought_absolute_mean_sgs$doy,rev(growth_curve_drought_absolute_mean_sgs$doy)),
         c(growth_curve_drought_absolute_mean_sgs$lower,rev(growth_curve_drought_absolute_mean_sgs$upper)),
@@ -818,12 +821,12 @@ text(162, 176, "June 28th",cex=1)
 points(178, 176,pch=19,cex=3)
 text(170, 97, "June 6th",cex=1)
 points(157,102,pch=19,cex=3)
-legend(175, 50, legend=c("Average year", "Drought year"),         #alpha legend: 0.015, 150
+legend(175, 60, legend=c("Average year", "Drought year"),         #alpha legend: 0.015, 150
        col=c("grey", "red"), lty=1.1,lwd=4,cex=2,box.lty=0)
-legend(175, 75, legend=c("50% of total production"),         #alpha legend: 0.015, 150
+legend(175, 90, legend=c("50% of total production"),         #alpha legend: 0.015, 150
        col=c("black"), pch=19,box.lty=0,cex=2)
 mtext('Julian day of year',side=1,line=3.75,cex=1.5)
-mtext(expression("Cumulative GPP " (gCm^-2)),side=2,line=3.5,cex=1.5)
+mtext(expression("Cumulative carbon uptake " (g~C~m^-2)),side=2,line=3.5,cex=1.5)
 mtext('Shortgrass steppe',side=3,line=0.5,cex=1.25)
 mtext('a',side=3,line=0.5,cex=1.5,adj=-0.05)
 #?mtext
@@ -831,9 +834,12 @@ mtext('a',side=3,line=0.5,cex=1.5,adj=-0.05)
 # plot it out panel B: nmp
 plot(mean ~ doy, growth_curve_absolute_mean_nmp,col='black',type='l',
      ylab='',
-     xlab='',las=1,cex.axis=1.5)
+     xlab='',las=1,cex.axis=1.5,ylim=c(0,480))
 polygon(c(growth_curve_absolute_mean_nmp$doy,rev(growth_curve_absolute_mean_nmp$doy)),
-        c(growth_curve_absolute_mean_nmp$lower,rev(growth_curve_absolute_mean_nmp$upper)),
+        c(growth_curve_absolute_mean_nmp$lower_temporal,rev(growth_curve_absolute_mean_nmp$upper_temporal)),
+        col = "grey", border = F)
+polygon(c(growth_curve_absolute_mean_nmp$doy,rev(growth_curve_absolute_mean_nmp$doy)),
+        c(growth_curve_absolute_mean_nmp$lower_spatial,rev(growth_curve_absolute_mean_nmp$upper_spatial)),
         col = "black", border = F)
 polygon(c(growth_curve_drought_absolute_mean_nmp$doy,rev(growth_curve_drought_absolute_mean_nmp$doy)),
         c(growth_curve_drought_absolute_mean_nmp$lower,rev(growth_curve_drought_absolute_mean_nmp$upper)),
@@ -850,7 +856,7 @@ mtext('b',side=3,line=0.5,cex=1.5,adj=-0.05)
 
 #inset SGS (add the polygons for uncertainty)
 panel.first = rect(c(1,7), -1e6, c(3,10), 1e6, col='green', border=NA)
-par(fig = c(0.05,0.30,0.60,0.95), new = TRUE)
+par(fig = c(0.05,0.3,0.60,0.95), new = TRUE)
 plot(perc_change~doy,data=growth_drynamics_sgs,type='l',
      xlab='',ylab='',las=1)
 rect(151,-70,243,350,col = 'grey95')
@@ -863,10 +869,10 @@ text(200, -20, "Summer",cex=1)
 text(275, -20, "Fall",cex=1)
 abline(h=0,col='black',lty='dashed')
 mtext('Julian day of year',side=1,line=2.35,cex=0.75)
-mtext('GPP impact (%)',side=2,line=2.5,cex=0.75)
+mtext('% Change in C uptake',side=2,line=2.5,cex=0.6)
 
 #inset NMP
-par(fig = c(0.55,0.80,0.60,0.95), new = TRUE)
+par(fig = c(0.55,0.78,0.60,0.95), new = TRUE)
 plot(perc_change~doy,data=growth_drynamics_nmp,type='l',
      xlab='',ylab='',las=1)
 rect(151,-50,243,350,col = 'grey95')
@@ -879,7 +885,7 @@ polygon(c(growth_drynamics_nmp$doy,rev(growth_drynamics_nmp$doy)),
 # lines(lower~doy,growth_drynamics_nmp)
 abline(h=0,col='black',lty='dashed')
 mtext('Julian day of year',side=1,line=2.35,cex=0.75)
-mtext('GPP impact (%)',side=2,line=2.5,cex=0.75)
+mtext('% Change in C uptake',side=2,line=2.5,cex=0.6)
 
 #?rect
 dev.off()
@@ -1358,7 +1364,7 @@ five_driest_years$year <- as.factor(five_driest_years$year)
 
   driest_years_barchat <- ggplot(five_driest_years,aes(reorder(year,-ppt),ppt,fill=ecoregion)) +
     stat_summary(fun='mean',geom='bar',color='black') +
-    ylab('Number of sites') +
+    ylab('Number of pixels') +
     xlab('Driest year (2003-2020)') +
     scale_fill_manual(values = c(
       'Shortgrass steppe' = 'green4',
@@ -1492,6 +1498,7 @@ driest_year_map_df$layer <- round(driest_year_map_df$layer)
   
   dev.off()
   
+  #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 # growth dynamics absolute ------
   

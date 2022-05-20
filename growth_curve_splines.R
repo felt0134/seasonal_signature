@@ -100,7 +100,7 @@ rm(ppt_df)
 #create a vector of unique sites IDs
 id_list <- unique(gpp_df$id_value)
 
-#get average growth curve
+#get average growth curve and that 95 CI
 with_progress({
   p <- progressor(along = id_list)
   growth_curve_spline_list <- future_lapply(id_list, function(i) {

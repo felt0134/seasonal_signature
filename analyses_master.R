@@ -13,8 +13,8 @@ library(progressr)
 
 
 
-Ecoregion = 'shortgrass_steppe'
-#Ecoregion = 'northern_mixed_prairies' 
+#Ecoregion = 'shortgrass_steppe'
+Ecoregion = 'northern_mixed_prairies' 
 #Ecoregion = 'nebraska_sandhills'
 
 

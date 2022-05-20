@@ -631,14 +631,23 @@ ks.test(day_90_drought_sgs_2_lat$layer,day_90_drought_nmp_2_lat$layer)
 hist(day_90_drought_nmp_2_lat$layer)
 hist(day_90_drought_sgs_2_lat$layer,add=T,col='blue')
 
-coordinates(day_90_drought_sgs_2_lat) = ~ x+y
-TheVariogram=variogram(layer~1, data=day_90_drought_sgs_2_lat)
-plot(TheVariogram)
-
-
 # data:  day_90_drought_sgs_2_lat$layer and day_90_drought_nmp_2_lat$layer
 # D = 0.42584, p-value < 2.2e-16
 # alternative hypothesis: two-sided
+#so distributions are different...what is this really telling us?
+
+library(gstat)
+#bind them and make into one variogram 
+binded_day_90 <- rbind(day_90_drought_nmp_2_lat,day_90_drought_sgs_2_lat)
+coordinates(binded_day_90) = ~ x+y
+TheVariogram=variogram(layer~1, data=binded_day_90)
+plot(TheVariogram)
+
+#psill = asymptote on y axis
+#nugget = intercept
+#range = asymptote on x axis
+TheVariogramModel <- vgm(psill=0.15, model="Gau", nugget=0.0001, range=5)
+
 
 #-------------------------------------------------------------------------------
 # compare distribution of day 50 (to do) ------
