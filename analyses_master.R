@@ -75,3 +75,14 @@ source('seasonal_precip_temp_analysis.R')
 source('drought_reduction_spline_1km_subset.R')
 source('growth_curve_splines_1km_subset.R')
 
+
+#------------------------
+# NDVI subset analysis ------
+
+
+#Ecoregion = 'shortgrass_steppe'
+Ecoregion = 'northern_mixed_prairies' 
+#Ecoregion = 'nebraska_sandhills'
+
+
+source('drought_reduction_spline_NDVI.R')
