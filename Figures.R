@@ -1498,7 +1498,6 @@ driest_year_map_df$layer <- round(driest_year_map_df$layer)
   
   dev.off()
   
-  #-------------------------------------------------------------------------------
 #-------------------------------------------------------------------------------
 # growth dynamics absolute ------
   
@@ -1645,4 +1644,50 @@ driest_year_map_df$layer <- round(driest_year_map_df$layer)
   dev.off()
   
   #test
+  
+#-------------------------------------------------------------------------------
+# correlation between annual and growing season GSP ------
+
+Ecoregion <- 'shortgrass_steppe'
+  sgs_a_gs_precip <- 
+    read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/annual_gs_subset.csv'))
+head(sgs_a_gs_precip)
+cor(sgs_a_gs_precip$annual_precip,sgs_a_gs_precip$gs_precip,method = 'spearman')
+#0.98
+
+
+Ecoregion <- 'northern_mixed_prairies'
+nmp_a_gs_precip <- 
+  read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/annual_gs_subset.csv'))
+head(sgs_a_gs_precip)
+cor(nmp_a_gs_precip$annual_precip,nmp_a_gs_precip$gs_precip,method = 'spearman')
+
+
+png(height = 1500,width=3000,res=300,'Figures/annual_growing_season_comparison.png')
+
+#two-panel plot
+par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,6,1,1),mar = c(3,1.25,3,3))
+#?par
+
+# plot it out panel A: sgs
+plot(gs_precip ~ annual_precip, sgs_a_gs_precip,col='black',
+     ylab='',
+     xlab='',las=1,cex.axis=1.5)
+mtext('Growing season precipitation (mm)',side=2,line=4.5,cex=1.5)
+mtext('a',side=3,line=0.5,cex=1.5,adj=-0.05)
+mtext('Shortgrass steppe',side=3,line=0.5,cex=1.75)
+
+
+# plot it out panel B: nmp
+plot(gs_precip ~ annual_precip, nmp_a_gs_precip,col='black',
+     ylab='',
+     xlab='',las=1,cex.axis=1.5)
+mtext('b',side=3,line=0.5,cex=1.5,adj=-0.05)
+mtext('Northern mixed prairies',side=3,line=0.5,cex=1.75)
+mtext('Annual precipitation (mm)',side=1,line=4,adj=-1,cex=1.5)
+
+dev.off()
+  
+#-------------------------------------------------------------------------------
+
   

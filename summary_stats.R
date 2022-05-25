@@ -712,3 +712,27 @@ TheVariogram=variogram(change_in_perc_spring ~1, data=start_raster)
 plot(TheVariogram)
 
 ?variogram
+
+#-------------------------------------------------------------------------------
+# % of GPP in months not analyzed ----
+
+
+Ecoregion <- 'northern_mxed_prairies'
+sgs_a_annual_gpp <-
+  read.csv(paste0('./../../Data/GPP/Ecoregion/',Ecoregion,'/full_year_subset.csv'))
+head(sgs_a_annual_gpp)
+
+str(sgs_a_annual_gpp)
+
+sgs_a_annual_gpp_sum 
+
+sgs_a_annual_gpp_subset_2 <- aggregate(gpp_mean ~ x+y+year,sum,data=sgs_a_annual_gpp_subset)
+
+sgs_a_annual_gpp_subset <- sgs_a_annual_gpp %>%
+  dplyr::filter(doy < 57 | doy > 297) %>%
+  group_by(x,y,year) %>%
+  summarise(subset_sum = sum(gpp_mean))
+
+
+
+head(sgs_a_annual_gpp_subset,1)
