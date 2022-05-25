@@ -107,7 +107,7 @@ with_progress({
   growth_curve_spline_list <- future_lapply(id_list, function(i) {
     Sys.sleep(0.1)
     p(sprintf("i=%g", i))
-    get_average_growth_curve_absolute_spline(i)
+    get_average_growth_curve_absolute_spline_ci(i)
   })
 })
 
@@ -121,25 +121,40 @@ with_progress({
 # }
 
 #get each 95% CI for each day of the prediction
-#library(plotrix)
+#day of year
 doy_list <- c(65:297)
 gpp_predicted_list <- list()
+gpp_predicted_list_2 <- list()
 gpp_mean_list <- list()
 
-for(i in doy_list){
+for(i in c(doy_list)){ #
   
   for(j in id_list){
     
-    gpp_predicted <- data.frame(predict(growth_curve_spline_list[[j]], i))
+    #predicted mean curve
+    gpp_predicted <- data.frame(predict(growth_curve_spline_list[[j]][[1]], i)) #extracts the mean cumulative gpp
     gpp_predicted_list[[j]] <- gpp_predicted
+    
+    #predicted temporal ci
+    gpp_predicted_ci <- data.frame(predict(growth_curve_spline_list[[j]][[2]], i)) #extracts the CI around the curve
+    gpp_predicted_list_2[[j]] <- gpp_predicted_ci
     
   }
   
+  #spatial variation
   gpp_predicted_list_df <- list_to_df(gpp_predicted_list)
   gpp_predicted_list_mean <- aggregate(y~x,mean,data=gpp_predicted_list_df)
   gpp_predicted_list_mean$lower <- median(gpp_predicted_list_df$y) - std.error(gpp_predicted_list_df$y)*2.576 #99% CI
   gpp_predicted_list_mean$upper <- median(gpp_predicted_list_mean$y) + std.error(gpp_predicted_list_df$y)*2.576
-  colnames(gpp_predicted_list_mean) <- c('doy','mean','lower','upper')
+  colnames(gpp_predicted_list_mean) <- c('doy','mean','lower_spatial','upper_spatial')
+  
+  #temporal variation
+  gpp_predicted_list_2_df <- list_to_df(gpp_predicted_list_2)
+  gpp_predicted_list_2_mean <- aggregate(y~x,mean,data=gpp_predicted_list_2_df)
+  colnames(gpp_predicted_list_2_mean) <-c('doy','temporal_ci')
+  
+  gpp_predicted_list_mean <- merge(gpp_predicted_list_mean,gpp_predicted_list_2_mean,by=c('doy'))
+  
   gpp_mean_list[[i]] <- gpp_predicted_list_mean
   
   
@@ -148,6 +163,13 @@ for(i in doy_list){
 #turn into dataframe
 gpp_mean_list_df <- list_to_df(gpp_mean_list)
 head(gpp_mean_list_df,1)
+
+gpp_mean_list_df$lower_temporal <- gpp_mean_list_df$lower_spatial - gpp_mean_list_df$temporal_ci
+gpp_mean_list_df$upper_temporal <- gpp_mean_list_df$upper_spatial + gpp_mean_list_df$temporal_ci
+
+plot(mean~doy,data=gpp_mean_list_df)
+lines(lower_temporal~doy,data=gpp_mean_list_df)
+lines(upper_temporal~doy,data=gpp_mean_list_df)
 
 filename <- paste0('./../../Data/growth_curves/one_km_subset/average_growth_curve_',Ecoregion,'.csv')
 write.csv(gpp_mean_list_df,filename)
