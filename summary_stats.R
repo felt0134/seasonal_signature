@@ -767,3 +767,22 @@ hist(nmp_gs_annual_gpp_sums$perc)
 
 
 head(sgs_a_annual_gpp_subset,1)
+
+#-------------------------------------------------------------------------------
+# size of the study area -----
+
+#import 
+rangeland_npp_covariates <- readRDS('./../../Data/Herbaceous_NPP_1986_2015_V2.rds')
+head(rangeland_npp_covariates)
+mean_production<-aggregate(npp~ x + y + region,mean,data=rangeland_npp_covariates)
+study_area<-subset(mean_production,region==c('shortgrass_steppe', 'northern_mixed_prairies'))
+study_area_raster <- rasterFromXYZ(study_area[c(1,2,4)])
+crs(study_area_raster) <- CRS("+proj=longlat")
+
+cell_size<-area(study_area_raster, na.rm=TRUE, weights=FALSE)
+#delete NAs from vector of all raster cells
+##NAs lie outside of the rastered region, can thus be omitted
+cell_size<-cell_size[!is.na(cell_size)]
+#compute area [km2] of all cells in geo_raster1000
+area<-length(cell_size)*median(cell_size)
+

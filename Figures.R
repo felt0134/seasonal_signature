@@ -566,7 +566,6 @@ day_25_sgs_nmp <- day_25_sgs_nmp %>%
 str(day_25_sgs_nmp)
 head(day_25_sgs_nmp)
 
-
 #turn to raster and fix projection, and then back to dataframe for plotting
 day_25_sgs_nmp <- rasterFromXYZ(day_25_sgs_nmp)
 proj4string(day_25_sgs_nmp) <- CRS("+proj=longlat")
@@ -703,6 +702,59 @@ png(height = 1700,width=2000,res=300,'Figures/day25_drought_inset_plot.png')
 full()
 
 dev.off()
+
+
+#correlation of day 50 impact and latitude 
+day_25_drought_sgs_2_lat <- data.frame(rasterToPoints(day_25_drought_sgs_2))
+day_25_drought_sgs_2_lat$ecoregion = 'Shortgrass steppe'
+
+day_25_drought_nmp_2_lat <- data.frame(rasterToPoints(day_25_drought_nmp_2))
+day_25_drought_nmp_2_lat$ecoregion = 'Northern mixed prairies'
+
+day_25_drought_2_lat <- rbind(day_25_drought_sgs_2_lat,day_25_drought_nmp_2_lat)
+
+cor.test(day_25_drought_2_lat$y,day_25_drought_2_lat$layer,method='spearman',exact=FALSE)
+#0.51
+
+day_25_lat_plot <- ggplot(day_25_drought_2_lat, aes(x = y, y=layer,color = ecoregion)) +
+  geom_point(alpha=0.25) +
+  scale_colour_manual(values = c(
+    'Shortgrass steppe' = 'green4',
+    'Northern mixed prairies' = 'steelblue2'
+  )) +
+  geom_hline(yintercept = 0,size=2,color='grey') +
+  stat_smooth(method='lm',color='black',size=2) +
+  #geom_vline(xintercept = 0,color='red') +
+  ylab('Effect of drought on day at which\n25% carbon uptake is achieved (days)') +
+  xlab('Latitude') +
+  annotate("text", x=46, y=14, label= "Delayed") +
+  annotate("text", x=46, y=-32, label= "Advanced") +
+  theme(
+    axis.text.x = element_text(color = 'black', size = 15),
+    #angle=25,hjust=1),
+    axis.text.y = element_text(color = 'black', size = 15),
+    axis.title = element_text(color = 'black', size = 18),
+    axis.ticks = element_line(color = 'black'),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    #legend.position = c(0.82, 0.95),
+    legend.position = 'top',
+    strip.background = element_rect(fill = "white"),
+    strip.text = element_text(size = 15),
+    panel.background = element_rect(fill = NA),
+    panel.border = element_blank(),
+    #make the borders clear in prep for just have two axes
+    axis.line.x = element_line(colour = "black"),
+    axis.line.y = element_line(colour = "black")
+  )
+
+png(height = 1500,width=2000,res=300,'Figures/day25_drought_latitude_relationship.png')
+
+day_25_lat_plot
+
+dev.off()
+
 #-------------------------------------------------------------------------------
 # day of maximum GPP (unclear if will do) ------
 
