@@ -716,22 +716,53 @@ plot(TheVariogram)
 #-------------------------------------------------------------------------------
 # % of GPP in months not analyzed ----
 
-
-Ecoregion <- 'northern_mxed_prairies'
-sgs_a_annual_gpp <-
+#shortgrass
+Ecoregion <- 'shortgrass_steppe'
+sgs_annual_gpp <-
   read.csv(paste0('./../../Data/GPP/Ecoregion/',Ecoregion,'/full_year_subset.csv'))
-head(sgs_a_annual_gpp)
+head(sgs_annual_gpp)
 
-str(sgs_a_annual_gpp)
+#full year
+sgs_annual_gpp_full_year <- aggregate(gpp_mean ~ x+y+year,sum,data=sgs_annual_gpp)
 
-sgs_a_annual_gpp_sum 
-
-sgs_a_annual_gpp_subset_2 <- aggregate(gpp_mean ~ x+y+year,sum,data=sgs_a_annual_gpp_subset)
-
-sgs_a_annual_gpp_subset <- sgs_a_annual_gpp %>%
+#growing season subset
+sgs_annual_gpp_subset <- sgs_annual_gpp %>%
   dplyr::filter(doy < 57 | doy > 297) %>%
   group_by(x,y,year) %>%
-  summarise(subset_sum = sum(gpp_mean))
+  summarise(shoulder_season_sum = sum(gpp_mean))
+
+sgs_gs_annual_gpp_sums <- merge(sgs_annual_gpp_subset,sgs_annual_gpp_full_year,
+                                by=c('x','y','year'))
+
+sgs_gs_annual_gpp_sums$perc <- 
+  (sgs_gs_annual_gpp_sums$shoulder_season_sum/sgs_gs_annual_gpp_sums$gpp_mean)*100
+summary(sgs_gs_annual_gpp_sums)
+#8%
+hist(sgs_gs_annual_gpp_sums$perc)
+
+#northern mixed prairies
+Ecoregion <- 'northern_mixed_prairies'
+nmp_annual_gpp <-
+  read.csv(paste0('./../../Data/GPP/Ecoregion/',Ecoregion,'/full_year_subset.csv'))
+head(sgs_annual_gpp)
+
+#full year
+nmp_annual_gpp_full_year <- aggregate(gpp_mean ~ x+y+year,sum,data=nmp_annual_gpp)
+
+#growing season subset
+nmp_annual_gpp_subset <- nmp_annual_gpp %>%
+  dplyr::filter(doy < 57 | doy > 297) %>%
+  group_by(x,y,year) %>%
+  summarise(shoulder_season_sum = sum(gpp_mean))
+
+nmp_gs_annual_gpp_sums <- merge(nmp_annual_gpp_subset,nmp_annual_gpp_full_year,
+                                by=c('x','y','year'))
+
+nmp_gs_annual_gpp_sums$perc <- 
+  (nmp_gs_annual_gpp_sums$shoulder_season_sum/nmp_gs_annual_gpp_sums$gpp_mean)*100
+summary(nmp_gs_annual_gpp_sums)
+#2%
+hist(nmp_gs_annual_gpp_sums$perc)
 
 
 

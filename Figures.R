@@ -239,8 +239,7 @@ day_90_drought_nmp_2_lat$ecoregion = 'Northern mixed prairies'
 
 day_90_drought_2_lat <- rbind(day_90_drought_sgs_2_lat,day_90_drought_nmp_2_lat)
 
-cor(day_90_drought_2_lat$y,day_90_drought_2_lat$layer,method='spearman')
-?cor
+cor.test(day_90_drought_2_lat$y,day_90_drought_2_lat$layer,method='spearman')
 
 day_90_lat_plot <- ggplot(day_90_drought_2_lat, aes(x = y, y=layer,color = ecoregion)) +
   geom_point(alpha=0.5) +
@@ -303,49 +302,13 @@ day_50_nmp_df$Ecoregion <- 'Northern mixed prairies'
 colnames(day_50_nmp_df) <- c('x','y','doy','Ecoregion')
 median(day_50_nmp_df$doy) #174
 
-day_50_df <- rbind(day_50_nmp_df,day_50_sgs_df)
+# day_50_df <- rbind(day_50_nmp_df,day_50_sgs_df)
+# 
+# #filter out extreme high and low values
+# day_50_df <- day_50_df %>%
+#   dplyr::filter(doy < 297) %>%
+#   dplyr::filter(doy > 65)
 
-#filter out extreme high and low values
-day_50_df <- day_50_df %>%
-  dplyr::filter(doy < 297) %>%
-  dplyr::filter(doy > 65)
-
-day_50_pdf <- ggplot(day_50_df, aes(x = doy, fill = Ecoregion)) +
-  #scale_y_continuous(expand = c(0,0),limits = c(0,1.02)) +
-  #scale_x_continuous(expand = c(0,0),limits = c(-1.5,0.6)) +
-  scale_y_continuous(expand = c(0, 0), limits = c(0, 1.02)) +
-  scale_x_continuous(expand = c(0, 0), limits = c(130, 281)) +
-  geom_density(color = 'black', alpha = 0.5, aes(y = ..scaled..)) +
-  scale_fill_manual(values = c(
-    'Northern mixed prairies' = 'steelblue2',
-    'Shortgrass steppe' = 'green4'
-  )) +
-  xlab('Day of 50% growth') +
-  ylab('Probability density') +
-  theme(
-    axis.text.x = element_text(color = 'black', size = 13),
-    #angle=25,hjust=1),
-    axis.text.y = element_text(color = 'black', size = 13),
-    axis.title = element_text(color = 'black', size = 16),
-    axis.ticks = element_line(color = 'black'),
-    legend.key = element_blank(),
-    legend.title = element_blank(),
-    legend.text = element_text(size = 10),
-    legend.position = c(0.70, 0.25),
-    #legend.position = 'none',
-    strip.background = element_rect(fill = "white"),
-    strip.text = element_text(size = 15),
-    panel.background = element_rect(fill = NA),
-    panel.border = element_blank(),
-    #make the borders clear in prep for just have two axes
-    axis.line.x = element_line(colour = "black"),
-    axis.line.y = element_line(colour = "black")
-  )
-
-
-
-# nmp_look <- stack(day_50_nmp,max_sens_doy_nmp)
-# plot(nmp_look)
 
 #combine
 day_50_sgs_nmp <- raster::merge(day_50_sgs,day_50_nmp,tolerance=0.2)
@@ -361,60 +324,12 @@ day_50_sgs_nmp <- day_50_sgs_nmp %>%
 str(day_50_sgs_nmp)
 head(day_50_sgs_nmp)
 
-#play around with creating day ranges
-# day_50_sgs_nmp_2 <- day_50_sgs_nmp %>%
-#   group_by(x,y) %>%
-#   summarise(
-#   layer2 = paste((layer-16), min(layer), sep = "-"))
-# 
-# head(day_50_sgs_nmp_2)
-# day_50_sgs_nmp_2$layer2 <- as.numeric(day_50_sgs_nmp_2$layer2)
-
 #turn to raster and fix projection, and then back to dataframe for plotting
 day_50_sgs_nmp <- rasterFromXYZ(day_50_sgs_nmp)
 proj4string(day_50_sgs_nmp) <- CRS("+proj=longlat")
 day_50_sgs_nmp <-projectRaster(day_50_sgs_nmp, crs='+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96
 +        +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs')
 day_50_sgs_nmp_df <- data.frame(rasterToPoints(day_50_sgs_nmp))
-
-
-# day_50_sgs_nmp_map <- ggplot() +
-#   geom_polygon(data=states_all_sites_tidy, mapping=aes(x = long, y = lat,group=group),
-#                color = "black", size = 0.1,fill=NA) +
-#   geom_raster(data=day_50_sgs_nmp_df, mapping=aes(x = x, y = y, fill = layer)) + 
-#   coord_equal() +
-#   scale_fill_scico('Day of 50% growth',palette = 'batlow',direction=1) +
-#   xlab('') +
-#   ylab('') +
-#   scale_x_continuous(expand=c(0,0)) +
-#   scale_y_continuous(expand=c(0,0)) +
-#   theme(
-#     axis.text.x = element_blank(), #angle=25,hjust=1),
-#     axis.text.y = element_blank(),
-#     axis.title.x = element_text(color='black',size=10),
-#     axis.title.y = element_text(color='black',size=10),
-#     axis.ticks = element_blank(),
-#     legend.key = element_blank(),
-#     #legend.title = element_blank(),
-#     #legend.text = element_text(size=2),
-#     #legend.position = c(0.7,0.1),
-#     #legend.margin =margin(r=5,l=5,t=5,b=5),
-#     #legend.position = c(0.0,0.1),
-#     legend.position = 'top',
-#     strip.background =element_rect(fill="white"),
-#     strip.text = element_text(size=10),
-#     panel.background = element_rect(fill=NA),
-#     panel.border = element_blank(), #make the borders clear in prep for just have two axes
-#     axis.line.x = element_blank(),
-#     axis.line.y = element_blank())
-# 
-# 
-# #save to file
-# png(height = 1500,width=920,res=300,'./../../Figures/day_50_growth_map.png')
-# 
-# print(day_50_sgs_nmp_map)
-# 
-# dev.off()
 
 
 #impact of drought on the 50% day of growth
@@ -488,17 +403,6 @@ day_50_sgs_nmp_drought_map <-
     axis.line.x = element_blank(),
     axis.line.y = element_blank())
 
-# #save to file
-# png(
-#   height = 1500,
-#   width = 2000,
-#   res = 300,
-#   './../../Figures/day_50_drought_growth_map.png'
-# )
-# 
-# print(day_50_sgs_nmp_drought_map)
-# 
-# dev.off()
 
 #PDF of drought impact to 50% growth
 
@@ -546,12 +450,7 @@ drought_day50_pdf <- ggplot(day_50_drought_nmp_sgs_2_df, aes(x = layer, fill = r
     axis.line.y = element_line(colour = "black")
   )
 
-#save to file
-# png(height = 1700,width=2000,res=300,'./../../Figures/day50_drought_distributions.png')
-# 
-# print(drought_day50_pdf)
-# 
-# dev.off()
+
 
 #try to make inset
 vp <- viewport(width = 0.44, height = 0.39, x = 0.23,y=0.27)
@@ -570,6 +469,58 @@ png(height = 1700,width=2000,res=300,'Figures/day50_drought_inset_plot.png')
 full()
 
 dev.off()
+
+#correlation of day 50 impact and latitude 
+day_50_drought_sgs_2_lat <- data.frame(rasterToPoints(day_50_drought_sgs_2))
+day_50_drought_sgs_2_lat$ecoregion = 'Shortgrass steppe'
+
+day_50_drought_nmp_2_lat <- data.frame(rasterToPoints(day_50_drought_nmp_2))
+day_50_drought_nmp_2_lat$ecoregion = 'Northern mixed prairies'
+
+day_50_drought_2_lat <- rbind(day_50_drought_sgs_2_lat,day_50_drought_nmp_2_lat)
+
+cor.test(day_50_drought_2_lat$y,day_50_drought_2_lat$layer,method='spearman',exact=FALSE)
+#0.35
+
+day_50_lat_plot <- ggplot(day_50_drought_2_lat, aes(x = y, y=layer,color = ecoregion)) +
+  geom_point(alpha=0.25) +
+  scale_colour_manual(values = c(
+    'Shortgrass steppe' = 'green4',
+    'Northern mixed prairies' = 'steelblue2'
+  )) +
+  geom_hline(yintercept = 0,size=2,color='grey') +
+  stat_smooth(method='lm',color='black',size=2) +
+  #geom_vline(xintercept = 0,color='red') +
+  ylab('Effect of drought on day at which\n50% carbon uptake is achieved (days)') +
+  xlab('Latitude') +
+  annotate("text", x=46, y=40, label= "Delayed") +
+  annotate("text", x=46, y=-50, label= "Advanced") +
+  theme(
+    axis.text.x = element_text(color = 'black', size = 15),
+    #angle=25,hjust=1),
+    axis.text.y = element_text(color = 'black', size = 15),
+    axis.title = element_text(color = 'black', size = 18),
+    axis.ticks = element_line(color = 'black'),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 10),
+    #legend.position = c(0.82, 0.95),
+    legend.position = 'top',
+    strip.background = element_rect(fill = "white"),
+    strip.text = element_text(size = 15),
+    panel.background = element_rect(fill = NA),
+    panel.border = element_blank(),
+    #make the borders clear in prep for just have two axes
+    axis.line.x = element_line(colour = "black"),
+    axis.line.y = element_line(colour = "black")
+  )
+
+png(height = 1500,width=2000,res=300,'Figures/day50_drought_latitude_relationship.png')
+
+day_50_lat_plot
+
+dev.off()
+
 
 
 
@@ -1693,14 +1644,15 @@ Ecoregion <- 'shortgrass_steppe'
     read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/annual_gs_subset.csv'))
 head(sgs_a_gs_precip)
 cor(sgs_a_gs_precip$annual_precip,sgs_a_gs_precip$gs_precip,method = 'spearman')
-#0.98
+#0.97
 
 
 Ecoregion <- 'northern_mixed_prairies'
 nmp_a_gs_precip <- 
   read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/annual_gs_subset.csv'))
-head(sgs_a_gs_precip)
+head(nmp_a_gs_precip)
 cor(nmp_a_gs_precip$annual_precip,nmp_a_gs_precip$gs_precip,method = 'spearman')
+#0.97
 
 
 png(height = 1500,width=3000,res=300,'Figures/annual_growing_season_comparison.png')
@@ -1729,5 +1681,81 @@ mtext('Annual precipitation (mm)',side=1,line=4,adj=-1,cex=1.5)
 dev.off()
   
 #-------------------------------------------------------------------------------
+# % of annual GPP from months not analyzed -------
 
-  
+#shortgrass
+Ecoregion <- 'shortgrass_steppe'
+sgs_annual_gpp <-
+  read.csv(paste0('./../../Data/GPP/Ecoregion/',Ecoregion,'/full_year_subset.csv'))
+head(sgs_annual_gpp)
+
+#full year
+sgs_annual_gpp_full_year <- aggregate(gpp_mean ~ x+y+year,sum,data=sgs_annual_gpp)
+
+#growing season subset
+sgs_annual_gpp_subset <- sgs_annual_gpp %>%
+  dplyr::filter(doy < 57 | doy > 297) %>%
+  group_by(x,y,year) %>%
+  summarise(shoulder_season_sum = sum(gpp_mean))
+
+sgs_gs_annual_gpp_sums <- merge(sgs_annual_gpp_subset,sgs_annual_gpp_full_year,
+                                by=c('x','y','year'))
+
+sgs_gs_annual_gpp_sums$perc <- 
+  (sgs_gs_annual_gpp_sums$shoulder_season_sum/sgs_gs_annual_gpp_sums$gpp_mean)*100
+summary(sgs_gs_annual_gpp_sums)
+#8%
+hist(sgs_gs_annual_gpp_sums$perc)
+
+#northern mixed prairies
+Ecoregion <- 'northern_mixed_prairies'
+nmp_annual_gpp <-
+  read.csv(paste0('./../../Data/GPP/Ecoregion/',Ecoregion,'/full_year_subset.csv'))
+head(sgs_annual_gpp)
+
+#full year
+nmp_annual_gpp_full_year <- aggregate(gpp_mean ~ x+y+year,sum,data=nmp_annual_gpp)
+
+#growing season subset
+nmp_annual_gpp_subset <- nmp_annual_gpp %>%
+  dplyr::filter(doy < 57 | doy > 297) %>%
+  group_by(x,y,year) %>%
+  summarise(shoulder_season_sum = sum(gpp_mean))
+
+nmp_gs_annual_gpp_sums <- merge(nmp_annual_gpp_subset,nmp_annual_gpp_full_year,
+                                by=c('x','y','year'))
+
+nmp_gs_annual_gpp_sums$perc <- 
+  (nmp_gs_annual_gpp_sums$shoulder_season_sum/nmp_gs_annual_gpp_sums$gpp_mean)*100
+summary(nmp_gs_annual_gpp_sums)
+#2%
+hist(nmp_gs_annual_gpp_sums$perc)
+
+
+png(height = 1500,width=3000,res=300,'Figures/C_uptake_shoulder_season.png')
+
+#two-panel plot
+par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,6,1,1),mar = c(3,1.25,3,3))
+#?par
+
+# plot it out panel A: sgs
+hist(sgs_gs_annual_gpp_sums$perc,
+     ylab='',main='', ylim=c(0,400),
+     xlab='',las=1,cex.axis=1.5)
+mtext('Number of pixels',side=2,line=4.5,cex=1.5)
+mtext('a',side=3,line=0.5,cex=1.5,adj=-0.05)
+mtext('Shortgrass steppe',side=3,line=0.5,cex=1.75)
+
+# plot it out panel B: nmp
+hist(nmp_gs_annual_gpp_sums$perc,
+     ylab='', main='',
+     xlab='',las=1,cex.axis=1.5)
+mtext('b',side=3,line=0.5,cex=1.5,adj=-0.05)
+mtext('Northern mixed prairies',side=3,line=0.5,cex=1.75)
+
+mtext('% Carbon uptake',side=1,line=4,adj=-0.75,cex=1.5)
+
+dev.off()
+
+
+#-------------------------------------------------------------------------------
