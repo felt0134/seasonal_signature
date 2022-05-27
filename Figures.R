@@ -1811,3 +1811,94 @@ dev.off()
 
 
 #-------------------------------------------------------------------------------
+# variograms of drought impact to day of 50% C uptake ------
+
+
+library(gstat)
+library(sp)
+
+#drought impact to day of 50 growth
+
+#advance of day 50 sgs
+day_50_sgs <- raster('./../../Data/CDD/day_of_50/day_50_shortgrass_steppe.tif')
+day_50_drought_sgs <-
+  raster('./../../Data/CDD/day_of_50/day_50_droughtshortgrass_steppe.tif')
+day_50_drought_sgs <- stack(day_50_drought_sgs, day_50_sgs)
+day_50_drought_sgs_2 <-
+  day_50_drought_sgs$day_50_droughtshortgrass_steppe -
+  day_50_drought_sgs$day_50_shortgrass_steppe
+
+#advance of day 50 nmp
+day_50_nmp <- raster('./../../Data/CDD/day_of_50/day_50_northern_mixed_prairies.tif')
+day_50_drought_nmp <-
+  raster('./../../Data/CDD/day_of_50/day_50_droughtnorthern_mixed_prairies.tif')
+day_50_drought_nmp <- stack(day_50_drought_nmp, day_50_nmp)
+day_50_drought_nmp_2 <-
+  day_50_drought_nmp$day_50_droughtnorthern_mixed_prairies -
+  day_50_drought_nmp$day_50_northern_mixed_prairies
+
+#combine
+# day_50_drought <-
+#   raster::merge(day_50_drought_nmp_2, day_50_drought_sgs_2, tolerance = 0.20)
+# proj4string(day_50_drought) <- CRS("+proj=longlat")
+# plot(day_50_drought)
+
+#SGS
+point_data_50 <- as(day_50_drought_sgs_2, 'SpatialPointsDataFrame')
+
+TheVariogram_50_sgs = variogram(layer ~1,data = point_data_50,width = 10)
+summary(TheVariogram_50_sgs)
+plot(TheVariogram_50_sgs)
+
+TheVariogramModel_50_sgs <- vgm(psill=200, model="Exp", nugget=50, range=100)
+plot(TheVariogram_50_sgs, model=TheVariogramModel_50_sgs) 
+FittedModel_50_sgs <- fit.variogram(TheVariogram_50_sgs, model=TheVariogramModel_50_sgs)
+FittedModel_50_sgs
+#Range = 49.43 km
+
+plot(TheVariogram_50_sgs, model=FittedModel_50_sgs,xlab='Distance (km)',
+     ylab = 'Semivariance',cex=1,lwd=2,col='black')
+
+#NMP
+point_data_50 <- as(day_50_drought_nmp_2, 'SpatialPointsDataFrame')
+
+TheVariogram_50_nmp = variogram(layer ~1,data = point_data_50,width = 10)
+summary(TheVariogram_50_nmp)
+plot(TheVariogram_50_nmp)
+
+TheVariogramModel_50_nmp <- vgm(psill=50, model="Exp", nugget=10, range=200)
+plot(TheVariogram_50_nmp, model=TheVariogramModel_50_nmp) 
+FittedModel_50_nmp <- fit.variogram(TheVariogram_50_nmp, model=TheVariogramModel_50_nmp)
+FittedModel_50_nmp
+#Range = 201.1 km
+
+plot(TheVariogram_50_nmp, model=FittedModel_50_nmp,xlab='Distance (km)',
+     ylab = 'Semivariance',cex=1,lwd=2,col='black')
+abline(h=c(0.025,0.075),col=4,lty=2)
+
+
+#two variograms
+png(height = 1500,width=3000,res=300,'Figures/day_50_variograms')
+
+
+par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,6,1,1),mar = c(3,1.25,3,3))
+
+#SGS
+plot(gamma~dist,data=TheVariogram_50_sgs,xlab='',ylab='',cex=2)
+abline(v=49.4,lwd=3,col='red',add=T)
+mtext('Semivariance',side=2,line=3.5,cex=1.5)
+mtext('Shortgrass steppe',side=3,line=0.5,cex=1.25)
+mtext('a',side=3,line=0.5,cex=1.5,adj=-0.05)
+
+#NMP
+plot(gamma~dist,data=TheVariogram_50_nmp,xlab='',ylab='',cex=2)
+abline(v=201.1,lwd=3,col='red',add=T)
+mtext('Northern mixed prairies',side=3,line=0.5,cex=1.25)
+mtext('b',side=3,line=0.5,cex=1.5,adj=-0.05)
+mtext('Distance (km)',side=1,line=3.75,adj=-.5,cex=1.5)
+
+dev.off()
+
+
+#-------------------------------------------------------------------------------
+

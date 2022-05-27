@@ -311,7 +311,7 @@ plot(gpp_average~doy,data=gpp_normal_list_df)
 lines(gpp_drought~doy,data=gpp_drought_list_df,col='red')
 
 
-# growth curev with temporal 95 CI -----
+# growth curve with temporal 95 CI -----
 
 
 get_average_growth_curve_absolute_spline_ci  <- function(i) {
@@ -408,3 +408,403 @@ get_average_growth_curve_absolute_spline_ci  <- function(i) {
 
 
 look <- get_average_growth_curve_absolute_ci(100)
+
+# variograms of day 50,90,25 --------
+
+library(gstat)
+library(sp)
+
+#drought impact to day of 50 growth
+
+#advance of day 50 sgs
+day_50_sgs <- raster('./../../Data/CDD/day_of_50/day_50_shortgrass_steppe.tif')
+day_50_drought_sgs <-
+  raster('./../../Data/CDD/day_of_50/day_50_droughtshortgrass_steppe.tif')
+day_50_drought_sgs <- stack(day_50_drought_sgs, day_50_sgs)
+day_50_drought_sgs_2 <-
+  day_50_drought_sgs$day_50_droughtshortgrass_steppe -
+  day_50_drought_sgs$day_50_shortgrass_steppe
+
+#advance of day 50 nmp
+day_50_nmp <- raster('./../../Data/CDD/day_of_50/day_50_northern_mixed_prairies.tif')
+day_50_drought_nmp <-
+  raster('./../../Data/CDD/day_of_50/day_50_droughtnorthern_mixed_prairies.tif')
+day_50_drought_nmp <- stack(day_50_drought_nmp, day_50_nmp)
+day_50_drought_nmp_2 <-
+  day_50_drought_nmp$day_50_droughtnorthern_mixed_prairies -
+  day_50_drought_nmp$day_50_northern_mixed_prairies
+
+#combine
+# day_50_drought <-
+#   raster::merge(day_50_drought_nmp_2, day_50_drought_sgs_2, tolerance = 0.20)
+# proj4string(day_50_drought) <- CRS("+proj=longlat")
+# plot(day_50_drought)
+
+#SGS
+point_data_50 <- as(day_50_drought_sgs_2, 'SpatialPointsDataFrame')
+
+TheVariogram_50_sgs = variogram(layer ~1,data = point_data_50,width = 10)
+summary(TheVariogram_50_sgs)
+plot(TheVariogram_50_sgs)
+
+TheVariogramModel_50_sgs <- vgm(psill=200, model="Exp", nugget=50, range=100)
+plot(TheVariogram_50_sgs, model=TheVariogramModel_50_sgs) 
+FittedModel_50_sgs <- fit.variogram(TheVariogram_50_sgs, model=TheVariogramModel_50_sgs)
+FittedModel_50_sgs
+#Range = 49.43 km
+
+plot(TheVariogram_50_sgs, model=FittedModel_50_sgs,xlab='Distance (km)',
+     ylab = 'Semivariance',cex=1,lwd=2,col='black')
+
+#NMP
+point_data_50 <- as(day_50_drought_nmp_2, 'SpatialPointsDataFrame')
+
+TheVariogram_50_nmp = variogram(layer ~1,data = point_data_50,width = 10)
+summary(TheVariogram_50_nmp)
+plot(TheVariogram_50_nmp)
+
+TheVariogramModel_50_nmp <- vgm(psill=50, model="Exp", nugget=10, range=200)
+plot(TheVariogram_50_nmp, model=TheVariogramModel_50_nmp) 
+FittedModel_50_nmp <- fit.variogram(TheVariogram_50_nmp, model=TheVariogramModel_50_nmp)
+FittedModel_50_nmp
+#Range = 201.1 km
+
+plot(TheVariogram_50_nmp, model=FittedModel_50_nmp,xlab='Distance (km)',
+     ylab = 'Semivariance',cex=1,lwd=2,col='black')
+abline(h=c(0.025,0.075),col=4,lty=2)
+
+
+#two variograms
+png(height = 1500,width=3000,res=300,'Figures/day_50_variograms')
+
+
+par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,6,1,1),mar = c(3,1.25,3,3))
+
+#SGS
+plot(gamma~dist,data=TheVariogram_50_sgs,xlab='',ylab='',cex=2)
+abline(v=49.4,lwd=3,col='red',add=T)
+mtext('Semivariance',side=2,line=3.5,cex=1.5)
+mtext('Shortgrass steppe',side=3,line=0.5,cex=1.25)
+mtext('a',side=3,line=0.5,cex=1.5,adj=-0.05)
+
+#NMP
+plot(gamma~dist,data=TheVariogram_50_nmp,xlab='',ylab='',cex=2)
+abline(v=201.1,lwd=3,col='red',add=T)
+mtext('Northern mixed prairies',side=3,line=0.5,cex=1.25)
+mtext('b',side=3,line=0.5,cex=1.5,adj=-0.05)
+mtext('Distance (km)',side=1,line=3.75,adj=-.5,cex=1.5)
+
+dev.off()
+
+# drought impact to day of 90% growth
+
+#advance of day 50 sgs
+day_90_sgs <- raster('./../../Data/CDD/day_of_90/day_90_shortgrass_steppe.tif')
+day_90_drought_sgs <-
+  raster('./../../Data/CDD/day_of_90/day_90_droughtshortgrass_steppe.tif')
+day_90_drought_sgs <- stack(day_90_drought_sgs, day_90_sgs)
+day_90_drought_sgs_2 <-
+  day_90_drought_sgs$day_90_droughtshortgrass_steppe -
+  day_90_drought_sgs$day_90_shortgrass_steppe
+
+#advance of day 90 nmp
+day_90_nmp <- raster('./../../Data/CDD/day_of_90/day_90_northern_mixed_prairies.tif')
+day_90_drought_nmp <-
+  raster('./../../Data/CDD/day_of_90/day_90_droughtnorthern_mixed_prairies.tif')
+day_90_drought_nmp <- stack(day_90_drought_nmp, day_90_nmp)
+day_90_drought_nmp_2 <-
+  day_90_drought_nmp$day_90_droughtnorthern_mixed_prairies -
+  day_90_drought_nmp$day_90_northern_mixed_prairies
+
+# #combine
+# day_90_drought <-
+#   raster::merge(day_90_drought_nmp_2, day_90_drought_sgs_2, tolerance = 0.20)
+# proj4string(day_90_drought) <- CRS("+proj=longlat")
+# plot(day_90_drought)
+
+#SGS
+point_data_90_sgs <- as(day_90_drought_sgs_2, 'SpatialPointsDataFrame')
+
+TheVariogram_90_sgs = variogram(layer ~1,data = point_data_90_sgs,width = 10)
+plot(TheVariogram_90_sgs)
+
+TheVariogramModel_90_sgs <- vgm(psill=15, model="Exp", nugget=3, range=200)
+plot(TheVariogram_90_sgs, model=TheVariogramModel_90_sgs) 
+FittedModel_90_sgs <- fit.variogram(TheVariogram_90_sgs, model=TheVariogramModel_90_sgs)
+FittedModel_90_sgs
+#Range = 112.1
+
+plot(TheVariogram_90_sgs, model=FittedModel_90_sgs,xlab='Distance (km)',
+     ylab = 'Semivariance',cex=1,lwd=2,col='black')
+
+#NMP
+point_data_90_nmp <- as(day_90_drought_nmp_2, 'SpatialPointsDataFrame')
+
+TheVariogram_90_nmp = variogram(layer ~1,data = point_data_90_nmp,width = 10)
+plot(TheVariogram_90_nmp)
+
+TheVariogramModel_90_nmp <- vgm(psill=8, model="Exp", nugget=1, range=200)
+plot(TheVariogram_90_nmp, model=TheVariogramModel_90_nmp) 
+FittedModel_90_nmp <- fit.variogram(TheVariogram_90_nmp, model=TheVariogramModel_90_nmp)
+FittedModel_90_nmp
+#Range = 160.72
+
+plot(TheVariogram_90_nmp, model=FittedModel_90_nmp,xlab='Distance (km)',
+     ylab = 'Semivariance',cex=1,lwd=2,col='black')
+
+
+#drought impact to day of 25% growth
+
+#advance of day 25 sgs
+day_25_sgs <- raster('./../../Data/CDD/day_of_25/day_25_shortgrass_steppe.tif')
+day_25_drought_sgs <-
+  raster('./../../Data/CDD/day_of_25/day_25_droughtshortgrass_steppe.tif')
+day_25_drought_sgs <- stack(day_25_drought_sgs, day_25_sgs)
+day_25_drought_sgs_2 <-
+  day_25_drought_sgs$day_25_droughtshortgrass_steppe -
+  day_25_drought_sgs$day_25_shortgrass_steppe
+
+#advance of day 25 nmp
+day_25_nmp <- raster('./../../Data/CDD/day_of_25/day_25_northern_mixed_prairies.tif')
+day_25_drought_nmp <-
+  raster('./../../Data/CDD/day_of_25/day_25_droughtnorthern_mixed_prairies.tif')
+day_25_drought_nmp <- stack(day_25_drought_nmp, day_25_nmp)
+day_25_drought_nmp_2 <-
+  day_25_drought_nmp$day_25_droughtnorthern_mixed_prairies -
+  day_25_drought_nmp$day_25_northern_mixed_prairies
+
+# #combine
+# day_25_drought <-
+#   raster::merge(day_25_drought_nmp_2, day_25_drought_sgs_2, tolerance = 0.20)
+# proj4string(day_25_drought) <- CRS("+proj=longlat")
+# plot(day_25_drought)
+
+
+#SGS
+point_data_25_sgs <- as(day_25_drought_sgs_2, 'SpatialPointsDataFrame')
+
+TheVariogram_25_sgs = variogram(layer ~1,data = point_data_25_sgs,width = 10)
+plot(TheVariogram_25_sgs)
+
+TheVariogramModel_25_sgs <- vgm(psill=50, model="Exp", nugget=10, range=150)
+plot(TheVariogram_25_sgs, model=TheVariogramModel_25_sgs) 
+FittedModel_25_sgs <- fit.variogram(TheVariogram_25_sgs, model=TheVariogramModel_25_sgs)
+FittedModel_25_sgs
+#Range = 56.68
+
+plot(TheVariogram_25_sgs, model=FittedModel_25_sgs,xlab='Distance (km)',
+     ylab = 'Semivariance',cex=1,lwd=2,col='black')
+
+#NMP
+point_data_25_nmp <- as(day_25_drought_nmp_2, 'SpatialPointsDataFrame')
+
+TheVariogram_25_nmp = variogram(layer ~1,data = point_data_25_nmp,width = 10)
+plot(TheVariogram_25_nmp)
+
+TheVariogramModel_25_nmp <- vgm(psill=40, model="Exp", nugget=5, range=300)
+plot(TheVariogram_25_nmp, model=TheVariogramModel_25_nmp) 
+FittedModel_25_nmp <- fit.variogram(TheVariogram_25_nmp, model=TheVariogramModel_25_nmp)
+FittedModel_25_nmp
+#Range = 136.1
+
+plot(TheVariogram_25_nmp, model=FittedModel_25_nmp,xlab='Distance (km)',
+     ylab = 'Semivariance',cex=1,lwd=2,col='black')
+
+
+
+# k. test of random subsample -----
+
+library(plotrix)
+
+# day of 50% C uptake
+
+#advance of day 50 sgs
+day_50_sgs <- raster('./../../Data/CDD/day_of_50/day_50_shortgrass_steppe.tif')
+day_50_drought_sgs <-
+  raster('./../../Data/CDD/day_of_50/day_50_droughtshortgrass_steppe.tif')
+day_50_drought_sgs <- stack(day_50_drought_sgs, day_50_sgs)
+day_50_drought_sgs_2 <-
+  day_50_drought_sgs$day_50_droughtshortgrass_steppe -
+  day_50_drought_sgs$day_50_shortgrass_steppe
+
+day_50_drought_sgs <- data.frame(rasterToPoints(day_50_drought_sgs_2))
+
+
+
+#advance of day 50 nmp
+day_50_nmp <- raster('./../../Data/CDD/day_of_50/day_50_northern_mixed_prairies.tif')
+day_50_drought_nmp <-
+  raster('./../../Data/CDD/day_of_50/day_50_droughtnorthern_mixed_prairies.tif')
+day_50_drought_nmp <- stack(day_50_drought_nmp, day_50_nmp)
+day_50_drought_nmp_2 <-
+  day_50_drought_nmp$day_50_droughtnorthern_mixed_prairies -
+  day_50_drought_nmp$day_50_northern_mixed_prairies
+
+day_50_drought_nmp <- data.frame(rasterToPoints(day_50_drought_nmp_2))
+
+d_list <- list()
+for(i in 1:1000){
+
+#get random subset of 100
+day_50_drought_nmp_rand <- day_50_drought_nmp %>%
+  dplyr::sample_n(100)
+hist(day_50_drought_nmp_rand$layer)
+
+day_50_drought_sgs_rand <- day_50_drought_sgs %>%
+  dplyr::sample_n(100)
+hist(day_50_drought_sgs_rand$layer)
+plot(y~x,day_50_drought_sgs_rand)
+
+test <- ks.test(day_50_drought_sgs_rand$layer,day_50_drought_nmp_rand$layer,exact=F)
+D <- data.frame(test$statistic)
+
+d_list[[i]] <- D
+
+}
+
+d_df <- do.call('rbind',d_list)
+hist(d_df$test.statistic)
+summary(d_df)
+#calculate 99% confidence intervals
+ci_99(d_df$test.statistic)
+
+
+##
+
+
+# day of 90% C uptake
+
+#advance of day 50 sgs
+day_90_sgs <- raster('./../../Data/CDD/day_of_90/day_90_shortgrass_steppe.tif')
+day_90_drought_sgs <-
+  raster('./../../Data/CDD/day_of_90/day_90_droughtshortgrass_steppe.tif')
+day_90_drought_sgs <- stack(day_90_drought_sgs, day_90_sgs)
+day_90_drought_sgs_2 <-
+  day_90_drought_sgs$day_90_droughtshortgrass_steppe -
+  day_90_drought_sgs$day_90_shortgrass_steppe
+
+day_90_drought_sgs <- data.frame(rasterToPoints(day_90_drought_sgs_2))
+
+#advance of day 90 nmp
+day_90_nmp <- raster('./../../Data/CDD/day_of_90/day_90_northern_mixed_prairies.tif')
+day_90_drought_nmp <-
+  raster('./../../Data/CDD/day_of_90/day_90_droughtnorthern_mixed_prairies.tif')
+day_90_drought_nmp <- stack(day_90_drought_nmp, day_90_nmp)
+day_90_drought_nmp_2 <-
+  day_90_drought_nmp$day_90_droughtnorthern_mixed_prairies -
+  day_90_drought_nmp$day_90_northern_mixed_prairies
+
+day_90_drought_nmp <- data.frame(rasterToPoints(day_90_drought_nmp_2))
+
+d_list_90 <- list()
+for(i in 1:1000){
+  
+  #get random subset of 100
+  day_90_drought_nmp_rand <- day_90_drought_nmp %>%
+    dplyr::sample_n(100)
+  hist(day_90_drought_nmp_rand$layer)
+  
+  day_90_drought_sgs_rand <- day_90_drought_sgs %>%
+    dplyr::sample_n(100)
+  hist(day_90_drought_sgs_rand$layer)
+  plot(y~x,day_90_drought_sgs_rand)
+  
+  test <- ks.test(day_90_drought_sgs_rand$layer,day_90_drought_nmp_rand$layer,exact=F)
+  D <- data.frame(test$statistic)
+  
+  d_list_90[[i]] <- D
+  
+}
+
+d_df_90 <- do.call('rbind',d_list_90)
+hist(d_df_90$test.statistic)
+summary(d_df_90)
+#calculate 99% confidence intervals
+
+
+##
+
+
+# day of 25% C uptake
+
+#advance of day 50 sgs
+day_25_sgs <- raster('./../../Data/CDD/day_of_25/day_25_shortgrass_steppe.tif')
+day_25_drought_sgs <-
+  raster('./../../Data/CDD/day_of_25/day_25_droughtshortgrass_steppe.tif')
+day_25_drought_sgs <- stack(day_25_drought_sgs, day_25_sgs)
+day_25_drought_sgs_2 <-
+  day_25_drought_sgs$day_25_droughtshortgrass_steppe -
+  day_25_drought_sgs$day_25_shortgrass_steppe
+
+day_25_drought_sgs <- data.frame(rasterToPoints(day_25_drought_sgs_2))
+
+#advance of day 25 nmp
+day_25_nmp <- raster('./../../Data/CDD/day_of_25/day_25_northern_mixed_prairies.tif')
+day_25_drought_nmp <-
+  raster('./../../Data/CDD/day_of_25/day_25_droughtnorthern_mixed_prairies.tif')
+day_25_drought_nmp <- stack(day_25_drought_nmp, day_25_nmp)
+day_25_drought_nmp_2 <-
+  day_25_drought_nmp$day_25_droughtnorthern_mixed_prairies -
+  day_25_drought_nmp$day_25_northern_mixed_prairies
+
+day_25_drought_nmp <- data.frame(rasterToPoints(day_25_drought_nmp_2))
+
+d_list_25 <- list()
+for(i in 1:1000){
+  
+  #get random subset of 100
+  day_25_drought_nmp_rand <- day_25_drought_nmp %>%
+    dplyr::sample_n(100)
+  hist(day_25_drought_nmp_rand$layer)
+  
+  day_25_drought_sgs_rand <- day_25_drought_sgs %>%
+    dplyr::sample_n(100)
+  hist(day_25_drought_sgs_rand$layer)
+  plot(y~x,day_25_drought_sgs_rand)
+  
+  test <- ks.test(day_25_drought_sgs_rand$layer,day_25_drought_nmp_rand$layer,exact=F)
+  D <- data.frame(test$statistic)
+  
+  d_list_25[[i]] <- D
+  
+}
+
+d_df_25 <- do.call('rbind',d_list_25)
+hist(d_df_25$test.statistic)
+summary(d_df_25)
+#calculate 99% confidence intervals
+
+#all comparisons significant 
+
+
+
+# variograms of % change in spring ppt -----
+
+
+Ecoregion <- 'shortgrass_steppe'
+source('seasonal_precip_temp_analysis.R')
+head(spring_summer_precip_drought)
+hist(spring_summer_precip_drought$change_in_perc_spring)
+
+ks.test(spring_summer_precip_drought$change_in_perc_spring)
+
+spring_precip <- spring_summer_precip_drought %>%
+  select(x,y,change_in_perc_spring)
+
+spring_precip_raster <- rasterFromXYZ(spring_precip)
+
+point_data_spring_precip <- as(spring_precip_raster, 'SpatialPointsDataFrame')
+
+TheVariogram_50_spring_precip = variogram(change_in_perc_spring ~1,
+                                          data = point_data_spring_precip,width=0.1)
+plot(TheVariogram_50_spring_precip)
+
+TheVariogramModel_50_spring_precip <- vgm(psill=200, model="Exp", nugget=50, range=1)
+plot(TheVariogram_50_spring_precip, model=TheVariogramModel_50_sgs) 
+FittedModel_50_spring_precip <- fit.variogram(TheVariogram_50_sgs, model=TheVariogramModel_50_sgs)
+FittedModel_50_spring_precip
+#Range = 49.43 km
+
+plot(TheVariogram_50_spring_precip, model=FittedModel_50_spring_precip,xlab='Distance (km)',
+     ylab = 'Semivariance',cex=1,lwd=2,col='black')
+

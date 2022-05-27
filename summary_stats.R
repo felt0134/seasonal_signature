@@ -702,7 +702,7 @@ plot(start_raster)
 
 
 #variogram
-coordinates(start_raster)= ~ x+y
+sp::coordinates(start_raster)= ~ x+y
 
 # create a bubble plot with the random values
 bubble(start_raster, change_in_perc_spring='change in spring ppt', fill=TRUE, do.sqrt=FALSE, maxsize=3)
@@ -775,7 +775,9 @@ head(sgs_a_annual_gpp_subset,1)
 rangeland_npp_covariates <- readRDS('./../../Data/Herbaceous_NPP_1986_2015_V2.rds')
 head(rangeland_npp_covariates)
 mean_production<-aggregate(npp~ x + y + region,mean,data=rangeland_npp_covariates)
-study_area<-subset(mean_production,region==c('shortgrass_steppe', 'northern_mixed_prairies'))
+
+#for SGS
+study_area<-subset(mean_production,region==c('shortgrass_steppe'))
 study_area_raster <- rasterFromXYZ(study_area[c(1,2,4)])
 crs(study_area_raster) <- CRS("+proj=longlat")
 
@@ -784,5 +786,23 @@ cell_size<-area(study_area_raster, na.rm=TRUE, weights=FALSE)
 ##NAs lie outside of the rastered region, can thus be omitted
 cell_size<-cell_size[!is.na(cell_size)]
 #compute area [km2] of all cells in geo_raster1000
-area<-length(cell_size)*median(cell_size)
+area_sgs<-length(cell_size)*median(cell_size)
+# 188651.2
+
+#for NMP
+study_area<-subset(mean_production,region==c('northern_mixed_prairies'))
+study_area_raster <- rasterFromXYZ(study_area[c(1,2,4)])
+crs(study_area_raster) <- CRS("+proj=longlat")
+
+cell_size<-area(study_area_raster, na.rm=TRUE, weights=FALSE)
+#delete NAs from vector of all raster cells
+##NAs lie outside of the rastered region, can thus be omitted
+cell_size<-cell_size[!is.na(cell_size)]
+#compute area [km2] of all cells in geo_raster1000
+area_nmp<-length(cell_size)*median(cell_size)
+#440832.6
+
+#total area
+area_nmp + area_sgs
+#629483.8
 
