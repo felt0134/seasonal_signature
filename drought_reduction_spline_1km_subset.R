@@ -169,10 +169,11 @@ for(i in doy_list){
                                                    gpp_predicted_drought_average$gpp_average)/gpp_predicted_drought_average$gpp_average)*100
   
   #get median
-  gpp_predicted_drought_average_2 <- aggregate(perc_change~doy,median,data=gpp_predicted_drought_average)
+  gpp_predicted_drought_average_2 <- aggregate(perc_change~doy,mean,data=gpp_predicted_drought_average)
   
   #get and add 99% CI
-  gpp_predicted_drought_average_2$ci_99 <- std.error(gpp_predicted_drought_average$perc_change)*2.576
+  #gpp_predicted_drought_average_2$ci_99 <- std.error(gpp_predicted_drought_average$perc_change)*2.576
+  gpp_predicted_drought_average_2$ci_99 <- sd(gpp_predicted_drought_average$perc_change)
   gpp_predicted_drought_average_2$sample_size <- ss
   gpp_reduction_list[[i]] <- gpp_predicted_drought_average_2
   
@@ -181,23 +182,31 @@ for(i in doy_list){
     gpp_predicted_drought_average$gpp_average
   
   #get median
-  gpp_predicted_drought_average_4 <- aggregate(abs_change~doy,median,data=gpp_predicted_drought_average_3)
+  gpp_predicted_drought_average_4 <- aggregate(abs_change~doy,mean,data=gpp_predicted_drought_average_3)
   
   #get and add 99% CI
-  gpp_predicted_drought_average_4$ci_99 <- std.error(gpp_predicted_drought_average_3$abs_change)*2.576
+  #gpp_predicted_drought_average_4$ci_99 <- std.error(gpp_predicted_drought_average_3$abs_change)*2.576
+  gpp_predicted_drought_average_4$ci_99 <- sd(gpp_predicted_drought_average_3$abs_change)
   gpp_predicted_drought_average_4$sample_size <- ss
   gpp_reduction_list_2[[i]] <- gpp_predicted_drought_average_4
   
 }
 
+#turn to dataframe and add/subtract SD
 gpp_reduction_list_df <- list_to_df(gpp_reduction_list)
-head(gpp_reduction_list_df,1)
+gpp_reduction_list_df$upper <- gpp_reduction_list_df$perc_change + gpp_reduction_list_df$ci_99
+gpp_reduction_list_df$lower <- gpp_reduction_list_df$perc_change - gpp_reduction_list_df$ci_99
+#head(gpp_reduction_list_df,1)
 
+#save to file
 filename <- paste0('./../../Data/growth_dynamics/one_km_subset/drought_gpp_reduction_1km_',Ecoregion,'.csv')
 write.csv(gpp_reduction_list_df,filename)
 
+#same workflow for absolute
 gpp_reduction_list_df_2 <- list_to_df(gpp_reduction_list_2)
-head(gpp_reduction_list_df_2,1)
+gpp_reduction_list_df_2$upper <- gpp_reduction_list_df_2$abs_change + gpp_reduction_list_df_2$ci_99
+gpp_reduction_list_df_2$lower <- gpp_reduction_list_df_2$abs_change - gpp_reduction_list_df_2$ci_99
+#head(gpp_reduction_list_df_2,1)
 
 filename <- paste0('./../../Data/growth_dynamics/one_km_subset/drought_gpp_reduction_absolute_1km_',Ecoregion,'.csv')
 write.csv(gpp_reduction_list_df_2,filename)
@@ -210,15 +219,15 @@ rm(gpp_df_mean,gpp_predicted_average,gpp_predicted_drought,gpp_predicted_drought
 
 
 #plot this out ------
-str(gpp_reduction_list_df)
-gpp_reduction_list_df$upper <- gpp_reduction_list_df$perc_change + gpp_reduction_list_df$ci_99
-gpp_reduction_list_df$lower <- gpp_reduction_list_df$perc_change - gpp_reduction_list_df$ci_99
-plot(perc_change~doy,data=gpp_reduction_list_df,cex=0.1,
-     xlab='Julian day',ylab='Drought impact (% change in GPP)')
-lines(perc_change~doy,data=gpp_reduction_list_df)
-lines(upper~as.numeric(as.integer(doy)),gpp_reduction_list_df)
-lines(lower~doy,gpp_reduction_list_df)
-abline(h=0)
+# str(gpp_reduction_list_df)
+# gpp_reduction_list_df$upper <- gpp_reduction_list_df$perc_change + gpp_reduction_list_df$ci_99
+# gpp_reduction_list_df$lower <- gpp_reduction_list_df$perc_change - gpp_reduction_list_df$ci_99
+# plot(perc_change~doy,data=gpp_reduction_list_df,cex=0.1,
+#      xlab='Julian day',ylab='Drought impact (% change in GPP)')
+# lines(perc_change~doy,data=gpp_reduction_list_df)
+# lines(upper~as.numeric(as.integer(doy)),gpp_reduction_list_df)
+# lines(lower~doy,gpp_reduction_list_df)
+# abline(h=0)
 # 
 # gpp.doy.spl <-
 #   with(gpp_reduction_list_df, smooth.spline(doy, perc_change))

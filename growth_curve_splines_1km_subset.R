@@ -144,8 +144,10 @@ for(i in c(doy_list)){ #
   #spatial variation
   gpp_predicted_list_df <- list_to_df(gpp_predicted_list)
   gpp_predicted_list_mean <- aggregate(y~x,mean,data=gpp_predicted_list_df)
-  gpp_predicted_list_mean$lower <- median(gpp_predicted_list_df$y) - std.error(gpp_predicted_list_df$y)*2.576 #99% CI
-  gpp_predicted_list_mean$upper <- median(gpp_predicted_list_mean$y) + std.error(gpp_predicted_list_df$y)*2.576
+  # gpp_predicted_list_mean$lower <- mean(gpp_predicted_list_df$y) - std.error(gpp_predicted_list_df$y)*2.576 #99% CI
+  # gpp_predicted_list_mean$upper <- mean(gpp_predicted_list_mean$y) + std.error(gpp_predicted_list_df$y)*2.576
+  gpp_predicted_list_mean$lower <- mean(gpp_predicted_list_df$y) - sd(gpp_predicted_list_df$y)
+  gpp_predicted_list_mean$upper <- mean(gpp_predicted_list_mean$y) + sd(gpp_predicted_list_df$y)
   colnames(gpp_predicted_list_mean) <- c('doy','mean','lower_spatial','upper_spatial')
   
   #temporal variation
@@ -164,8 +166,8 @@ for(i in c(doy_list)){ #
 gpp_mean_list_df <- list_to_df(gpp_mean_list)
 head(gpp_mean_list_df,1)
 
-gpp_mean_list_df$lower_temporal <- gpp_mean_list_df$lower_spatial - gpp_mean_list_df$temporal_ci
-gpp_mean_list_df$upper_temporal <- gpp_mean_list_df$upper_spatial + gpp_mean_list_df$temporal_ci
+gpp_mean_list_df$lower_temporal <- gpp_mean_list_df$mean - gpp_mean_list_df$temporal_ci
+gpp_mean_list_df$upper_temporal <- gpp_mean_list_df$mean + gpp_mean_list_df$temporal_ci
 
 plot(mean~doy,data=gpp_mean_list_df)
 lines(lower_temporal~doy,data=gpp_mean_list_df)
@@ -177,7 +179,6 @@ write.csv(gpp_mean_list_df,filename)
 rm(gpp_df_mean,gpp_mean_list,gpp_mean_list_df,gpp_predicted,gpp_predicted_list,
    gpp_predicted_list_df,gpp_predicted_list_mean,growth_curve_spline_list)
 
-?std.error
 
 #get drought growth curve
 with_progress({
@@ -225,8 +226,8 @@ for(i in doy_list){
   
   gpp_predicted_list_df <- list_to_df(gpp_predicted_list_2)
   gpp_predicted_list_mean <- aggregate(y~x,mean,data=gpp_predicted_list_df)
-  gpp_predicted_list_mean$lower <- median(gpp_predicted_list_df$y) - std.error(gpp_predicted_list_df$y)*2.576 #99% CI
-  gpp_predicted_list_mean$upper <- median(gpp_predicted_list_mean$y) + std.error(gpp_predicted_list_df$y)*2.576
+  gpp_predicted_list_mean$lower <- mean(gpp_predicted_list_df$y) - std.error(gpp_predicted_list_df$y)*2.576 #99% CI
+  gpp_predicted_list_mean$upper <- mean(gpp_predicted_list_mean$y) + std.error(gpp_predicted_list_df$y)*2.576
   colnames(gpp_predicted_list_mean) <- c('doy','mean','lower','upper')
   gpp_mean_list_2[[i]] <- gpp_predicted_list_mean
   

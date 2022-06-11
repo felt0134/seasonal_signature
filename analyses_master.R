@@ -14,7 +14,7 @@ library(progressr)
 
 
 #Ecoregion = 'shortgrass_steppe'
-Ecoregion = 'northern_mixed_prairies' 
+#Ecoregion = 'northern_mixed_prairies' 
 #Ecoregion = 'nebraska_sandhills'
 
 
@@ -43,7 +43,7 @@ source('growth_curves.R')
 #Ecoregion = 'northern_mixed_prairies' 
 
 source('growth_curve_splines.R')
-
+source('drought_reduction_spline.R')
 
 #------------------------
 # day of maximum gpp ------

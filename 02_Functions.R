@@ -265,8 +265,8 @@ get_90_gpp_drought <- function(i) {
   x <- unique(ppt_id %>% pull(x))
   y <- unique(ppt_id %>% pull(y))
   
-  #identify the quantile of interest
-  quantile_25 <- quantile(ppt_id$ppt, probs = 0.05)
+  #get year with lowest precip
+  quantile_25 <- min(ppt_id$ppt) + 0.1
   
   #subset to years below this value
   ppt_id  <- ppt_id %>%
@@ -328,8 +328,8 @@ get_50_gpp_drought <- function(i) {
   x <- unique(ppt_id %>% pull(x))
   y <- unique(ppt_id %>% pull(y))
   
-  #identify the quantile of interest
-  quantile_25 <- quantile(ppt_id$ppt, probs = 0.05)
+  #get year with lowest precip
+  quantile_25 <- min(ppt_id$ppt) + 0.1
   
   #subset to years below this value
   ppt_id  <- ppt_id %>%
@@ -391,8 +391,8 @@ get_25_gpp_drought <- function(i) {
   x <- unique(ppt_id %>% pull(x))
   y <- unique(ppt_id %>% pull(y))
   
-  #identify the quantile of interest
-  quantile_25 <- quantile(ppt_id$ppt, probs = 0.05)
+  #get year with lowest precip
+  quantile_25 <- min(ppt_id$ppt) + 0.1
   
   #subset to years below this value
   ppt_id  <- ppt_id %>%
@@ -589,8 +589,8 @@ get_drought_growth_curve <- function(i) {
   x <- unique(ppt_id %>% pull(x))
   y <- unique(ppt_id %>% pull(y))
   
-  #identify the quantile of interest
-  quantile_25 <- quantile(ppt_id$ppt, probs = 0.05)
+  #get year with lowest precip
+  quantile_25 <- min(ppt_id$ppt) + 0.1
   
   #subset to years below this value
   ppt_id  <- ppt_id %>%
@@ -634,157 +634,175 @@ get_drought_growth_curve <- function(i) {
 
 #
 
-#absolute (% of growth)
-get_average_growth_curve_absolute  <- function(i) {
-  
-  #subset to a given pixel
-  growth_id <- gpp_df %>%
-    dplyr::filter(id_value == i)
-  
-  x <- unique(growth_id %>% pull(x))
-  y <- unique(growth_id %>% pull(y))
-  
-  growth_id <- aggregate(gpp ~ doy, mean, data = growth_id)
-  #plot(gpp~doy,growth_id)
-  
-  #for that pixel, get cumulative GPP throughout the year
-  growth_id_cmulative <-
-    data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
-  
-  head(growth_id_cmulative)
-  #plot(gpp_2 ~ doy,data= growth_id_cmulative)
-  
-  rm(growth_id)
-  
-  #create spline model of growth curve
-  gpp.doy.spl <-
-    with(growth_id_cmulative, smooth.spline(doy, gpp_2))
-  #lines(gpp.doy.spl, col = "blue")
-  
-  rm(growth_id_cmulative)
-  
-  #run model through a sequence of days
-  doy <- data.frame(seq(from = 65, to = 297, by = 1))
-  gpp_predicted <- data.frame(predict(gpp.doy.spl, doy))
-  colnames(gpp_predicted) <- c('day', 'gpp')
-  #plot(gpp ~ day,gpp_predicted)
-  
-  #rm(gpp_predicted)
-  
-  gpp_predicted$x <- x
-  gpp_predicted$y <- y
-  
-  gpp_predicted <- gpp_predicted %>%
-    select(x,y,day,gpp)
-  
-  
-  return(gpp_predicted)
-  
-  
-  
-}
+#absolute (% of growth) (maybe delete june 2022)
+# get_average_growth_curve_absolute  <- function(i) {
+#   
+#   #subset to a given pixel
+#   growth_id <- gpp_df %>%
+#     dplyr::filter(id_value == i)
+#   
+#   x <- unique(growth_id %>% pull(x))
+#   y <- unique(growth_id %>% pull(y))
+#   
+#   growth_id <- aggregate(gpp ~ doy, mean, data = growth_id)
+#   #plot(gpp~doy,growth_id)
+#   
+#   #for that pixel, get cumulative GPP throughout the year
+#   growth_id_cmulative <-
+#     data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
+#   
+#   head(growth_id_cmulative)
+#   #plot(gpp_2 ~ doy,data= growth_id_cmulative)
+#   
+#   rm(growth_id)
+#   
+#   #create spline model of growth curve
+#   gpp.doy.spl <-
+#     with(growth_id_cmulative, smooth.spline(doy, gpp_2))
+#   #lines(gpp.doy.spl, col = "blue")
+#   
+#   rm(growth_id_cmulative)
+#   
+#   #run model through a sequence of days
+#   doy <- data.frame(seq(from = 65, to = 297, by = 1))
+#   gpp_predicted <- data.frame(predict(gpp.doy.spl, doy))
+#   colnames(gpp_predicted) <- c('day', 'gpp')
+#   #plot(gpp ~ day,gpp_predicted)
+#   
+#   #rm(gpp_predicted)
+#   
+#   gpp_predicted$x <- x
+#   gpp_predicted$y <- y
+#   
+#   gpp_predicted <- gpp_predicted %>%
+#     select(x,y,day,gpp)
+#   
+#   
+#   return(gpp_predicted)
+#   
+#   
+#   
+# }
 
 #
 
-#absolute (% of growth)
-get_drought_growth_curve_absolute <- function(i) {
-  
-  ppt_id <- subset(ppt_gpp, id_value == i)
-  gpp_id <- subset(gpp_df, id_value == i)
-  
-  ppt_id <- aggregate(ppt ~ x + y + id_value + year, sum, data = ppt_id)
-  
-  x <- unique(ppt_id %>% pull(x))
-  y <- unique(ppt_id %>% pull(y))
-  
-  #identify the quantile of interest
-  quantile_25 <- quantile(ppt_id$ppt, probs = 0.05)
-  
-  #subset to years below this value
-  ppt_id  <- ppt_id %>%
-    filter(ppt < quantile_25)
-  
-  ppt_id  <- merge(ppt_id, gpp_id, by = c('x', 'y', 'id_value', 'year'))
-  
-  ppt_id  <- aggregate(gpp ~ doy, mean, data = ppt_id)
-  
-  #for that pixel, get cumulative GPP throughout the year
-  ppt_id <- data.frame(ppt_id, gpp_2 = cumsum(ppt_id$gpp))
-  
-  #reduce data size by selecting specific columns
-  ppt_id <- ppt_id %>%
-    select(c('doy', 'gpp_2'))
-  
-  #create spline model of growth curve
-  gpp.doy.drought.spl <- with(ppt_id, smooth.spline(doy, gpp_2))
-  #lines(gpp.doy.drought.spl, col = "blue")
-  
-  #run model through a sequence of days
-  doy <- data.frame(seq(from = 65, to = 297, by = 1))
-  gpp_drought_predicted <-
-    data.frame(predict(gpp.doy.drought.spl, doy))
-  colnames(gpp_drought_predicted) <- c('day', 'gpp')
-  
-  rm(ppt_id, doy, gpp.doy.drought.spl)
-  
-  gpp_drought_predicted$x <- x
-  gpp_drought_predicted$y <- y
-  
-  gpp_drought_predicted <- gpp_drought_predicted %>%
-    select(x,y,day,gpp)
-  
-  
-  return(gpp_drought_predicted)
-  
-  
-}
+#absolute (% of growth) (maybe delete - June 2022)
+# get_drought_growth_curve_absolute <- function(i) {
+#   
+#   ppt_id <- subset(ppt_gpp, id_value == i)
+#   gpp_id <- subset(gpp_df, id_value == i)
+#   
+#   ppt_id <- aggregate(ppt ~ x + y + id_value + year, sum, data = ppt_id)
+#   
+#   x <- unique(ppt_id %>% pull(x))
+#   y <- unique(ppt_id %>% pull(y))
+#   
+#   #get year with lowest precip
+#   quantile_25 <- min(ppt_id$ppt) + 0.1
+#   
+#   #subset to years below this value
+#   ppt_id  <- ppt_id %>%
+#     filter(ppt < quantile_25)
+#   
+#   ppt_id  <- merge(ppt_id, gpp_id, by = c('x', 'y', 'id_value', 'year'))
+#   
+#   ppt_id  <- aggregate(gpp ~ doy, mean, data = ppt_id)
+#   
+#   #for that pixel, get cumulative GPP throughout the year
+#   ppt_id <- data.frame(ppt_id, gpp_2 = cumsum(ppt_id$gpp))
+#   
+#   #reduce data size by selecting specific columns
+#   ppt_id <- ppt_id %>%
+#     select(c('doy', 'gpp_2'))
+#   
+#   #create spline model of growth curve
+#   gpp.doy.drought.spl <- with(ppt_id, smooth.spline(doy, gpp_2))
+#   #lines(gpp.doy.drought.spl, col = "blue")
+#   
+#   #run model through a sequence of days
+#   doy <- data.frame(seq(from = 65, to = 297, by = 1))
+#   gpp_drought_predicted <-
+#     data.frame(predict(gpp.doy.drought.spl, doy))
+#   colnames(gpp_drought_predicted) <- c('day', 'gpp')
+#   
+#   rm(ppt_id, doy, gpp.doy.drought.spl)
+#   
+#   gpp_drought_predicted$x <- x
+#   gpp_drought_predicted$y <- y
+#   
+#   gpp_drought_predicted <- gpp_drought_predicted %>%
+#     select(x,y,day,gpp)
+#   
+#   
+#   return(gpp_drought_predicted)
+#   
+#   
+# }
 
 #
 
-#spline model of growth during average year
-get_average_growth_curve_absolute_spline  <- function(i) {
-  
-  #subset to a given pixel
-  growth_id <- gpp_df %>%
-    dplyr::filter(id_value == i)
-  
-  x <- unique(growth_id %>% pull(x))
-  y <- unique(growth_id %>% pull(y))
-  
-  growth_id <- aggregate(gpp ~ doy, mean, data = growth_id)
-  #plot(gpp~doy,growth_id)
-  
-  #for that pixel, get cumulative GPP throughout the year
-  growth_id_cmulative <-
-    data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
-  
-  head(growth_id_cmulative)
-  #plot(gpp_2 ~ doy,data= growth_id_cmulative)
-  
-  rm(growth_id)
-  
-  #create spline model of growth curve
-  gpp.doy.spl <-
-    with(growth_id_cmulative, smooth.spline(doy, gpp_2))
-  #lines(gpp.doy.spl, col = "blue")
-  
-  rm(growth_id_cmulative)
-  
-  return(gpp.doy.spl)
-  
-  
-  
-}
+#spline model of growth during average year (maybe delete - June 2022)
+# get_average_growth_curve_absolute_spline  <- function(i) {
+#   
+#   #subset to a given pixel
+#   growth_id <- gpp_df %>%
+#     dplyr::filter(id_value == i)
+#   
+#   x <- unique(growth_id %>% pull(x))
+#   y <- unique(growth_id %>% pull(y))
+#   
+#   growth_id <- aggregate(gpp ~ doy, mean, data = growth_id)
+#   #plot(gpp~doy,growth_id)
+#   
+#   #for that pixel, get cumulative GPP throughout the year
+#   growth_id_cmulative <-
+#     data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
+#   
+#   head(growth_id_cmulative)
+#   #plot(gpp_2 ~ doy,data= growth_id_cmulative)
+#   
+#   rm(growth_id)
+#   
+#   #create spline model of growth curve
+#   gpp.doy.spl <-
+#     with(growth_id_cmulative, smooth.spline(doy, gpp_2))
+#   #lines(gpp.doy.spl, col = "blue")
+#   
+#   rm(growth_id_cmulative)
+#   
+#   return(gpp.doy.spl)
+#   
+#   
+#   
+# }
 
-#spline models of both average and the temporal 99CI
+
+
+#spline models of both average gpp and the temporal CI (updated june 2022)
 get_average_growth_curve_absolute_spline_ci  <- function(i) {
   
   #subset to a given pixel
-  growth_id <- gpp_df %>%
+  growth_id <- ppt_gpp %>%
     dplyr::filter(id_value == i)
   
+  #ID lat/lon up front
   x <- unique(growth_id %>% pull(x))
   y <- unique(growth_id %>% pull(y))
+  
+  ppt_sum <- aggregate(ppt ~ year,sum,data=growth_id)
+  colnames(ppt_sum) <- c('year','ppt_sum')
+  
+  growth_id <- merge(growth_id,ppt_sum,by=c('year'))
+  
+
+  #get year with lowest precip
+  min_ppt <- min(growth_id$ppt_sum) 
+  
+  #subset to years above this value
+  growth_id  <- growth_id %>%
+    filter(ppt_sum > min_ppt)
+  
+  u#nique(growth_id$year) #works
   
   #first get temporal variation
   year_list <- list()
@@ -807,10 +825,10 @@ get_average_growth_curve_absolute_spline_ci  <- function(i) {
   #plot(gpp_2~doy,data=year_df)
   rm(year_list)
   
-  growth_id_ci <- aggregate(gpp_ci ~ doy, ci_99, data = year_df)
+  growth_id_ci <- aggregate(gpp_ci ~ doy, sd, data = year_df)
   rm(year_df)
   
-  gpp.doy.spl_ci <-
+   gpp_doy_spl_ci <-
     with(growth_id_ci, smooth.spline(doy, gpp_ci))
   
   
@@ -823,54 +841,55 @@ get_average_growth_curve_absolute_spline_ci  <- function(i) {
     data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
   
   #create spline model of growth curve
-  gpp.doy.spl <-
+  gpp_doy_spl <-
     with(growth_id_cmulative, smooth.spline(doy, gpp_2))
 
   
-  return(list(gpp.doy.spl,gpp.doy.spl_ci))
+  return(list(gpp.doy.spl,gpp_doy_spl_ci))
   
   
 }
 
-
-
+#
 #
 
-#spline model of growth during drought year
+#spline model of gpp during drought year (updated june 2022)
 get_drought_growth_curve_absolute_spline <- function(i) {
   
-  ppt_id <- subset(ppt_gpp, id_value == i)
-  gpp_id <- subset(gpp_df, id_value == i)
+  gpp_ppt_id <- subset(ppt_gpp, id_value == i)
+  #gpp_id <- subset(gpp_df, id_value == i)
   
-  ppt_id <- aggregate(ppt ~ x + y + id_value + year, sum, data = ppt_id)
+  ppt_id <- aggregate(ppt ~ x + y + id_value + year, sum, data = gpp_ppt_id)
   
+  #ID lat/lon values
   x <- unique(ppt_id %>% pull(x))
   y <- unique(ppt_id %>% pull(y))
   
-  #identify the quantile of interest
-  quantile_25 <- quantile(ppt_id$ppt, probs = 0.05)
+  #get year with lowest precip
+  min_ppt <- min(ppt_id$ppt) + 0.1
   
   #subset to years below this value
   ppt_id  <- ppt_id %>%
-    filter(ppt < quantile_25)
+    filter(ppt < min_ppt) %>%
+    rename('ppt_min' = 'ppt')
   
-  ppt_id  <- merge(ppt_id, gpp_id, by = c('x', 'y', 'id_value', 'year'))
+  gpp_ppt_id  <- merge(ppt_id, gpp_ppt_id, by = c('x', 'y', 'id_value', 'year'))
   
-  ppt_id  <- aggregate(gpp ~ doy, mean, data = ppt_id)
+  gpp_ppt_id  <- aggregate(gpp ~ doy, mean, data = gpp_ppt_id)
   
   #for that pixel, get cumulative GPP throughout the year
-  ppt_id <- data.frame(ppt_id, gpp_2 = cumsum(ppt_id$gpp))
+  gpp_ppt_id <- data.frame(gpp_ppt_id, gpp_2 = cumsum(gpp_ppt_id$gpp))
   
   #reduce data size by selecting specific columns
-  ppt_id <- ppt_id %>%
-    select(c('doy', 'gpp_2'))
+  gpp_ppt_id <- gpp_ppt_id %>%
+    dplyr::select(c('doy', 'gpp_2'))
   
   #create spline model of growth curve
-  gpp.doy.drought.spl <- with(ppt_id, smooth.spline(doy, gpp_2))
+  gpp_doy_drought_spl <- with(gpp_ppt_id, smooth.spline(doy, gpp_2))
   #lines(gpp.doy.drought.spl, col = "blue")
   
   
-  return(gpp.doy.drought.spl)
+  return(gpp_doy_drought_spl)
   
   
 }
@@ -938,8 +957,8 @@ get_drought_max_production <- function(i) {
   x <- unique(ppt_id %>% pull(x))
   y <- unique(ppt_id %>% pull(y))
   
-  #identify the quantile of interest
-  quantile_25 <- quantile(ppt_id$ppt, probs = 0.05)
+  #get year with lowest precip
+  quantile_25 <- min(ppt_id$ppt) + 0.1
   
   #subset to years below this value
   ppt_id  <- ppt_id %>%
@@ -1001,8 +1020,8 @@ get_drought_pecent_reduction <- function(i) {
   
   #Get max gpp during years of drought:
   
-  #identify the quantile of interest
-  quantile_25 <- quantile(ppt_id$ppt, probs = 0.05)
+  #get year with lowest precip
+  quantile_25 <- min(ppt_id$ppt) + 0.1
   
   #subset to years below this value
   ppt_id_drought  <- ppt_id %>%
@@ -1104,8 +1123,8 @@ get_drought_years <- function(i) {
   
   #Get max gpp during years of drought:
   
-  #identify the quantile of interest
-  quantile_25 <- quantile(ppt_id$ppt, probs = 0.05)
+  #get year with lowest precip
+  quantile_25 <- min(ppt_id$ppt) + 0.1
   
   #subset to years below this value
   ppt_id_drought  <- ppt_id %>%
@@ -1124,57 +1143,74 @@ get_drought_years <- function(i) {
 
 #16-day cumulative GPP throughout growing season (not the cumulative total GPP growth curve)
 
+# updated June 2022
 gpp_spline  <- function(i) {
   
   #subset to a given pixel
-  growth_id <- gpp_df %>%
+  growth_id <- ppt_gpp %>%
     dplyr::filter(id_value == i)
   
+  #ID lat/lon up front
   x <- unique(growth_id %>% pull(x))
   y <- unique(growth_id %>% pull(y))
   
-  growth_id <- aggregate(gpp ~ doy, mean, data = growth_id)
-  #plot(gpp~doy,growth_id,ylim=c(0,30))
+  #get total precip
+  ppt_sum <- aggregate(ppt ~ year,sum,data=growth_id)
+  colnames(ppt_sum) <- c('year','ppt_sum')
+  
+  growth_id <- merge(growth_id,ppt_sum,by=c('year'))
+  
+  #get year with lowest precip
+  min_ppt <- min(growth_id$ppt_sum) 
+  
+  #subset to years above this value
+  growth_id  <- growth_id %>%
+    filter(ppt_sum > min_ppt)
+  
+  #average
+  growth_id <- aggregate(gpp ~ doy, median, data = growth_id)
+  #plot(gpp~doy,growth_id)
   
   #create spline model of growth curve
-  gpp.doy.spl <-
+  gpp_doy_spl <-
     with(growth_id, smooth.spline(doy, gpp))
-  #lines(gpp.doy.spl, col = "blue")
+  #lines(gpp_doy_spl, col = "blue")
   
-  return(gpp.doy.spl)
+  return(gpp_doy_spl)
   
   
 }
 
+# updated June 2022
 gpp_spline_drought <- function(i) {
   
-  ppt_id <- subset(ppt_gpp, id_value == i)
-  gpp_id <- subset(gpp_df, id_value == i)
+  growth_id <- ppt_gpp %>%
+    dplyr::filter(id_value == i)
   
-  ppt_id <- aggregate(ppt ~ x + y + id_value + year, sum, data = ppt_id)
+  #ID lat/lon up front
+  x <- unique(growth_id %>% pull(x))
+  y <- unique(growth_id %>% pull(y))
   
-  x <- unique(ppt_id %>% pull(x))
-  y <- unique(ppt_id %>% pull(y))
+  #get total precip
+  ppt_sum <- aggregate(ppt ~ year,sum,data=growth_id)
+  colnames(ppt_sum) <- c('year','ppt_sum')
   
-  #identify the quantile of interest
-  quantile_25 <- quantile(ppt_id$ppt, probs = 0.05)
+  growth_id <- merge(growth_id,ppt_sum,by=c('year'))
   
-  #subset to years below this value
-  ppt_id  <- ppt_id %>%
-    filter(ppt < quantile_25)
+  #get year with lowest precip
+  min_ppt <- min(growth_id$ppt_sum) + 0.1
   
-  ppt_id  <- merge(ppt_id, gpp_id, by = c('x', 'y', 'id_value', 'year'))
-  
-  ppt_id  <- aggregate(gpp ~ doy, mean, data = ppt_id)
-  
+  #subset to years above this value
+  growth_id  <- growth_id %>%
+    filter(ppt_sum < min_ppt)
   
   #create spline model of growth curve
-  gpp.doy.drought.spl <- with(ppt_id, smooth.spline(doy, gpp))
-  plot(gpp ~ doy, data = ppt_id)
-  #lines(gpp.doy.drought.spl, col = "red")
+  gpp_doy_drought_spl <- with(growth_id, smooth.spline(doy, gpp))
+  plot(gpp ~ doy, data = growth_id)
+  #lines(gpp_doy_drought_spl, col = "red")
   
   
-  return(gpp.doy.drought.spl)
+  return(gpp_doy_drought_spl)
   
   
 }
@@ -1217,8 +1253,8 @@ ndvi_spline_drought <- function(i) {
   x <- unique(ppt_id %>% pull(x))
   y <- unique(ppt_id %>% pull(y))
   
-  #identify the quantile of interest
-  quantile_25 <- quantile(ppt_id$ppt, probs = 0.05)
+  #get year with lowest precip
+  quantile_25 <- min(ppt_id$ppt) + 0.1
   
   #subset to years below this value
   ppt_id  <- ppt_id %>%
@@ -1321,8 +1357,8 @@ get_driest_year <- function(i){
   x <- unique(ppt_df_2 %>% pull(x))
   y <- unique(ppt_df_2 %>% pull(y))
   
-  #identify the quantile of interest
-  quantile_25 <- quantile(ppt_df_2$ppt, probs = 0.05)
+  #get year with lowest precip
+  quantile_25 <- min(ppt_id$ppt) + 0.1
   
   #subset to years below this value
   ppt_id  <- ppt_df_2 %>%
@@ -1344,7 +1380,7 @@ get_driest_year <- function(i){
 
 ci_99 <- function(x){
   
-  ci <- std.error(x)*2.576
+  ci <- std.error(x)*2.58
   
   return(ci)
   

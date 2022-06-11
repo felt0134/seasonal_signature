@@ -800,11 +800,164 @@ TheVariogram_50_spring_precip = variogram(change_in_perc_spring ~1,
 plot(TheVariogram_50_spring_precip)
 
 TheVariogramModel_50_spring_precip <- vgm(psill=200, model="Exp", nugget=50, range=1)
-plot(TheVariogram_50_spring_precip, model=TheVariogramModel_50_sgs) 
-FittedModel_50_spring_precip <- fit.variogram(TheVariogram_50_sgs, model=TheVariogramModel_50_sgs)
+plot(TheVariogram_50_spring_precip, model=TheVariogramModel_50_spring_precip) 
+FittedModel_50_spring_precip <- fit.variogram(TheVariogram_50_spring_precip, model=TheVariogramModel_50_spring_precip)
 FittedModel_50_spring_precip
 #Range = 49.43 km
 
 plot(TheVariogram_50_spring_precip, model=FittedModel_50_spring_precip,xlab='Distance (km)',
      ylab = 'Semivariance',cex=1,lwd=2,col='black')
+
+
+# quadrature ------
+
+
+get_average_growth_curve_absolute_spline_ci  <- function(i) {
+  
+  #subset to a given pixel
+  growth_id <- gpp_df %>%
+    dplyr::filter(id_value == 100)
+  
+  x <- unique(growth_id %>% pull(x))
+  y <- unique(growth_id %>% pull(y))
+  
+  #first get temporal variation
+  year_list <- list()
+  for(j in unique(growth_id$year)){
+    
+    subset <- subset(growth_id,year==j)
+    
+    subset <- subset %>% arrange(doy)
+    
+    subset <-
+      data.frame(subset, gpp_ci = cumsum(subset$gpp))
+    
+    year_list[[j]] <- subset
+    
+    #str(subset)
+    
+  }
+  
+  year_df <- do.call('rbind',year_list)
+  #plot(gpp_2~doy,data=year_df)
+  rm(year_list)
+  
+  growth_id_ci <- aggregate(gpp_ci ~ doy, sd, data = year_df)
+  rm(year_df)
+  
+  gpp.doy.spl_ci <-
+    with(growth_id_ci, smooth.spline(doy, gpp_ci))
+  
+  
+  #now do average growth curve
+  growth_id <- aggregate(gpp ~ doy, mean, data = growth_id)
+  #plot(gpp~doy,growth_id)
+  
+  #for that pixel, get cumulative GPP throughout the year
+  growth_id_cmulative <-
+    data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
+  
+  #create spline model of growth curve
+  gpp.doy.spl <-
+    with(growth_id_cmulative, smooth.spline(doy, gpp_2))
+  
+  
+  return(list(gpp.doy.spl,gpp.doy.spl_ci))
+  
+  
+}
+
+
+cum_sum_quadrature <- function(x){
+  
+  median_val <- aggregate(gpp_ci ~ doy,median,data=year_df)
+  colnames(median_val) <- c('doy','gpp_doy_median')
+  
+  merged <- merge(median_val,year_df,by=c('doy'))
+  
+  merged$diff <- merged$gpp_doy_median -  merged$gpp_ci
+  
+  (merged$gpp_doy_median)^2 +  merged$gpp_ci
+
+  sd(c(1,1,1,1))
+
+  
+
+}
+
+?sd
+?var
+
+  
+#------
+
+
+#relative
+plot(perc_change~doy,data=growth_drynamics_sgs,type='l',
+     xlab='',ylab='',las=1,ylim=c(-80,55))
+rect(151,-90,243,350,col = 'grey95')
+rect(60,-90,151,350,col = 'grey')
+polygon(c(growth_drynamics_sgs$doy,rev(growth_drynamics_sgs$doy)),
+        c(growth_drynamics_sgs$lower,rev(growth_drynamics_sgs$upper)),
+        col = "black", border = F)
+text(100, -50, "Spring",cex=1)
+text(200, -20, "Summer",cex=1)
+text(275, 20, "Fall",cex=1)
+abline(h=0,col='black',lty='dashed')
+mtext('Julian day of year',side=1,line=2.35,cex=0.75)
+mtext('% Change in C uptake',side=2,line=2.5,cex=0.6)
+lines(perc_change~doy,data=growth_drynamics_sgs,type='l',col='white')
+
+#absolute
+growth_drynamics_absolute_sgs <- 
+  read_csv('./../../Data/growth_dynamics/drought_gpp_reduction_absolute_shortgrass_steppe.csv')
+head(growth_drynamics_absolute_sgs,1)
+
+growth_drynamics_absolute_sgs$upper <- growth_drynamics_absolute_sgs$abs_change + growth_drynamics_absolute_sgs$ci_99
+growth_drynamics_absolute_sgs$lower <- growth_drynamics_absolute_sgs$abs_change - growth_drynamics_absolute_sgs$ci_99
+
+plot(abs_change~doy,data=growth_drynamics_absolute_sgs,type='l',
+     xlab='',ylab='',las=1,cex.axis=2,ylim=c(-35,15))
+rect(151,-70,243,350,col = 'grey95')
+rect(60,-70,151,350,col = 'grey')
+polygon(c(growth_drynamics_absolute_sgs$doy,rev(growth_drynamics_absolute_sgs$doy)),
+        c(growth_drynamics_absolute_sgs$ci_95,rev(growth_drynamics_absolute_sgs$ci_05)),
+        col = "black", border = F)
+text(100, -15, "Spring",cex=2.5)
+text(200, -5, "Summer",cex=2.5)
+text(275, -15, "Fall",cex=2.5)
+abline(h=0,col='black',lty='dashed')
+mtext('Shortgrass steppe',side=3,line=0.5,cex=2)
+mtext('a',side=3,line=0.5,cex=1.5,adj=0.0)
+lines(abs_change~doy,data=growth_drynamics_absolute_sgs,type='l',col='white',lwd=2)
+
+
+plot(perc_change~doy,data=growth_drynamics_nmp,type='l',
+     xlab='',ylab='',las=1,ylim=c(-100,120))
+rect(151,-50,243,350,col = 'grey95')
+rect(60,-50,151,350,col = 'grey')
+polygon(c(growth_drynamics_nmp$doy,rev(growth_drynamics_nmp$doy)),
+        c(growth_drynamics_nmp$lower,rev(growth_drynamics_nmp$upper)),
+        col = "black", border = F)
+# lines(perc_change~doy,data=growth_drynamics_nmp)
+# lines(upper~as.numeric(as.integer(doy)),growth_drynamics_nmp)
+# lines(lower~doy,growth_drynamics_nmp)
+abline(h=0,col='black',lty='dashed')
+mtext('Julian day of year',side=1,line=2.35,cex=0.75)
+mtext('% Change in C uptake',side=2,line=2.5,cex=0.6)
+lines(perc_change~doy,data=growth_drynamics_nmp,type='l',col='white')
+
+plot(abs_change~doy,data=growth_drynamics_absolute_nmp,type='l',
+     xlab='',ylab='',las=1,cex.axis=2,ylim=c(-35,10))
+rect(151,-70,243,350,col = 'grey95')
+rect(60,-70,151,350,col = 'grey')
+polygon(c(growth_drynamics_absolute_nmp$doy,rev(growth_drynamics_absolute_nmp$doy)),
+        c(growth_drynamics_absolute_nmp$ci_25,rev(growth_drynamics_absolute_nmp$ci_75)),
+        col = "black", border = F)
+abline(h=0,col='black',lty='dashed')
+mtext('Northern mixed prairies',side=3,line=0.5,cex=2)
+mtext('Julian day of year',side=1,line=4,cex=2)
+mtext(expression("GPP impact "(gCm^-2~'16 days')),side=2,line=4,adj = -15, cex=2)
+mtext('b',side=3,line=0.5,cex=1.5,adj=0.0)
+lines(abs_change~doy,data=growth_drynamics_absolute_nmp,type='l',col='white',lwd=4)
 

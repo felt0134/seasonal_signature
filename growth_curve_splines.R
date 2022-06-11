@@ -1,7 +1,8 @@
 
 #get splines of growth curves 
 
-library(plotrix)
+#library(plotrix)
+
 
 
 # setup----
@@ -93,10 +94,6 @@ rm(ppt_df)
 
 # get splines -----
 
-# test_list <- c(1:100)
-# test_store <- list()
-
-
 #create a vector of unique sites IDs
 id_list <- unique(gpp_df$id_value)
 
@@ -110,17 +107,8 @@ with_progress({
   })
 })
 
-#get each spline model
-# for(i in test_list){
-#   
-#   test_spline <- get_average_growth_curve_absolute_spline(i)
-#   
-#   test_store[[i]] <- test_spline
-#   
-# }
 
 #get each 95% CI for each day of the prediction
-#library(plotrix)
 doy_list <- c(65:297)
 gpp_predicted_list <- list()
 gpp_predicted_list_2 <- list()
@@ -142,10 +130,17 @@ for(i in c(doy_list)){ #doy_list
   
   #spatial variation
   gpp_predicted_list_df <- list_to_df(gpp_predicted_list)
+  
+  #take random sample of 100
+  # gpp_predicted_list_df_2 <- gpp_predicted_list_df %>%
+  #   dplyr::sample_n(100)
+  
   gpp_predicted_list_mean <- aggregate(y~x,mean,data=gpp_predicted_list_df)
-  gpp_predicted_list_mean$lower <- median(gpp_predicted_list_df$y) - std.error(gpp_predicted_list_df$y)*2.576 #99% CI
-  gpp_predicted_list_mean$upper <- median(gpp_predicted_list_mean$y) + std.error(gpp_predicted_list_df$y)*2.576
-  colnames(gpp_predicted_list_mean) <- c('doy','mean','lower_spatial','upper_spatial')
+  #gpp_predicted_list_mean$lower <- mean(gpp_predicted_list_df$y) - std.error(gpp_predicted_list_df_2$y)*2.58 #99% CI
+  #gpp_predicted_list_mean$upper <- mean(gpp_predicted_list_mean$y) + std.error(gpp_predicted_list_df_2$y)*2.58
+  # gpp_predicted_list_mean$lower <- mean(gpp_predicted_list_df$y) - sd(gpp_predicted_list_df$y)
+  # gpp_predicted_list_mean$upper <- mean(gpp_predicted_list_mean$y) + sd(gpp_predicted_list_df$y)
+  # colnames(gpp_predicted_list_mean) <- c('doy','mean','lower_spatial','upper_spatial')
   
   #temporal variation
   gpp_predicted_list_2_df <- list_to_df(gpp_predicted_list_2)
@@ -163,12 +158,12 @@ for(i in c(doy_list)){ #doy_list
 gpp_mean_list_df <- list_to_df(gpp_mean_list)
 head(gpp_mean_list_df,1)
 
-gpp_mean_list_df$lower_temporal <- gpp_mean_list_df$lower_spatial - gpp_mean_list_df$temporal_ci
-gpp_mean_list_df$upper_temporal <- gpp_mean_list_df$upper_spatial + gpp_mean_list_df$temporal_ci
+gpp_mean_list_df$lower_temporal <- gpp_mean_list_df$mean - gpp_mean_list_df$temporal_ci
+gpp_mean_list_df$upper_temporal <- gpp_mean_list_df$mean + gpp_mean_list_df$temporal_ci
 
-plot(mean~doy,data=gpp_mean_list_df)
-lines(lower_temporal~doy,data=gpp_mean_list_df)
-lines(upper_temporal~doy,data=gpp_mean_list_df)
+# plot(mean~doy,data=gpp_mean_list_df)
+# lines(lower_temporal~doy,data=gpp_mean_list_df)
+# lines(upper_temporal~doy,data=gpp_mean_list_df)
 
 filename <- paste0('./../../Data/growth_curves/average_growth_curve_',Ecoregion,'.csv')
 write.csv(gpp_mean_list_df,filename)
@@ -176,7 +171,6 @@ write.csv(gpp_mean_list_df,filename)
 rm(gpp_df_mean,gpp_mean_list,gpp_mean_list_df,gpp_predicted,gpp_predicted_list,
    gpp_predicted_list_df,gpp_predicted_list_mean,growth_curve_spline_list)
 
-?std.error
 
 #get drought growth curve
 with_progress({
@@ -187,27 +181,6 @@ with_progress({
     get_drought_growth_curve_absolute_spline(i)
   })
 })
-
-
-# test_store_2 <- list()
-# for(i in test_list){
-#   
-#   test_spline_2 <- get_drought_growth_curve_absolute_spline(i)
-#   
-#   test_store_2[[i]] <- test_spline_2
-#   
-# }
-
-# for(i in test_list){
-#   
-#   lines(test_store_2[[i]],col='red')
-#   
-#   
-# }
-# 
-# 
-# model <- test_store_2[[i]]
-# coef(model)  
 
 # for each day, get a prediction from each spline, then calculate the 95%CI (mean +/- 2*SE)
 gpp_predicted_list_2 <- list()
@@ -222,10 +195,13 @@ for(i in doy_list){
     
   }
   
+  #get mean and spatial variation
   gpp_predicted_list_df <- list_to_df(gpp_predicted_list_2)
   gpp_predicted_list_mean <- aggregate(y~x,mean,data=gpp_predicted_list_df)
-  gpp_predicted_list_mean$lower <- median(gpp_predicted_list_df$y) - std.error(gpp_predicted_list_df$y)*2.576 #99% CI
-  gpp_predicted_list_mean$upper <- median(gpp_predicted_list_mean$y) + std.error(gpp_predicted_list_df$y)*2.576
+  #gpp_predicted_list_mean$lower <- median(gpp_predicted_list_df$y) - std.error(gpp_predicted_list_df$y)*2.576 #99% CI
+  #gpp_predicted_list_mean$upper <- median(gpp_predicted_list_mean$y) + std.error(gpp_predicted_list_df$y)*2.576
+  gpp_predicted_list_mean$lower <- mean(gpp_predicted_list_df$y) - sd(gpp_predicted_list_df$y)
+  gpp_predicted_list_mean$upper <- mean(gpp_predicted_list_mean$y) + sd(gpp_predicted_list_df$y)
   colnames(gpp_predicted_list_mean) <- c('doy','mean','lower','upper')
   gpp_mean_list_2[[i]] <- gpp_predicted_list_mean
   
@@ -246,50 +222,4 @@ rm(gpp_df_mean,gpp_mean_list,gpp_mean_list_df_2,gpp_predicted,gpp_predicted_list
 
 # plot it out -------
 
-gpp_mean_list_df <- read.csv(paste0('./../../Data/growth_curves/average_growth_curve_',Ecoregion,'.csv'))
-gpp_mean_list_df_2 <- read.csv(paste0('./../../Data/growth_curves/drought_growth_curve_',Ecoregion,'.csv'))
 
-# #plot it out (will vary by ecoregion)
-plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = 'Cumulative GPP', xlab = 'Julian day of year',
-     xlim=c(65,297), ylim=c(0,500))
-
-#normal year
-# lines(lower~doy,data=gpp_mean_list_df,lwd=1,lty='dashed')
-# lines(upper~doy,data=gpp_mean_list_df,lwd=1,lty='dashed')
-polygon(c(gpp_mean_list_df$doy, rev(gpp_mean_list_df$doy)),
-        c(gpp_mean_list_df$lower,rev(gpp_mean_list_df$upper)), density = 200, col ='grey90')
-lines(mean~doy,data=gpp_mean_list_df,lwd=3)
-#
-# # #?adjustcolor
-# # 
-# #droughtyear
-polygon(c(gpp_mean_list_df_2$doy, rev(gpp_mean_list_df_2$doy)),
-        c(gpp_mean_list_df_2$lower,rev(gpp_mean_list_df_2$upper)), density = 200, col='red')
-        #adjustcolor("red",alpha.f=0.5))
-lines(mean~doy,data=gpp_mean_list_df_2,lwd=3,col='black',lty='dashed')
-# lines(lower~doy,data=gpp_mean_list_df_2,lwd=1,col='red',lty='dashed')
-# lines(upper~doy,data=gpp_mean_list_df_2,lwd=1,col='red',lty='dashed')
-# axis(side=1)
-# axis(side=2)
-# # axis(side=3)
-# # axis(side=4)
-# # 
-# # #get GPP difference by day (need to add confidence interval)
-# # gpp_mean_list_df$year <- 'average'
-# # gpp_mean_list_df_2$year <- 'drought'
-# # 
-# # gpp_mean_list_df_binded <- merge(gpp_mean_list_df[c(1,2,5)],gpp_mean_list_df_2[c(1,2,5)],by=c('doy'))
-# # head(gpp_mean_list_df_binded)
-# # gpp_mean_list_df_binded$diff <- gpp_mean_list_df_binded$mean.y - gpp_mean_list_df_binded$mean.x
-# # head(gpp_mean_list_df_binded)
-# # 
-# # #plot it out
-# # plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = 'GPP difference between drought and normal year'
-# #      , xlab = 'Julian day of year',
-# #      xlim=c(65,297), ylim=c(-200,25))
-# # lines(diff ~ doy, data=gpp_mean_list_df_binded,lwd=5)
-# # abline(h=0,lty='dashed')
-# # axis(side=1)
-# # axis(side=2)
-# 
-# 
