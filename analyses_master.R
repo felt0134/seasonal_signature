@@ -6,7 +6,7 @@
 library(future.apply)
 library(progressr)
 
-# day at which 25, 50, and 90% of growth has occurred during average and drought years -----
+# day at which 25%, 50%, and 75% of growth has occurred during average and drought years -----
 
 # generate and save to file estimates of the day of 90% growth and how this
 # changes during years of drought
@@ -18,8 +18,7 @@ library(progressr)
 #Ecoregion = 'nebraska_sandhills'
 
 
-
-source('day_of_90.R')
+source('day_of_75.R')
 source('day_of_50.R')
 source('day_of_25.R')
 
@@ -40,9 +39,10 @@ source('growth_curves.R')
 
 #Ecoregion = 'nebraska_sandhills'
 #Ecoregion = 'shortgrass_steppe'
-#Ecoregion = 'northern_mixed_prairies' 
+Ecoregion = 'northern_mixed_prairies' 
 
 source('growth_curve_splines.R')
+
 source('drought_reduction_spline.R')
 
 #------------------------
@@ -61,6 +61,7 @@ source('day_of_max_gpp.R')
 # seasonal climate ------
 
 Ecoregion = 'northern_mixed_prairies'
+#Ecoregion = 'shortgrass_steppe'
 
 source('seasonal_precip_temp_analysis.R')
 

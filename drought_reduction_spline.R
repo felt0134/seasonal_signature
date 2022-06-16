@@ -13,9 +13,10 @@ year_list <- seq(2003, 2020, 1) #set years
 year_list <-
   as.character(year_list) #easier when they are characters
 
-#save this file so can just pull it out when re-running this code
+#import
 ppt_gpp <- readr::read_csv(paste0('./../../Data/GPP/Ecoregion/',Ecoregion,'/ppt_gpp_combined.csv'))
 head(ppt_gpp,1)
+
 
 #aggregate(gpp~period,max,data=ppt_gpp)
 
@@ -77,7 +78,7 @@ for(i in doy_list){
   #average
   gpp_predicted_list_average_df <- list_to_df(gpp_predicted_list_average)
   colnames(gpp_predicted_list_average_df) <- c('doy','gpp_average','id_val')
-  high_average <- quantile(gpp_predicted_list_average_df$gpp_average,probs = 0.99)
+  #high_average <- quantile(gpp_predicted_list_average_df$gpp_average,probs = 0.99)
   gpp_predicted_list_average_df <- gpp_predicted_list_average_df %>%
     filter(gpp_average > 0) #%>%
     #filter(gpp_average < high_average) 
@@ -85,7 +86,7 @@ for(i in doy_list){
   #drought
   gpp_predicted_list_drought_df <- list_to_df(gpp_predicted_list_drought)
   colnames(gpp_predicted_list_drought_df) <- c('doy','gpp_drought','id_val')
-  high_drought <- quantile(gpp_predicted_list_drought_df$gpp_drought,probs = 0.99)
+  #high_drought <- quantile(gpp_predicted_list_drought_df$gpp_drought,probs = 0.99)
   gpp_predicted_list_drought_df <- gpp_predicted_list_drought_df %>%
     filter(gpp_drought > 0) #%>%
     #filter(gpp_drought < high_drought)
@@ -112,8 +113,8 @@ for(i in doy_list){
   #get and add CI
   #gpp_predicted_drought_average_2$ci_99 <- std.error(gpp_predicted_drought_average$perc_change)*2.576
   #gpp_predicted_drought_average_2$ci_99 <- sd(gpp_predicted_drought_average$perc_change)
-  gpp_predicted_drought_average_2$ci_95 <- quantile(gpp_predicted_drought_average$perc_change,probs=0.95)
-  gpp_predicted_drought_average_2$ci_05 <- quantile(gpp_predicted_drought_average$perc_change,probs=0.05)
+  gpp_predicted_drought_average_2$ci_75 <- quantile(gpp_predicted_drought_average$perc_change,probs=0.75)
+  gpp_predicted_drought_average_2$ci_25 <- quantile(gpp_predicted_drought_average$perc_change,probs=0.25)
   gpp_predicted_drought_average_2$sample_size <- ss
   gpp_reduction_list[[i]] <- gpp_predicted_drought_average_2
   
@@ -153,32 +154,6 @@ rm(gpp_predicted_average,gpp_predicted_drought,gpp_predicted_drought_average,
    gpp_predicted_drought_average_4)
 
 
-#plot this out ------
-# str(gpp_reduction_list_df)
-# gpp_reduction_list_df$upper <- gpp_reduction_list_df$perc_change + gpp_reduction_list_df$ci_99
-# gpp_reduction_list_df$lower <- gpp_reduction_list_df$perc_change - gpp_reduction_list_df$ci_99
-# plot(perc_change~doy,data=gpp_reduction_list_df,cex=0.1,
-#      xlab='Julian day',ylab='Drought impact (% change in GPP)')
-# lines(perc_change~doy,data=gpp_reduction_list_df)
-# lines(upper~as.numeric(as.integer(doy)),gpp_reduction_list_df)
-# lines(lower~doy,gpp_reduction_list_df)
-# abline(h=0)
-# 
-# gpp.doy.spl <-
-#   with(gpp_reduction_list_df, smooth.spline(doy, perc_change))
-#lines(gpp.doy.spl, col = "blue")
+# ------
 
-# #import and merge
-# gpp_reduction_list_df <- read.csv(paste0('./../../Data/growth_dynamics/drought_gpp_reduction_',Ecoregion,'.csv'))
-# gpp_mean_list_df <- read.csv(paste0('./../../Data/growth_dynamics/average_gpp_',Ecoregion,'.csv'))
-# 
-# normal_drought_df <- merge(gpp_mean_list_df_2[c(2,3,5)],gpp_mean_list_df[c(2,3,5)],by='doy')
-# head(normal_drought_df)
-# 
-# normal_drought_df$perc_change <- 
-#   ((normal_drought_df$mean.x - normal_drought_df$mean.y)/normal_drought_df$mean.y)*100
-# 
-# head(normal_drought_df)
-# plot(perc_change ~ doy,data=normal_drought_df,xlab='Julian day',ylab='Drought impact (% change in GPP)')
-# abline(h=0)
 

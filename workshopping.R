@@ -892,72 +892,395 @@ cum_sum_quadrature <- function(x){
 #------
 
 
-#relative
-plot(perc_change~doy,data=growth_drynamics_sgs,type='l',
-     xlab='',ylab='',las=1,ylim=c(-80,55))
-rect(151,-90,243,350,col = 'grey95')
-rect(60,-90,151,350,col = 'grey')
-polygon(c(growth_drynamics_sgs$doy,rev(growth_drynamics_sgs$doy)),
-        c(growth_drynamics_sgs$lower,rev(growth_drynamics_sgs$upper)),
+#import SGS
+#mean
+growth_curve_absolute_mean_sgs <- 
+  read_csv('./../../Data/growth_curves/average_growth_curve_shortgrass_steppe.csv')
+#head(growth_curve_absolute_mean_sgs,1)
+
+#drought
+growth_curve_drought_absolute_mean_sgs <- 
+  read_csv('./../../Data/growth_curves/drought_growth_curve_shortgrass_steppe.csv')
+#head(growth_curve_drought_absolute_mean_sgs,1)
+
+#import NMP
+#mean
+growth_curve_absolute_mean_nmp <- 
+  read_csv('./../../Data/growth_curves/average_growth_curve_northern_mixed_prairies.csv')
+head(growth_curve_absolute_mean_nmp,2)
+
+#drought
+growth_curve_drought_absolute_mean_nmp <- 
+  read_csv('./../../Data/growth_curves/drought_growth_curve_northern_mixed_prairies.csv')
+head(growth_curve_drought_absolute_mean_nmp,2)
+
+
+#SGS growth curve figure
+png(height = 1500,width=3000,res=300,'Figures/multi_panel_growth_curves')
+
+par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,6,1,1),mar = c(3,1.25,3,3))
+#?par
+# plot it out panel A: sgs
+plot(mean ~ doy, growth_curve_absolute_mean_sgs,col='black',type='l',
+     ylab='',
+     xlab='',las=1,cex.axis=1.5,ylim=c(0,391))
+polygon(c(growth_curve_absolute_mean_sgs$doy,rev(growth_curve_absolute_mean_sgs$doy)),
+        c(growth_curve_absolute_mean_sgs$temporal_ci_25,rev(growth_curve_absolute_mean_sgs$temporal_ci_75)),
+        col = "grey", border = F)
+lines(mean ~ doy, growth_curve_absolute_mean_sgs,col='white',pch=19,lwd=2)
+polygon(c(growth_curve_absolute_mean_sgs$doy,rev(growth_curve_absolute_mean_sgs$doy)),
+        c(growth_curve_absolute_mean_sgs$lower_spatial,rev(growth_curve_absolute_mean_sgs$upper_spatial)),
         col = "black", border = F)
-text(100, -50, "Spring",cex=1)
-text(200, -20, "Summer",cex=1)
-text(275, 20, "Fall",cex=1)
-abline(h=0,col='black',lty='dashed')
-mtext('Julian day of year',side=1,line=2.35,cex=0.75)
-mtext('% Change in C uptake',side=2,line=2.5,cex=0.6)
-lines(perc_change~doy,data=growth_drynamics_sgs,type='l',col='white')
+polygon(c(growth_curve_drought_absolute_mean_sgs$doy,rev(growth_curve_drought_absolute_mean_sgs$doy)),
+        c(growth_curve_drought_absolute_mean_sgs$lower,rev(growth_curve_drought_absolute_mean_sgs$upper)),
+        col = "red", border = F)
+lines(mean ~ doy, growth_curve_drought_absolute_mean_sgs,col='black',pch=19,lwd=1)
+#abline(v=155)
+text(162, 176, "June 28th",cex=1)
+points(178, 176,pch=19,cex=3)
+text(170, 97, "June 6th",cex=1)
+points(157,102,pch=19,cex=3)
+legend(175, 60, legend=c("Average year", "Drought year"),         #alpha legend: 0.015, 150
+       col=c("grey", "red"), lty=1.1,lwd=4,cex=2,box.lty=0)
+legend(175, 90, legend=c("50% of total production"),         #alpha legend: 0.015, 150
+       col=c("black"), pch=19,box.lty=0,cex=2)
+mtext('Julian day of year',side=1,line=3.75,cex=1.5)
+mtext(expression("Cumulative carbon uptake " (g~C~m^-2)),side=2,line=3.5,cex=1.5)
+mtext('Shortgrass steppe',side=3,line=0.5,cex=1.25)
+mtext('a',side=3,line=0.5,cex=1.5,adj=-0.05)
+#?mtext
 
-#absolute
-growth_drynamics_absolute_sgs <- 
-  read_csv('./../../Data/growth_dynamics/drought_gpp_reduction_absolute_shortgrass_steppe.csv')
-head(growth_drynamics_absolute_sgs,1)
-
-growth_drynamics_absolute_sgs$upper <- growth_drynamics_absolute_sgs$abs_change + growth_drynamics_absolute_sgs$ci_99
-growth_drynamics_absolute_sgs$lower <- growth_drynamics_absolute_sgs$abs_change - growth_drynamics_absolute_sgs$ci_99
-
-plot(abs_change~doy,data=growth_drynamics_absolute_sgs,type='l',
-     xlab='',ylab='',las=1,cex.axis=2,ylim=c(-35,15))
-rect(151,-70,243,350,col = 'grey95')
-rect(60,-70,151,350,col = 'grey')
-polygon(c(growth_drynamics_absolute_sgs$doy,rev(growth_drynamics_absolute_sgs$doy)),
-        c(growth_drynamics_absolute_sgs$ci_95,rev(growth_drynamics_absolute_sgs$ci_05)),
+# plot it out panel B: nmp
+plot(mean ~ doy, growth_curve_absolute_mean_nmp,col='black',type='l',
+     ylab='',
+     xlab='',las=1,cex.axis=1.5,ylim=c(0,480))
+polygon(c(growth_curve_absolute_mean_nmp$doy,rev(growth_curve_absolute_mean_nmp$doy)),
+        c(growth_curve_absolute_mean_nmp$lower_temporal,rev(growth_curve_absolute_mean_nmp$upper_temporal)),
+        col = "grey", border = F)
+polygon(c(growth_curve_absolute_mean_nmp$doy,rev(growth_curve_absolute_mean_nmp$doy)),
+        c(growth_curve_absolute_mean_nmp$lower_spatial,rev(growth_curve_absolute_mean_nmp$upper_spatial)),
         col = "black", border = F)
-text(100, -15, "Spring",cex=2.5)
-text(200, -5, "Summer",cex=2.5)
-text(275, -15, "Fall",cex=2.5)
-abline(h=0,col='black',lty='dashed')
-mtext('Shortgrass steppe',side=3,line=0.5,cex=2)
-mtext('a',side=3,line=0.5,cex=1.5,adj=0.0)
-lines(abs_change~doy,data=growth_drynamics_absolute_sgs,type='l',col='white',lwd=2)
+polygon(c(growth_curve_drought_absolute_mean_nmp$doy,rev(growth_curve_drought_absolute_mean_nmp$doy)),
+        c(growth_curve_drought_absolute_mean_nmp$lower,rev(growth_curve_drought_absolute_mean_nmp$upper)),
+        col = "red", border = F)
+
+text(158, 210, "June 23rd",cex=1)
+points(174, 210,pch=19,cex=3)
+text(179, 170, "June 12th",cex=1)
+points(163,170,pch=19,cex=3)
+mtext('Julian day of year',side=1,line=3.75,cex=1.5)
+#mtext('GPP',side=2,line=2.5,cex=1.5)
+mtext('Northern mixed prairies',side=3,line=0.5,cex=1.25)
+mtext('b',side=3,line=0.5,cex=1.5,adj=-0.05)
 
 
-plot(perc_change~doy,data=growth_drynamics_nmp,type='l',
-     xlab='',ylab='',las=1,ylim=c(-100,120))
-rect(151,-50,243,350,col = 'grey95')
-rect(60,-50,151,350,col = 'grey')
-polygon(c(growth_drynamics_nmp$doy,rev(growth_drynamics_nmp$doy)),
-        c(growth_drynamics_nmp$lower,rev(growth_drynamics_nmp$upper)),
-        col = "black", border = F)
-# lines(perc_change~doy,data=growth_drynamics_nmp)
-# lines(upper~as.numeric(as.integer(doy)),growth_drynamics_nmp)
-# lines(lower~doy,growth_drynamics_nmp)
-abline(h=0,col='black',lty='dashed')
-mtext('Julian day of year',side=1,line=2.35,cex=0.75)
-mtext('% Change in C uptake',side=2,line=2.5,cex=0.6)
-lines(perc_change~doy,data=growth_drynamics_nmp,type='l',col='white')
 
-plot(abs_change~doy,data=growth_drynamics_absolute_nmp,type='l',
-     xlab='',ylab='',las=1,cex.axis=2,ylim=c(-35,10))
-rect(151,-70,243,350,col = 'grey95')
-rect(60,-70,151,350,col = 'grey')
-polygon(c(growth_drynamics_absolute_nmp$doy,rev(growth_drynamics_absolute_nmp$doy)),
-        c(growth_drynamics_absolute_nmp$ci_25,rev(growth_drynamics_absolute_nmp$ci_75)),
-        col = "black", border = F)
-abline(h=0,col='black',lty='dashed')
-mtext('Northern mixed prairies',side=3,line=0.5,cex=2)
-mtext('Julian day of year',side=1,line=4,cex=2)
-mtext(expression("GPP impact "(gCm^-2~'16 days')),side=2,line=4,adj = -15, cex=2)
-mtext('b',side=3,line=0.5,cex=1.5,adj=0.0)
-lines(abs_change~doy,data=growth_drynamics_absolute_nmp,type='l',col='white',lwd=4)
+# seasonality function ------
+
+
+seasonality_summary <- function(Ecoregion,climate,season){
+  
+  #import driest year
+  driest_year <- 
+    read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/growing_season/drought_precip_year_',Ecoregion,'.csv'))
+  driest_year <- driest_year %>%
+    dplyr::select(x,y,year,ppt_min)
+  #head(driest_year,1)
+  
+  
+  climate = 'temperature'
+  season = 'spring'
+  Ecoregion = 'shortgrass_steppe'
+  
+  
+  #import summer precip data
+  filepath_summer_precip <-
+    dir(
+      paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/',climate,'/',season,'/'   
+      ),
+      full.names = T
+    )
+  
+  if(climate=='precipitation'){
+    
+    import_function <- seasonal_precip_import_function
+    
+  }else{
+    
+    import_function <- seasonal_temp_import_function
+    
+  }
+  
+  test_seasonal <- lapply(filepath_summer_precip, import_function)
+  test_seasonal <- list_to_df(test_seasonal)
+  #head(test_seasonal,1)
+  
+  
+  colnames(test_seasonal) <- c('x','y','climate','year')
+  
+  #get unique ID for each coordinate
+  id_value_df <- aggregate(climate ~ x + y,mean,data = test_seasonal)
+  id_value_df$id_value <- seq.int(nrow(id_value_df))
+  id_value_df <- id_value_df %>%
+    dplyr::select(x,y,id_value)
+  test_seasonal <- merge(id_value_df,test_seasonal,by=c('x','y'))
+  
+  #merge summer precip with driest year
+  test_seasonal_drought <- merge(test_seasonal,driest_year,by=c('x','y','year')) #will use this later for merging
+  test_seasonal_drought_2 <- test_seasonal_drought %>%
+    dplyr::select(x,y,year,id_value) %>%
+    rename('dry_year' = 'year')
+  
+  id_list <- unique(test_seasonal_drought_2$id_value)
+  
+  #filter out the driest year from the summer ppt data
+  seasonal_list <- list()
+  for(i in id_list){
+    
+    dry_year_subset <- subset(test_seasonal_drought_2,id_value == i)
+    dry_year = as.numeric(dry_year_subset$dry_year)
+    
+    seasonal_id <- subset(test_seasonal,id_value == i)
+    
+    seasonal_id <- seasonal_id %>%
+      dplyr::filter(year != dry_year)
+    
+    seasonal_list[[i]] <- seasonal_id 
+    
+    #print(as.numeric(i)/as.numeric(length(id_list)))
+    
+  }
+  
+  seasonal_df <- do.call('rbind',seasonal_list)
+  head(seasonal_df,1)
+  
+  #get mean and merge with drought year
+  seasonal_mean <- aggregate(climate ~ x + y,mean,data = seasonal_df)
+  seasonal_mean <- merge(seasonal_mean,test_seasonal_drought[c(1,2,5)],by = c('x','y'))
+  
+  colnames(seasonal_mean) <- c('x','y','mean','drought')
+  # head(seasonal_mean,1)
+  
+  #percent decrease 
+  seasonal_mean$perc_decrease <- 
+    round(((seasonal_mean$drought - seasonal_mean$mean)/
+             seasonal_mean$mean)*100,2)
+  #hist(seasonal_mean$perc_decrease_seasonal)
+  
+  #absolute decrease 
+  seasonal_mean$abs_decrease <- 
+    seasonal_mean$drought - seasonal_mean$mean
+  
+  head(seasonal_mean,1)
+  
+  #make meaningful column names
+  colnames(seasonal_mean) <-
+    c('x','y',paste0(season,'_',climate,'_mean'),
+      paste0(season,'_',climate,'_drought'),paste0('perc_decrease_',season,'_',climate),
+      paste0('abs_decrease_',season,'_',climate))
+  
+  seasonal_mean$ecoregion <- Ecoregion
+  
+  return(seasonal_mean)
+  
+}
+
+# gpp 50 functions -----
+
+
+get_50_gpp_no_drought <- function(i) {
+  
+  #subset to a given pixel
+  growth_id <- ppt_gpp %>%
+    dplyr::filter(id_value == 100)
+  
+  #ID lat/lon up front
+  x <- unique(growth_id %>% pull(x))
+  y <- unique(growth_id %>% pull(y))
+  
+  ppt_sum <- aggregate(ppt ~ year,sum,data=growth_id)
+  colnames(ppt_sum) <- c('year','ppt_sum')
+  
+  growth_id <- merge(growth_id,ppt_sum,by=c('year'))
+  
+  
+  #get year with lowest precip
+  min_ppt <- min(growth_id$ppt_sum) 
+  
+  #subset to years above this value
+  growth_id  <- growth_id %>%
+    filter(ppt_sum > min_ppt)
+  
+  growth_id <- aggregate(gpp ~ doy, median, data = growth_id)
+  
+  #for that pixel, get cumulative GPP throughout the year
+  growth_id_cmulative <-
+    data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
+  growth_id_cmulative$gpp_3 <-
+    100 * (growth_id_cmulative$gpp_2 / max(growth_id_cmulative$gpp_2))
+  
+  rm(growth_id)
+  
+  #create spline model of growth curve
+  gpp.doy.spl <-
+    with(growth_id_cmulative, smooth.spline(doy, gpp_3))
+  #lines(gpp.doy.spl, col = "blue")
+  
+  rm(growth_id_cmulative)
+  
+  #run model through a sequence of days
+  doy <- data.frame(seq(from = 65, to = 297, by = 1))
+  gpp_predicted <- data.frame(predict(gpp.doy.spl, doy))
+  colnames(gpp_predicted) <- c('day', 'gpp_perc')
+  
+  #get day of year where roughly 50% of cumulative growth has occurred and turn into dataframe
+  gpp_predicted_50 <- gpp_predicted %>%
+    dplyr::filter(gpp_perc < 50.1)
+  
+  rm(gpp_predicted)
+  
+  doy_50 <-
+    max(gpp_predicted_50$day) #this is a rough approximation
+  
+  doy_50_df <- data.frame(doy_50)
+  colnames(doy_50_df) <- c('doy_50')
+  doy_50_df$x <- x
+  doy_50_df$y <- y
+  
+  doy_50_df <- doy_50_df[c(2, 3, 1)]
+  
+  return(doy_50_df)
+  
+  
+  
+}
+
+ 
+# day 50 plot ------
+
+
+#sgs
+day_50_drought_sgs <-
+  raster('./../../Data/CDD/day_of_50/day_50_drought_impact_shortgrass_steppe.tif')
+# plot(day_50_drought_sgs)
+# summary(day_50_drought_sgs)
+#median = -22
+#179-22
+
+#nmp
+day_50_drought_nmp <-
+  raster('./../../Data/CDD/day_of_50/day_50_drought_impact_northern_mixed_prairies.tif')
+summary(day_50_drought_nmp)
+#median = -12
+
+#combine
+day_50_drought <-
+  raster::merge(day_50_drought_nmp, day_50_drought_sgs,tolerance = 0.20)
+#proj4string(day_50_drought) <- CRS("+proj=longlat")
+day_50_drought <-projectRaster(day_50_drought, crs='+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96
++        +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs')
+day_50_drought_df <- data.frame(rasterToPoints(day_50_drought))
+
+# % of pixels with negative values (advanced day50)
+(day_50_drought_df %>%
+    filter(layer < 0) %>%
+    summarise(length(layer)))/(length(day_50_drought_df$layer))
+#0.90 of pixels see day of 50% growth occur earlier during extreme drought
+
+day_50_sgs_nmp_drought_map <-
+  ggplot() +
+  geom_polygon(data=states_all_sites_tidy, mapping=aes(x = long, y = lat,group=group),
+               color = "black", size = 0.1,fill=NA) +
+  geom_raster(data=day_50_drought_df, mapping=aes(x = x, y = y, fill = layer)) + 
+  coord_equal() +
+  scale_fill_scico('Effect of drought on day at which\nhalf of total C uptake occurs (days)',palette = 'roma',direction=-1) +
+  xlab('') +
+  ylab('') +
+  scale_x_continuous(expand=c(0,0)) +
+  scale_y_continuous(expand=c(0,0)) +
+  coord_fixed(xlim=c(-1500000,0), ylim=c(9e+05,3100000)) + #crop 
+  theme(
+    axis.text.x = element_blank(), #angle=25,hjust=1),
+    axis.text.y = element_blank(),
+    axis.title.x = element_text(color='black',size=10),
+    axis.title.y = element_text(color='black',size=10),
+    axis.ticks = element_blank(),
+    legend.key = element_blank(),
+    legend.position = 'top',
+    strip.background =element_rect(fill="white"),
+    strip.text = element_text(size=10),
+    panel.background = element_rect(fill=NA),
+    panel.border = element_blank(), #make the borders clear in prep for just have two axes
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank())
+
+
+#PDF of drought impact to 50% growth
+
+#nmp
+day_50_drought_nmp_2_df <- data.frame(rasterToPoints(day_50_drought_nmp))
+day_50_drought_nmp_2_df$region <- 'Northern mixed prairies'
+colnames(day_50_drought_nmp_2_df) <- c('x','y','day_50','region')
+
+#sgs
+day_50_drought_sgs_2_df <- data.frame(rasterToPoints(day_50_drought_sgs))
+day_50_drought_sgs_2_df$region <- 'Shortgrass steppe'
+colnames(day_50_drought_sgs_2_df) <- c('x','y','day_50','region')
+
+#join
+day_50_drought_nmp_sgs_2_df <- rbind(day_50_drought_nmp_2_df,day_50_drought_sgs_2_df)
+#head(day_50_drought_nmp_sgs_2_df,1)
+
+#plot it
+drought_day50_pdf <- ggplot(day_50_drought_nmp_sgs_2_df, aes(x = day_50, fill = region)) +
+  scale_y_continuous(expand = c(0,0)) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1.02)) +
+  geom_density(color = 'black', alpha = 0.5, aes(y = ..scaled..)) +
+  scale_fill_manual(values = c(
+    'Northern mixed prairies' = 'steelblue2',
+    'Shortgrass steppe' = 'green4'
+  )) +
+  geom_vline(xintercept = 0,color='black') +
+  xlab("Effect of drought on day at which\nhalf of total C uptake occurs (days)") +
+  ylab('Probability density') +
+  theme(
+    axis.text.x = element_text(color = 'black', size = 7),
+    #angle=25,hjust=1),
+    axis.text.y = element_text(color = 'black', size = 7),
+    axis.title = element_text(color = 'black', size = 10),
+    axis.ticks = element_line(color = 'black'),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 5),
+    legend.position = c(0.82, 0.7),
+    #legend.position = 'none',
+    strip.background = element_rect(fill = "white"),
+    strip.text = element_text(size = 15),
+    panel.background = element_rect(fill = NA),
+    panel.border = element_blank(),
+    #make the borders clear in prep for just have two axes
+    axis.line.x = element_line(colour = "black"),
+    axis.line.y = element_line(colour = "black")
+  )
+
+
+
+#try to make inset
+vp <- viewport(width = 0.44, height = 0.39, x = 0.23,y=0.27)
+# y = unit(0.7, "lines"), just = c("right",
+#                                  "bottom")
+
+#executing the inset, you create a function the utlizes all the previous code
+full <- function() {
+  print(day_50_sgs_nmp_drought_map)
+  print(drought_day50_pdf , vp = vp)
+}
+
+
+png(height = 1700,width=2000,res=300,'Figures/day50_drought_inset_plot.png')
+
+full()
+
+dev.off()
+
 
