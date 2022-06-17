@@ -49,6 +49,49 @@ write.csv(spring_summer_ppt,
 
 rm(spring_summer_ppt)
 
+#-------------------------------------------------------------------------------
+# spring and summer temperature -----
+
+#spring
+spring_temp <- seasonality_summary(Ecoregion = Ecoregion,
+                                  climate = 'temperature',
+                                  season = 'spring')
+
+
+#summer
+summer_temp <- seasonality_summary(Ecoregion = Ecoregion,
+                                  climate = 'temperature',
+                                  season = 'summer')
+
+#combine
+spring_summer_temp <- merge(spring_temp,summer_temp,by = c('x','y','ecoregion'))
+
+rm(spring_temp,summer_temp)
+
+spring_summer_temp$mean_total <- spring_summer_temp$spring_temperature_mean + 
+  spring_summer_temp$summer_temperature_mean
+
+spring_summer_temp$drought_total <- spring_summer_temp$summer_temperature_drought + 
+  spring_summer_temp$spring_temperature_drought
+
+
+spring_summer_temp$spring_prop_average <- spring_summer_temp$spring_temperature_mean/spring_summer_temp$mean_total
+#hist(spring_summer_temp$spring_prop_average)
+
+spring_summer_temp$spring_prop_drought <- spring_summer_temp$spring_temperature_drought/spring_summer_temp$drought_total
+#hist(spring_summer_temp$spring_prop_drought,col='red',add=T)
+
+spring_summer_temp$change_spring_prop <- (spring_summer_temp$spring_prop_drought -
+                                           spring_summer_temp$spring_prop_average)*100
+#hist(spring_summer_temp$change_spring_prop)
+
+#export
+write.csv(spring_summer_temp,
+          paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/temperature/seasonal_change_temperature.csv'))
+
+rm(spring_summer_ppt)
+
+#-------------------------------------------------------------------------------
 #VPD -------
 
 #repetitive code among the two seasons. Could be turned into a function. Only

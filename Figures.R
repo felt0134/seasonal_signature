@@ -51,20 +51,20 @@ states_all_sites_tidy <- left_join(states_all_sites_tidy, states_all_sites@data)
 
 
 #-------------------------------------------------------------------------------
-# day of 75% growth in normal and dry years-----
+# day of 75% C uptake in normal and dry years (updated 6/17/2022) -----
 
 #sgs
 day_75_drought_sgs <-
   raster('./../../Data/CDD/day_of_75/day_75_drought_impact_shortgrass_steppe.tif')
 # plot(day_75_drought_sgs)
 # summary(day_75_drought_sgs)
-#median = 
+#median = 3
 
 #nmp
 day_75_drought_nmp <-
   raster('./../../Data/CDD/day_of_75/day_75_drought_impact_northern_mixed_prairies.tif')
-summary(day_75_drought_nmp)
-#median 
+#summary(day_75_drought_nmp)
+#median = -4
 
 #combine
 day_75_drought <-
@@ -78,7 +78,7 @@ day_75_drought_df <- data.frame(rasterToPoints(day_75_drought))
 (day_75_drought_df %>%
     filter(layer < 0) %>%
     summarise(length(layer)))/(length(day_75_drought_df$layer))
-#0.90 of pixels see day of 75% growth occur earlier during extreme drought
+#0.61 of pixels see day of 75% growth occur earlier during extreme drought
 
 day_75_sgs_nmp_drought_map <-
   ggplot() +
@@ -86,7 +86,8 @@ day_75_sgs_nmp_drought_map <-
                color = "black", size = 0.1,fill=NA) +
   geom_raster(data=day_75_drought_df, mapping=aes(x = x, y = y, fill = layer)) + 
   coord_equal() +
-  scale_fill_scico('Effect of drought on day at which\nhalf of total C uptake occurs (days)',palette = 'roma',direction=-1) +
+  scale_fill_scico('Effect of drought on day at which\n75% of total C uptake occurs (days)',
+                   palette = 'roma',direction = -1,midpoint = 0) +
   xlab('') +
   ylab('') +
   scale_x_continuous(expand=c(0,0)) +
@@ -134,7 +135,7 @@ drought_day75_pdf <- ggplot(day_75_drought_nmp_sgs_2_df, aes(x = day_75, fill = 
     'Shortgrass steppe' = 'green4'
   )) +
   geom_vline(xintercept = 0,color='black') +
-  xlab("Effect of drought on day at which\nhalf of total C uptake occurs (days)") +
+  xlab("Effect of drought on day at which\n75% of total C uptake occurs (days)") +
   ylab('Probability density') +
   theme(
     axis.text.x = element_text(color = 'black', size = 7),
@@ -145,16 +146,15 @@ drought_day75_pdf <- ggplot(day_75_drought_nmp_sgs_2_df, aes(x = day_75, fill = 
     legend.key = element_blank(),
     legend.title = element_blank(),
     legend.text = element_text(size = 5),
-    legend.position = c(0.82, 0.7),
-    #legend.position = 'none',
+    #legend.position = c(0.82, 0.7),
+    legend.position = 'top',
     strip.background = element_rect(fill = "white"),
     strip.text = element_text(size = 15),
     panel.background = element_rect(fill = NA),
     panel.border = element_blank(),
     #make the borders clear in prep for just have two axes
     axis.line.x = element_line(colour = "black"),
-    axis.line.y = element_line(colour = "black")
-  )
+    axis.line.y = element_line(colour = "black"))
 
 #try to make inset
 vp <- viewport(width = 0.44, height = 0.39, x = 0.23,y=0.27)
@@ -183,10 +183,10 @@ rm(day_75_drought,day_75_drought_df,day_75_drought_nmp,day_75_drought_nmp_2_df,
 #follow up: correlation of day 75 impact and latitude 
 
 cor.test(day_75_drought_nmp_sgs_2_df$y,day_75_drought_nmp_sgs_2_df$day_75 ,method='spearman',exact=FALSE)
-#
+#-0.24
 
 day_75_lat_plot <- ggplot(day_75_drought_nmp_sgs_2_df, aes(x = y, y = day_75,color = region)) +
-  geom_point(alpha=0.5) +
+  geom_point(alpha=0.3) +
   scale_colour_manual(values = c(
     'Shortgrass steppe' = 'green4',
     'Northern mixed prairies' = 'steelblue2'
@@ -194,7 +194,7 @@ day_75_lat_plot <- ggplot(day_75_drought_nmp_sgs_2_df, aes(x = y, y = day_75,col
   geom_hline(yintercept = 0,size=2,color='grey') +
   stat_smooth(method='lm',color='black',size=2) +
   #geom_vline(xintercept = 0,color='red') +
-  ylab('Effect of drought on day at which\n75% carbon uptake is achieved (days)') +
+  ylab("Effect of drought on day at which\n75% of total C uptake occurs (days)") +
   xlab('Latitude') +
   annotate("text", x=46, y=40, label= "Delayed") +
   annotate("text", x=46, y=-50, label= "Advanced") +
@@ -215,8 +215,7 @@ day_75_lat_plot <- ggplot(day_75_drought_nmp_sgs_2_df, aes(x = y, y = day_75,col
     panel.border = element_blank(),
     #make the borders clear in prep for just have two axes
     axis.line.x = element_line(colour = "black"),
-    axis.line.y = element_line(colour = "black")
-  )
+    axis.line.y = element_line(colour = "black"))
 
 png(height = 1500,width=2000,res=300,'Figures/day75_drought_latitude_relationship.png')
 
@@ -230,7 +229,7 @@ rm(day_75_lat_plot,day_75_drought_nmp_sgs_2_df)
 
 
 #-------------------------------------------------------------------------------
-# day of 50% growth in normal and dry years (updated 6/16/2022)-----
+# day of 50% C uptake in normal and dry years (updated 6/16/2022) -----
 
 #sgs
 day_50_drought_sgs <-
@@ -265,7 +264,8 @@ day_50_sgs_nmp_drought_map <-
                color = "black", size = 0.1,fill=NA) +
   geom_raster(data=day_50_drought_df, mapping=aes(x = x, y = y, fill = layer)) + 
   coord_equal() +
-  scale_fill_scico('Effect of drought on day at which\nhalf of total C uptake occurs (days)',palette = 'roma',direction=-1) +
+  scale_fill_scico('Effect of drought on day at which\nhalf of total C uptake occurs (days)',
+                   palette = 'roma',direction = -1,midpoint = 0) +
   xlab('') +
   ylab('') +
   scale_x_continuous(expand=c(0,0)) +
@@ -302,6 +302,7 @@ colnames(day_50_drought_sgs_2_df) <- c('x','y','day_50','region')
 #join
 day_50_drought_nmp_sgs_2_df <- rbind(day_50_drought_nmp_2_df,day_50_drought_sgs_2_df)
 #head(day_50_drought_nmp_sgs_2_df,1)
+#summary(day_50_drought_nmp_sgs_2_df)
 
 #plot it
 drought_day50_pdf <- ggplot(day_50_drought_nmp_sgs_2_df, aes(x = day_50, fill = region)) +
@@ -324,16 +325,15 @@ drought_day50_pdf <- ggplot(day_50_drought_nmp_sgs_2_df, aes(x = day_50, fill = 
     legend.key = element_blank(),
     legend.title = element_blank(),
     legend.text = element_text(size = 5),
-    legend.position = c(0.82, 0.7),
-    #legend.position = 'none',
+    #legend.position = c(0.82, 0.7),
+    legend.position = 'top',
     strip.background = element_rect(fill = "white"),
     strip.text = element_text(size = 15),
     panel.background = element_rect(fill = NA),
     panel.border = element_blank(),
     #make the borders clear in prep for just have two axes
     axis.line.x = element_line(colour = "black"),
-    axis.line.y = element_line(colour = "black")
-  )
+    axis.line.y = element_line(colour = "black"))
 
 #try to make inset
 vp <- viewport(width = 0.44, height = 0.39, x = 0.23,y=0.27)
@@ -407,20 +407,16 @@ dev.off()
 rm(day_50_lat_plot,day_50_drought_nmp_sgs_2_df)
 
 #-------------------------------------------------------------------------------
-# day of 25% growth in normal and dry years -----
+# day of 25% C uptake in normal and dry years (updated 6/17/2022) -----
 
 #sgs
 day_25_drought_sgs <-
   raster('./../../Data/CDD/day_of_25/day_25_drought_impact_shortgrass_steppe.tif')
-# plot(day_25_drought_sgs)
-# summary(day_25_drought_sgs)
-#median = 
 
 #nmp
 day_25_drought_nmp <-
   raster('./../../Data/CDD/day_of_25/day_25_drought_impact_northern_mixed_prairies.tif')
-summary(day_25_drought_nmp)
-#median = -12
+
 
 #combine
 day_25_drought <-
@@ -442,7 +438,8 @@ day_25_sgs_nmp_drought_map <-
                color = "black", size = 0.1,fill=NA) +
   geom_raster(data=day_25_drought_df, mapping=aes(x = x, y = y, fill = layer)) + 
   coord_equal() +
-  scale_fill_scico('Effect of drought on day at which\nhalf of total C uptake occurs (days)',palette = 'roma',direction=-1) +
+  scale_fill_scico('Effect of drought on day at which\n25% of total C uptake occurs (days)',
+                   palette = 'roma',direction=-1,midpoint = 0) +
   xlab('') +
   ylab('') +
   scale_x_continuous(expand=c(0,0)) +
@@ -490,7 +487,7 @@ drought_day25_pdf <- ggplot(day_25_drought_nmp_sgs_2_df, aes(x = day_25, fill = 
     'Shortgrass steppe' = 'green4'
   )) +
   geom_vline(xintercept = 0,color='black') +
-  xlab("Effect of drought on day at which\nhalf of total C uptake occurs (days)") +
+  xlab("Effect of drought on day at which\n25% of total C uptake occurs (days)") +
   ylab('Probability density') +
   theme(
     axis.text.x = element_text(color = 'black', size = 7),
@@ -501,16 +498,15 @@ drought_day25_pdf <- ggplot(day_25_drought_nmp_sgs_2_df, aes(x = day_25, fill = 
     legend.key = element_blank(),
     legend.title = element_blank(),
     legend.text = element_text(size = 5),
-    legend.position = c(0.82, 0.7),
-    #legend.position = 'none',
+    #legend.position = c(0.82, 0.7),
+    legend.position = 'top',
     strip.background = element_rect(fill = "white"),
     strip.text = element_text(size = 15),
     panel.background = element_rect(fill = NA),
     panel.border = element_blank(),
     #make the borders clear in prep for just have two axes
     axis.line.x = element_line(colour = "black"),
-    axis.line.y = element_line(colour = "black")
-  )
+    axis.line.y = element_line(colour = "black"))
 
 #try to make inset
 vp <- viewport(width = 0.44, height = 0.39, x = 0.23,y=0.27)
@@ -539,7 +535,7 @@ rm(day_25_drought,day_25_drought_df,day_25_drought_nmp,day_25_drought_nmp_2_df,
 #follow up: correlation of day 25 impact and latitude 
 
 cor.test(day_25_drought_nmp_sgs_2_df$y,day_25_drought_nmp_sgs_2_df$day_25 ,method='spearman',exact=FALSE)
-#
+#0.49
 
 day_25_lat_plot <- ggplot(day_25_drought_nmp_sgs_2_df, aes(x = y, y = day_25,color = region)) +
   geom_point(alpha=0.5) +
@@ -550,7 +546,7 @@ day_25_lat_plot <- ggplot(day_25_drought_nmp_sgs_2_df, aes(x = y, y = day_25,col
   geom_hline(yintercept = 0,size=2,color='grey') +
   stat_smooth(method='lm',color='black',size=2) +
   #geom_vline(xintercept = 0,color='red') +
-  ylab('Effect of drought on day at which\n25% carbon uptake is achieved (days)') +
+  ylab("Effect of drought on day at which\n25% of total C uptake occurs (days)") +
   xlab('Latitude') +
   annotate("text", x=46, y=40, label= "Delayed") +
   annotate("text", x=46, y=-50, label= "Advanced") +
@@ -822,7 +818,8 @@ spring_ppt_map <- ggplot() +
                color = "black", size = 0.1,fill=NA) +
   geom_raster(data=seasonal_change_spring_ppt_df, mapping=aes(x = x, y = y, fill = layer)) + 
   coord_equal() +
-  scale_fill_scico('Change in % of\nspring precipitation',palette = 'roma',direction=1) +
+  scale_fill_scico('Change in % of\nspring precipitation',palette = 'roma',
+                   direction = 1,midpoint = 0) +
   xlab('') +
   ylab('') +
   scale_x_continuous(expand=c(0,0)) +
@@ -968,73 +965,6 @@ dev.off()
 
 
 #-------------------------------------------------------------------------------
-# ecoregion distributions (to do) ------
-
-library(rgdal)
-
-#shapefile referecne for state outlines. This will results in a sp file being downloaded...
-us<-getData("GADM", country='USA', level=1,download=TRUE)
-states_all_sites <- us[us$NAME_1 %in% c(
-  'Colorado','Wyoming',
-  'Montana','Texas','Kansas','New Mexico',
-  'North Dakota','South Dakota','Nebraska',
-  'Oklahoma'),]
-
-states_all_sites <- sp::spTransform(states_all_sites, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-states_all_sites <- spTransform(states_all_sites, crs(Albers))
-plot(states_all_sites)
-
-#set directory
-test_wd<-"/Volumes/GoogleDrive/My Drive/range-resilience/Sensitivity/Processing NPP Data/NPP Data processing"
-
-#load file (will need to update working directory)
-rangeland_npp_covariates<-readRDS(file.path(test_wd, "Dryland_NPP.rds")) #loads file and name it annualSWA_OctDec I guess
-
-nm_sgs<-rangeland_npp_covariates %>%
-  dplyr::filter(region==c('northern_mixed_prairies','shortgrass_steppe')) 
-
-mean_npp<-aggregate(npp~x+y,mean,data=nm_sgs)
-
-mean_production_raster<-rasterFromXYZ(mean_npp)
-#plot(mean_production_raster)
-
-#import shapefules
-
-#SGS
-SGS.shape<-readOGR(dsn="/Volumes/GoogleDrive/My Drive/range-resilience/scope/study-area-shapefiles/SGS",layer="SGS")
-#plot(SGS.shape)
-SGS.shape@bbox <- as.matrix(extent(mean_production_raster))
-#plot(SGS.shape)
-SGS.shape.2 <- sp::spTransform(SGS.shape, crs("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-SGS.shape.3 <- sp::spTransform(SGS.shape.2, crs(Albers))
-plot(SGS.shape.3)
-
-#NMP
-NorthernMixedSubset.shape<-readOGR(dsn="/Volumes/GoogleDrive/My Drive/range-resilience/scope/study-area-shapefiles/NorthernMixedSubset",layer="NorthernMixedSubset")
-#plot(NorthernMixedSubset.shape)
-NorthernMixedSubset.shape@bbox <- as.matrix(extent(mean_production_raster))
-plot(NorthernMixedSubset.shape)
-#step 2:
-NorthernMixedSubset.shape.2 <- sp::spTransform(NorthernMixedSubset.shape, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
-#plot(NorthernMixedSubset.shape.2)
-NorthernMixedSubset.shape.3 <- sp::spTransform(NorthernMixedSubset.shape.2, crs(Albers))
-plot(NorthernMixedSubset.shape.3)
-crop(NorthernMixedSubset.shape.2,mean_production_raster)
-
-#combine
-test<-NorthernMixedSubset.shape.3 + SGS.shape.3
-
-png(height = 2000,width=2100,res=300,'Figures/ecoregions.png')
-plot(test,lwd=0.1)
-plot(NorthernMixedSubset.shape.3,col='steelblue2', lwd = .1,add=TRUE)
-plot(SGS.shape.3, lwd = 0.1,col='green4', lwd = .1,add=TRUE)
-legend(-2090000, 1916791.1, legend=c("Shortgrass steppe", "Northern mixed prairies"),         #alpha legend: 0.015, 150
-       col=c("green4", "steelblue2"), pch=19,cex=1,box.lty=0)
- plot(states_all_sites,add=TRUE,lwd=0.5)
-
-dev.off()
-
-#-------------------------------------------------------------------------------
 # 1 km subset of gpp dynamics during drought (update 6/9/2022) --------
 
 
@@ -1166,28 +1096,127 @@ dev.off()
 
 
 #-------------------------------------------------------------------------------
-# drought years map and barchart ------
+# drought years map and barchart (updated 6/17/2022) ------
 
+library(rgdal)
+
+#map of distributions
+
+#shapefile referecne for state outlines. This will results in a sp file being downloaded...
+us<-getData("GADM", country='USA', level=1,download=TRUE)
+states_all_sites <- us[us$NAME_1 %in% c(
+  'Colorado','Wyoming',
+  'Montana','Texas','Kansas','New Mexico',
+  'North Dakota','South Dakota','Nebraska',
+  'Oklahoma'),]
+
+states_all_sites <- sp::spTransform(states_all_sites, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+states_all_sites <- spTransform(states_all_sites, crs(Albers))
+plot(states_all_sites)
+
+#set directory
+test_wd <- "/Volumes/GoogleDrive/My Drive/range-resilience/Sensitivity/Processing NPP Data/NPP Data processing"
+
+#load file (will need to update working directory)
+rangeland_npp_covariates <- readRDS(file.path(test_wd, "Dryland_NPP.rds")) #loads file and name it annualSWA_OctDec I guess
+
+nm_sgs <- rangeland_npp_covariates %>%
+  dplyr::filter(region == c('northern_mixed_prairies','shortgrass_steppe')) 
+
+mean_npp <- aggregate(npp~x+y,mean,data=nm_sgs)
+
+mean_production_raster<-rasterFromXYZ(mean_npp)
+#plot(mean_production_raster)
+
+#import shapefiles
+
+#SGS
+SGS.shape<-readOGR(dsn="/Volumes/GoogleDrive/My Drive/range-resilience/scope/study-area-shapefiles/SGS",layer="SGS")
+#plot(SGS.shape)
+SGS.shape@bbox <- as.matrix(extent(mean_production_raster))
+#plot(SGS.shape)
+SGS.shape.2 <- sp::spTransform(SGS.shape, crs("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+SGS.shape.3 <- sp::spTransform(SGS.shape.2, crs(Albers))
+sgs_shape_df_tidy <- tidy(SGS.shape.3)
+sgs_shape_df_tidy <- left_join(sgs_shape_df_tidy, SGS.shape.3@data)
+#plot(SGS.shape.3)
+
+#NMP
+NorthernMixedSubset.shape<-readOGR(dsn="/Volumes/GoogleDrive/My Drive/range-resilience/scope/study-area-shapefiles/NorthernMixedSubset",layer="NorthernMixedSubset")
+#plot(NorthernMixedSubset.shape)
+NorthernMixedSubset.shape@bbox <- as.matrix(extent(mean_production_raster))
+plot(NorthernMixedSubset.shape)
+#step 2:
+NorthernMixedSubset.shape.2 <- sp::spTransform(NorthernMixedSubset.shape, CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0"))
+#plot(NorthernMixedSubset.shape.2)
+NorthernMixedSubset.shape.3 <- sp::spTransform(NorthernMixedSubset.shape.2, crs(Albers))
+plot(NorthernMixedSubset.shape.3)
+#crop(NorthernMixedSubset.shape.2,mean_production_raster)
+
+nmp_shape_df_tidy <- tidy(NorthernMixedSubset.shape.3)
+nmp_shape_df_tidy$ecoregion <- 'Northern mixed prairies'
+sgs_shape_df_tidy$ecoregion <- 'Shortgrass steppe'
+
+# Recategorizes data as required for plotting
+#nmp_shape_df_tidy <- left_join(nmp_shape_df_tidy, NorthernMixedSubset.shape.3@data)
+
+distributions <- ggplot() +
+  geom_polygon(data=states_all_sites_tidy, mapping=aes(x = long, y = lat,group=group),
+               color = "black", size = 0.1,fill=NA) +
+  geom_polygon(data=nmp_shape_df_tidy, mapping=aes(x = long, y = lat,group=group,fill=ecoregion),
+               color = "black", size = 0.1) + #fill='steelblue2'
+  geom_polygon(data=sgs_shape_df_tidy, mapping=aes(x = long, y = lat,group=group,fill=ecoregion),
+               color = "black", size = 0.1) + #fill='green4'
+  scale_fill_manual(values = c(
+    'Shortgrass steppe' = 'green4',
+    'Northern mixed prairies' = 'steelblue2'
+  )) +
+  coord_equal() +
+  xlab('') +
+  ylab('') +
+  scale_x_continuous(expand=c(0,0)) +
+  scale_y_continuous(expand=c(0,0)) +
+  coord_fixed(xlim=c(-1500000,0), ylim=c(9e+05,3100000)) + #crop 
+  theme(
+    axis.text.x = element_blank(), #angle=25,hjust=1),
+    axis.text.y = element_blank(),
+    axis.title.x = element_text(color='black',size=10),
+    axis.title.y = element_text(color='black',size=10),
+    axis.ticks = element_blank(),
+    plot.margin = margin(0.0,1,0.0,0.0,"cm"),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    legend.position = 'top',
+    strip.background =element_rect(fill="white"),
+    strip.text = element_text(size=10),
+    panel.background = element_rect(fill=NA),
+    panel.border = element_blank(), #make the borders clear in prep for just have two axes
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank())
+
+#
+#
+
+#barchart of driest years
 Ecoregion <- 'shortgrass_steppe'
 driest_year_sgs <- 
   read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/growing_season/drought_precip_year_',Ecoregion,'.csv'))
 driest_year_sgs$ecoregion <- 'Shortgrass steppe'
 
 #select five most common years
-driest_year_sgs_count <- aggregate(ppt~year + ecoregion,length,data=driest_year_sgs)
-driest_year_sgs_count <- driest_year_sgs_count %>% arrange(desc(ppt)) %>%
-  dplyr::filter(ppt >34)
+driest_year_sgs_count <- aggregate(ppt_min~year + ecoregion,length,data=driest_year_sgs)
+driest_year_sgs_count <- driest_year_sgs_count %>% arrange(desc(ppt_min)) %>%
+  dplyr::filter(ppt_min > 34)
   
-
 Ecoregion <- 'northern_mixed_prairies'
 driest_year_nmp <- 
   read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/growing_season/drought_precip_year_',Ecoregion,'.csv'))
 driest_year_nmp$ecoregion <- 'Northern mixed prairies'
 
 #select five most common years
-driest_year_nmp_count <- aggregate(ppt~year + ecoregion,length,data=driest_year_nmp)
-driest_year_nmp_count <- driest_year_nmp_count %>% arrange(desc(ppt)) %>%
-  filter(ppt > 872)
+driest_year_nmp_count <- aggregate(ppt_min~year + ecoregion,length,data=driest_year_nmp)
+driest_year_nmp_count <- driest_year_nmp_count %>% arrange(desc(ppt_min)) %>%
+  filter(ppt_min > 878)
 
 five_driest_years <- rbind(driest_year_sgs_count,driest_year_nmp_count)
 
@@ -1195,7 +1224,7 @@ head(five_driest_years,1)
 
 five_driest_years$year <- as.factor(five_driest_years$year)
 
-  driest_years_barchat <- ggplot(five_driest_years,aes(reorder(year,-ppt),ppt,fill=ecoregion)) +
+  driest_years_barchat <- ggplot(five_driest_years,aes(reorder(year,-ppt_min),ppt_min,fill=ecoregion)) +
     stat_summary(fun='mean',geom='bar',color='black') +
     ylab('Number of pixels') +
     xlab('Driest year (2003-2020)') +
@@ -1223,15 +1252,18 @@ five_driest_years$year <- as.factor(five_driest_years$year)
       panel.border = element_blank(),
       #make the borders clear in prep for just have two axes
       axis.line.x = element_line(colour = "black"),
-      axis.line.y = element_line(colour = "black")
-    )
+      axis.line.y = element_line(colour = "black"))
 
+#
+#
 
+#map make of driest years
+  
 #raster is acting weird
-  str(driest_year_sgs)
+#str(driest_year_sgs)
 #driest_year_sgs$year <- as.factor(driest_year_sgs$year)
-driest_year_sgs_raster <- rasterFromXYZ(driest_year_sgs[c(1,2,4)])
-driest_year_nmp_raster <- rasterFromXYZ(driest_year_nmp[c(1,2,4)])
+driest_year_sgs_raster <- rasterFromXYZ(driest_year_sgs[c(2,3,4)])
+driest_year_nmp_raster <- rasterFromXYZ(driest_year_nmp[c(2,3,4)])
 
 driest_year_raster <- 
   raster::merge(driest_year_sgs_raster,driest_year_nmp_raster,
@@ -1276,27 +1308,30 @@ driest_year_map_df$layer <- round(driest_year_map_df$layer)
       axis.line.x = element_blank(),
       axis.line.y = element_blank())
   
+#make multipanel figure
   
-  #make the inset
+  library(patchwork)
   
-  vp <- viewport(width = 0.44, height = 0.39, x = 0.23,y=0.27)
-  # y = unit(0.7, "lines"), just = c("right",
-  #                                  "bottom")
-  
-  #executing the inset, you create a function the utlizes all the previous code
-  full <- function() {
-    print(driest_year_map_plot)
-    print(driest_years_barchat , vp = vp)
-  }
+  png(height = 1500,width=3000,res=300,'Figures/driest_years_V2.png')
   
   
-  png(height = 1700,width=2000,res=300,'Figures/driest_years.png')
-  
-  full()
+  #p123 <- (distributions/ driest_years_barchat)|driest_year_map_plot
+  p123 <- distributions + driest_years_barchat + driest_year_map_plot
+  p123 + plot_annotation(tag_levels = "a")
   
   dev.off()
   
+#
+#
   
+#cleanup
+rm(distributionsm,driest_year_map,driest_year_map_df,driest_year_map_plot,
+   driest_year_nmp,driest_year_nmp_count,driest_year_nmp_raster,
+   driest_year_raster,driest_year_sgs,driest_year_sgs_count,five_driest_years,
+   mean_npp,mean_precip_sgs,mean_production_raster,nm_sgs,nmp_shape_df_tidy,
+   NorthernMixedSubset.shape,NorthernMixedSubset.shape.2,NorthernMixedSubset.shape.3,
+   p123,rangeland_npp_covariates,sgs_shape_df_tidy,SGS.shape,SGS.shape.2,SGS.shape.3,
+   driest_year_sgs_raster,driest_years_barchat,distributions)
 
 
 #-------------------------------------------------------------------------------

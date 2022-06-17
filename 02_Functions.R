@@ -606,7 +606,7 @@ day_50_gpp_drought <- function(i) {
 day_25_gpp_drought <- function(i) {
   
   growth_id <- ppt_gpp %>%
-    dplyr::filter(id_value == 100)
+    dplyr::filter(id_value == i)
   
   #ID lat/lon up front
   x <- unique(growth_id %>% pull(x))
@@ -1780,5 +1780,44 @@ seasonality_summary <- function(Ecoregion,climate,season){
   
 }
 
+
+
+
+#-------------------------------------------------------------------------------
+# boostrapped ks test of distributions -----
+
+
+ks_test_bootstrap <- function(data_1,data_2){
+  
+  #assumes the two dataframes have an XYZ structure
+  
+  d_list <- list()
+  for(i in 1:1000){
+    
+    #get random subset of 100
+    
+    #first dataset
+    dataset_1 <- data_1 %>%
+      dplyr::sample_n(100)
+    colnames(dataset_1) <- c('x','y','z')
+    
+    #second dataset
+    dataset_2 <- data_2 %>%
+      dplyr::sample_n(100)
+    colnames(dataset_2) <- c('x','y','z')
+
+    
+    test <- ks.test(dataset_1$z,dataset_2$z,exact=F)
+    D <- data.frame(test$statistic)
+    
+    d_list[[i]] <- D
+    
+  }
+  
+  d_df <- do.call('rbind',d_list)
+  
+  return(d_df)
+  
+}
 
 
