@@ -1456,6 +1456,7 @@ gpp_spline_drought <- function(i) {
 
 #16-day NDVI throughout growing season 
 
+#average year
 ndvi_spline  <- function(i) {
   
   #subset to a given pixel
@@ -1478,6 +1479,48 @@ ndvi_spline  <- function(i) {
   
 }
 
+#updated June 2022
+ndvi_spline_2  <- function(i) {
+  
+  #subset to a given pixel
+  growth_id <- ppt_ndvi %>%
+    dplyr::filter(id_value == i)
+  
+  #ID lat/lon up front
+  x <- unique(growth_id %>% pull(x))
+  y <- unique(growth_id %>% pull(y))
+  
+  #get total precip
+  ppt_sum <- aggregate(ndvi ~ year,sum,data=growth_id)
+  colnames(ppt_sum) <- c('year','ppt_sum')
+  
+  growth_id <- merge(growth_id,ppt_sum,by=c('year'))
+  
+  #get year with lowest precip
+  min_ppt <- min(growth_id$ppt_sum) 
+  
+  #subset to years above this value
+  growth_id  <- growth_id %>%
+    filter(ppt_sum > min_ppt)
+  
+  #average
+  growth_id <- aggregate(ndvi ~ doy, median, data = growth_id)
+  #plot(gpp~doy,growth_id)
+  
+  #create spline model of growth curve
+  ndvi_doy_spl <-
+    with(growth_id, smooth.spline(doy, ndvi))
+  #lines(gpp_doy_spl, col = "blue")
+  
+  return(ndvi_doy_spl)
+  
+  
+}
+
+#
+#
+
+#drought year
 ndvi_spline_drought <- function(i) {
   
   ppt_id <- subset(ppt_ndvi, id_value == i)
@@ -1508,6 +1551,39 @@ ndvi_spline_drought <- function(i) {
   
   return(ndvi.doy.drought.spl)
   
+  
+}
+
+#updated June 2022
+ndvi_spline_drought_2 <- function(i){
+  
+  growth_id <- ppt_ndvi %>%
+    dplyr::filter(id_value == i)
+  
+  #ID lat/lon up front
+  x <- unique(growth_id %>% pull(x))
+  y <- unique(growth_id %>% pull(y))
+  
+  #get total precip
+  ppt_sum <- aggregate(ppt ~ year,sum,data=growth_id)
+  colnames(ppt_sum) <- c('year','ppt_sum')
+  
+  growth_id <- merge(growth_id,ppt_sum,by=c('year'))
+  
+  #get year with lowest precip
+  min_ppt <- min(growth_id$ppt_sum) + 0.1
+  
+  #subset to years above this value
+  growth_id  <- growth_id %>%
+    filter(ppt_sum < min_ppt)
+  
+  #create spline model of growth curve
+  ndvi_doy_drought_spl <- with(growth_id, smooth.spline(doy, ndvi))
+  #plot(ndvi ~ doy, data = growth_id)
+  #lines(ndvi_doy_drought_spl, col = "red")
+  
+  
+  return(ndvi_doy_drought_spl)
   
 }
 

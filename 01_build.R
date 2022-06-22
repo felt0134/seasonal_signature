@@ -5,7 +5,7 @@
 rm(list=ls())
 
 pkgs <- c("raster",'tidyverse','data.table',
-          'rstudioapi') #sp and rgdal deleted 1/4/2022
+          'rstudioapi','readr') #sp and rgdal deleted 1/4/2022
 lapply(pkgs, library, character.only = TRUE) 
 
 # Set working directory to local directory

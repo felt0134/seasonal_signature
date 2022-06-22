@@ -3,7 +3,6 @@
 
 
 # setup----
-library(plotrix)
 plan(multisession, workers = 10)
 options(future.globals.maxSize = 8000 * 1024^2) #https://github.com/satijalab/seurat/issues/1845
 period_list <- seq(1, 15, 1) #set periods
@@ -13,87 +12,14 @@ year_list <- seq(2003, 2020, 1) #set years
 year_list <-
   as.character(year_list) #easier when they are characters
 
-
-# first do the ndvi import----
-
-#loop through each year and period combination
-
-#list to store outputs in
-ndvi_list <- list()
-
-#run the loop
-for (i in period_list) {
-  filepath <-
-    dir(
-      paste0(
-        './../../Data/ndvi/Ecoregion/',
-        Ecoregion,
-        '/MODIS_ndvi/Period/',
-        i,
-        '/'
-      ),
-      full.names = T
-    )
-  test <- lapply(filepath, format_ndvi_df)
-  test <- data.frame(do.call('rbind', test))
-  #test <- lapply(test,rasterToPoints)
-  ndvi_list[[i]] <- test
-  
-}
-
-#convert list of dataframes to a single dataframe
-ndvi_df <- do.call('rbind', ndvi_list)
-rm(ndvi_list, test) #get rid of excess stuff
-
-#make unique id for each site
-ndvi_df_mean <- aggregate(ndvi ~ x + y, mean, data = ndvi_df)
-ndvi_df_mean$id_value <- seq.int(nrow(ndvi_df_mean))
-#head(ndvi_df_mean,50)
-
-#import conversion of period to day of year to map period on to DOY
-doy_conversion <- read.csv('./../../Data/ndvi/period_day_match.csv')
-
-#add on day of year and ID columns
-ndvi_df <- merge(ndvi_df, doy_conversion[c(2, 3)], by = c('period'))
-ndvi_df <- merge(ndvi_df, ndvi_df_mean[c(1, 2, 4)], by = c('x', 'y'))
-
-#create a vector of unique sites IDs
-id_list <- unique(ndvi_df$id_value)
-
-# import ppt -----
-ppt_list <- list()
-
-#loop through each year and period
-for (i in period_list) {
-  filepath <-
-    dir(
-      paste0(
-        './../../Data/Climate/Ecoregion/',
-        Ecoregion,
-        '/Precipitation/Period/',
-        i,
-        '/'
-      ),
-      full.names = T
-    )
-  test_ppt <- lapply(filepath, format_ppt_df)
-  test_ppt <- data.frame(do.call('rbind', test_ppt))
-  ppt_list[[i]] <- test_ppt
-  
-}
-
-#convert to dataframe
-ppt_df <- do.call('rbind', ppt_list)
-rm(ppt_list, test_ppt) #remove excess data
-#head(ppt_df)
-
-#merge the two dataframes by location, year, and period within each year
-ppt_ndvi <- merge(ndvi_df, ppt_df, by = c('x', 'y', 'year', 'period'))
-#head(ppt_ndvi)
-rm(ppt_df)
-
+#import
+ppt_ndvi <- readr::read_csv(paste0('./../../Data/NDVI/Ecoregion/',Ecoregion,'/ppt_ndvi_combined.csv'))
+#head(ppt_ndvi,1)
 
 # get splines -----
+
+#create a vector of unique sites IDs
+id_list <- unique(ppt_ndvi$id_value)
 
 #get average growth 
 with_progress({
@@ -101,7 +27,7 @@ with_progress({
   growth_spline_list <- future_lapply(id_list, function(i) {
     Sys.sleep(0.1)
     p(sprintf("i=%g", i))
-    ndvi_spline(i)
+    ndvi_spline_2(i)
   })
 })
 
@@ -112,7 +38,7 @@ with_progress({
   growth_drought_spline_list <- future_lapply(id_list, function(i) {
     Sys.sleep(0.1)
     p(sprintf("i=%g", i))
-    ndvi_spline_drought(i)
+    ndvi_spline_drought_2(i)
   })
 })
 
@@ -172,8 +98,10 @@ for(i in doy_list){
   #get median
   ndvi_predicted_drought_average_2 <- aggregate(perc_change~doy,median,data=ndvi_predicted_drought_average)
 
-  #get and add 99% CI
-  ndvi_predicted_drought_average_2$ci_99 <- std.error(ndvi_predicted_drought_average$perc_change)*2.576
+  #get and add 25th and 75 quantiles
+  #ndvi_predicted_drought_average_2$ci_99 <- std.error(ndvi_predicted_drought_average$perc_change)*2.576
+  ndvi_predicted_drought_average_2$ci_75 <- quantile(ndvi_predicted_drought_average$perc_change, probs = 0.75)
+  ndvi_predicted_drought_average_2$ci_25 <- quantile(ndvi_predicted_drought_average$perc_change, probs = 0.25)
   ndvi_predicted_drought_average_2$sample_size <- ss
   ndvi_reduction_list[[i]] <- ndvi_predicted_drought_average_2
   
@@ -184,8 +112,10 @@ for(i in doy_list){
   #get median
   ndvi_predicted_drought_average_4 <- aggregate(abs_change~doy,median,data=ndvi_predicted_drought_average_3)
   
-  #get and add 99% CI
-  ndvi_predicted_drought_average_4$ci_99 <- std.error(ndvi_predicted_drought_average_3$abs_change)*2.576
+  #get and add 25th and 75th quantiles
+  #ndvi_predicted_drought_average_4$ci_99 <- std.error(ndvi_predicted_drought_average_3$abs_change)*2.576
+  ndvi_predicted_drought_average_4$ci_75 <- quantile(ndvi_predicted_drought_average_3$abs_change, probs = 0.75)
+  ndvi_predicted_drought_average_4$ci_25 <- quantile(ndvi_predicted_drought_average_3$abs_change, probs = 0.25)
   ndvi_predicted_drought_average_4$sample_size <- ss
   ndvi_reduction_list_2[[i]] <- ndvi_predicted_drought_average_4
   
@@ -203,7 +133,7 @@ head(ndvi_reduction_list_df_2,1)
 filename <- paste0('./../../Data/growth_dynamics/drought_ndvi_reduction_absolute_',Ecoregion,'.csv')
 write.csv(ndvi_reduction_list_df_2,filename)
 
-rm(ndvi_df_mean,ndvi_predicted_average,ndvi_predicted_drought,ndvi_predicted_drought_average,
+rm(ndvi_predicted_average,ndvi_predicted_drought,ndvi_predicted_drought_average,
    ndvi_predicted_drought_average_2,ndvi_predicted_list_average,ndvi_predicted_list_average_df,
    ndvi_predicted_list_drought,ndvi_predicted_list_drought_df,ndvi_reduction_list,
    growth_drought_spline_list,growth_spline_list,ndvi_reduction_list_2,ndvi_predicted_drought_average_3,
@@ -211,30 +141,12 @@ rm(ndvi_df_mean,ndvi_predicted_average,ndvi_predicted_drought,ndvi_predicted_dro
 
 
 #plot this out ------
-str(ndvi_reduction_list_df)
-ndvi_reduction_list_df$upper <- ndvi_reduction_list_df$perc_change + ndvi_reduction_list_df$ci_99
-ndvi_reduction_list_df$lower <- ndvi_reduction_list_df$perc_change - ndvi_reduction_list_df$ci_99
-plot(perc_change~doy,data=ndvi_reduction_list_df,cex=0.1,
-     xlab='Julian day',ylab='Drought impact (% change in ndvi)',ylim=c(-40,1))
-lines(perc_change~doy,data=ndvi_reduction_list_df)
-lines(upper~as.numeric(as.integer(doy)),ndvi_reduction_list_df)
-lines(lower~doy,ndvi_reduction_list_df)
-abline(h=0)
-# 
-# ndvi.doy.spl <-
-#   with(ndvi_reduction_list_df, smooth.spline(doy, perc_change))
-#lines(ndvi.doy.spl, col = "blue")
-
-# #import and merge
-# ndvi_reduction_list_df <- read.csv(paste0('./../../Data/growth_dynamics/drought_ndvi_reduction_',Ecoregion,'.csv'))
-# ndvi_mean_list_df <- read.csv(paste0('./../../Data/growth_dynamics/average_ndvi_',Ecoregion,'.csv'))
-# 
-# normal_drought_df <- merge(ndvi_mean_list_df_2[c(2,3,5)],ndvi_mean_list_df[c(2,3,5)],by='doy')
-# head(normal_drought_df)
-# 
-# normal_drought_df$perc_change <- 
-#   ((normal_drought_df$mean.x - normal_drought_df$mean.y)/normal_drought_df$mean.y)*100
-# 
-# head(normal_drought_df)
-# plot(perc_change ~ doy,data=normal_drought_df,xlab='Julian day',ylab='Drought impact (% change in ndvi)')
+# str(ndvi_reduction_list_df)
+# ndvi_reduction_list_df$upper <- ndvi_reduction_list_df$perc_change + ndvi_reduction_list_df$ci_99
+# ndvi_reduction_list_df$lower <- ndvi_reduction_list_df$perc_change - ndvi_reduction_list_df$ci_99
+# plot(perc_change~doy,data=ndvi_reduction_list_df,cex=0.1,
+#      xlab='Julian day',ylab='Drought impact (% change in ndvi)',ylim=c(-40,1))
+# lines(perc_change~doy,data=ndvi_reduction_list_df)
+# lines(upper~as.numeric(as.integer(doy)),ndvi_reduction_list_df)
+# lines(lower~doy,ndvi_reduction_list_df)
 # abline(h=0)

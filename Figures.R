@@ -1369,7 +1369,7 @@ rm(distributionsm,driest_year_map,driest_year_map_df,driest_year_map_plot,
   
   par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,6,1,1),mar = c(3,1.25,3,3))
   
-  plot(perc_change~doy,data=growth_drynamics_ndvi_sgs,type='l',
+  plot(abs_change~doy,data=growth_drynamics_ndvi_sgs,type='l',
        xlab='',ylab='',las=1,ylim=c(-35,1))
   rect(151,-70,243,350,col = 'grey95')
   rect(60,-70,151,350,col = 'grey')
@@ -1385,7 +1385,7 @@ rm(distributionsm,driest_year_map,driest_year_map_df,driest_year_map_plot,
   mtext('% Change in NDVI',side=2,line=3,cex=1.75)
   
   
-  plot(perc_change~doy,data=growth_drynamics_ndvi_nmp,type='l',
+  plot(abs_change~doy,data=growth_drynamics_ndvi_nmp,type='l',
        xlab='',ylab='',las=1,ylim=c(-25,40))
   rect(151,-70,243,350,col = 'grey95')
   rect(60,-70,151,350,col = 'grey')
