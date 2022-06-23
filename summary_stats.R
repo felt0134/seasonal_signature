@@ -594,81 +594,41 @@ summer_gpp = end_summer$mean - spring_gpp
 summer_gpp/spring_gpp
 #1.4
 #-------------------------------------------------------------------------------
-# compare distributions of day 90 by ecoregion ------
+# compare distributions of day 75 by ecoregion ------
 
-#sgs
-day_90_sgs <- raster('./../../Data/CDD/day_of_90/day_90_shortgrass_steppe.tif')
-plot(day_90_sgs)
-day_90_sgs_df <- data.frame(rasterToPoints(day_90_sgs))
-day_90_sgs_df$Ecoregion <- 'Shortgrass steppe'
-colnames(day_90_sgs_df) <- c('x','y','doy','Ecoregion')
-median(day_90_sgs_df$doy) #263 = September 20
+#shortgrass stppe
+day_75_drought_sgs <-
+  raster('./../../Data/CDD/day_of_75/day_75_drought_impact_shortgrass_steppe.tif')
+day_75_drought_sgs <- data.frame(rasterToPoints(day_75_drought_sgs))
+day_75_drought_sgs <- day_75_drought_sgs %>%
+  dplyr::rename('day_75' = 'day_75_drought_impact_shortgrass_steppe')
+#day_75_drought_sgs$ecoregion <- 'shortgrass_steppe'
 
-#nmp
-day_90_nmp <- raster('./../../Data/CDD/day_of_90/day_90_northern_mixed_prairies.tif')
-plot(day_90_nmp)
-day_90_nmp_df <- data.frame(rasterToPoints(day_90_nmp))
-day_90_nmp_df$Ecoregion <- 'Northern mixed prairies'
-colnames(day_90_nmp_df) <- c('x','y','doy','Ecoregion')
-median(day_90_nmp_df$doy) #248 = September 5
+quantile(day_75_drought_sgs$day_75,probs = c(0.25,0.5,0.75))
 
-#impact of drought on the 90% day of growth
+#
+#
 
-#sgs
-day_90_drought_sgs <-
-  raster('./../../Data/CDD/day_of_90/day_90_droughtshortgrass_steppe.tif')
-#plot(day_90_drought_sgs)
-day_90_drought_sgs <- stack(day_90_drought_sgs, day_90_sgs)
-plot(day_90_drought_sgs)
-day_90_drought_sgs_2 <-
-  day_90_drought_sgs$day_90_droughtshortgrass_steppe -
-  day_90_drought_sgs$day_90_shortgrass_steppe
-#plot(day_90_drought_sgs_2)
-summary(day_90_drought_sgs_2)
-#median = 4
+#northern mixed prairies
+day_75_drought_nmp <-
+  raster('./../../Data/CDD/day_of_75/day_75_drought_impact_northern_mixed_prairies.tif')
+day_75_drought_nmp <- data.frame(rasterToPoints(day_75_drought_nmp))
+day_75_drought_nmp <- day_75_drought_nmp %>%
+  dplyr::rename('day_75' = 'day_75_drought_impact_northern_mixed_prairies')
+#day_75_drought_nmp$ecoregion <- 'northern_mixed_prairies'
 
-#nmp
-day_90_drought_nmp <-
-  raster('./../../Data/CDD/day_of_90/day_90_droughtnorthern_mixed_prairies.tif')
-#plot(day_90_drought_nmp)
-day_90_drought_nmp <- stack(day_90_drought_nmp, day_90_nmp)
-#plot(day_90_drought_nmp)
-day_90_drought_nmp_2 <-
-  day_90_drought_nmp$day_90_droughtnorthern_mixed_prairies -
-  day_90_drought_nmp$day_90_northern_mixed_prairies
-#plot(day_90_drought_nmp_2)
-summary(day_90_drought_nmp_2)
-#median = 0
+quantile(day_75_drought_nmp$day_75,probs = c(0.25,0.5,0.75))
 
-#turn each to a dataframe
-day_90_drought_sgs_2_lat <- data.frame(rasterToPoints(day_90_drought_sgs_2))
-day_90_drought_nmp_2_lat <- data.frame(rasterToPoints(day_90_drought_nmp_2))
+#compare distributions
+compare_day_75 <- ks_test_bootstrap(day_75_drought_nmp,day_75_drought_sgs)
+hist(compare_day_75$test.statistic)
+quantile(compare_day_75$test.statistic,probs= c(0.01,0.5))
 
-ks.test(day_90_drought_sgs_2_lat$layer,day_90_drought_nmp_2_lat$layer)
-hist(day_90_drought_nmp_2_lat$layer)
-hist(day_90_drought_sgs_2_lat$layer,add=T,col='blue')
+#look at correlation
+day_75_drought_sgs_nmp <- rbind(day_75_drought_nmp,day_75_drought_sgs)
+cor.test(day_75_drought_sgs_nmp$y,day_75_drought_sgs_nmp$day_75 ,method='spearman',exact=FALSE)
+#-0.24
 
-# data:  day_90_drought_sgs_2_lat$layer and day_90_drought_nmp_2_lat$layer
-# D = 0.42584, p-value < 2.2e-16
-# alternative hypothesis: two-sided
-#so distributions are different...what is this really telling us?
-
-library(gstat)
-#bind them and make into one variogram 
-binded_day_90 <- rbind(day_90_drought_nmp_2_lat,day_90_drought_sgs_2_lat)
-coordinates(day_90_drought_nmp_2_lat) = ~ x+y
-TheVariogram=variogram(layer~1, data=day_90_drought_nmp_2_lat)
-plot(TheVariogram)
-summary(TheVariogram)
-#psill = asymptote on y axis
-#nugget = intercept
-#range = asymptote on x axis
-TheVariogramModel <- vgm(psill=10, model="Sph", nugget=4, range=5)
-plot(TheVariogram, model=TheVariogramModel,xlab='Distance (km)',cex.lab=5,
-     main='Effect of drought on day at which 90% of carbon uptake occurs') 
-abline(h=5)
-?abline
-summary(TheVariogramModel)
 
 #-------------------------------------------------------------------------------
 # compare distribution of day 50 (in progress) ------
@@ -687,6 +647,7 @@ quantile(day_50_drought_sgs$day_50,probs = c(0.25,0.5,0.75))
 #
 #
 
+#northern mixed prairies
 day_50_drought_nmp <-
   raster('./../../Data/CDD/day_of_50/day_50_drought_impact_northern_mixed_prairies.tif')
 day_50_drought_nmp <- data.frame(rasterToPoints(day_50_drought_nmp))
@@ -699,33 +660,101 @@ quantile(day_50_drought_nmp$day_50,probs = c(0.25,0.5,0.75))
 #compare distributions
 compare_day_50 <- ks_test_bootstrap(day_50_drought_nmp,day_50_drought_sgs)
 hist(compare_day_50$test.statistic)
+quantile(compare_day_50$test.statistic,probs= c(0.01,0.5))
+
+#look at correlation
+day_50_all <- rbind(day_50_drought_nmp,day_50_drought_sgs)
+cor.test(day_50_all$y,day_50_all$day_50 ,method='spearman',exact=FALSE)
+#0.34
 
 #variogram analysis
-day_50_all <- rbind(day_50_drought_nmp,day_50_drought_sgs)
-day_50_all <- rasterFromXYZ(day_50_all)
-proj4string(day_50_all) <- CRS("+proj=longlat")
 
-library(gstat)
-#bind them and make into one variogram 
+#sgs
+day_50_drought_sgs <-
+  raster('./../../Data/CDD/day_of_50/day_50_drought_impact_shortgrass_steppe.tif')
+point_data_50_sgs <- as(day_50_drought_sgs, 'SpatialPointsDataFrame')
 
-coordinates(day_50_all) =~ x+y
-TheVariogram = variogram(day_50~1, data = day_50_all)
-plot(TheVariogram)
-summary(TheVariogram)
-#psill = asymptote on y axis
-#nugget = intercept
-#range = asymptote on x axis
-TheVariogramModel <- vgm(psill=10, model="Sph", nugget=4, range=5)
-plot(TheVariogram, model=TheVariogramModel,xlab='Distance (km)',cex.lab=5,
-     main='Effect of drought on day at which 90% of carbon uptake occurs') 
-abline(h=5)
-?abline
-summary(TheVariogramModel)
+TheVariogram_50_sgs = variogram(day_50_drought_impact_shortgrass_steppe ~1,
+                                data = point_data_50_sgs,width = 10)
 
+summary(TheVariogram_50_sgs)
+plot(TheVariogram_50_sgs)
+
+TheVariogramModel_50_sgs <- vgm(psill=300, model="Exp", nugget=50, range=100)
+plot(TheVariogram_50_sgs, model=TheVariogramModel_50_sgs) 
+FittedModel_50_sgs <- fit.variogram(TheVariogram_50_sgs, model=TheVariogramModel_50_sgs)
+FittedModel_50_sgs
+#Range = 50.1 km
+
+# plot(TheVariogram_50_sgs, model=FittedModel_50_sgs,xlab='Distance (km)',
+#      ylab = 'Semivariance',cex=1,lwd=2,col='black')
+
+#northern mixed prairies
+day_50_drought_nmp <-
+  raster('./../../Data/CDD/day_of_50/day_50_drought_impact_northern_mixed_prairies.tif')
+
+point_data_50_nmp <- as(day_50_drought_nmp, 'SpatialPointsDataFrame')
+
+TheVariogram_50_nmp = variogram(day_50_drought_impact_northern_mixed_prairies ~1,
+                                data = point_data_50_nmp,width = 10)
+
+summary(TheVariogram_50_nmp)
+plot(TheVariogram_50_nmp)
+
+TheVariogramModel_50_nmp <- vgm(psill=300, model="Exp", nugget=50, range=100)
+plot(TheVariogram_50_nmp, model=TheVariogramModel_50_nmp) 
+FittedModel_50_nmp <- fit.variogram(TheVariogram_50_nmp, model=TheVariogramModel_50_nmp)
+FittedModel_50_nmp
+
+# plot(TheVariogram_50_nmp, model=FittedModel_50_nmp,xlab='Distance (km)',
+#      ylab = 'Semivariance',cex=1,lwd=2,col='black')
+
+# #make a quick figure of this here
+# par(mfrow=c(2,1),cex = 0.5,lwd = 0.5,oma=c(3.2,9,1,1),mar = c(3,2.25,3,3))
+# 
+# plot(TheVariogram_50_sgs, model=FittedModel_50_sgs,xlab='Distance (km)',
+#      ylab = 'Semivariance',cex=1,lwd=2,col='black')
+# plot(TheVariogram_50_nmp, model=FittedModel_50_nmp,xlab='Distance (km)',
+#      ylab = 'Semivariance',cex=1,lwd=2,col='black')
 
 
 #-------------------------------------------------------------------------------
 # compare distribution of day 25 (to do) ------
+
+
+#shortgrass stppe
+day_25_drought_sgs <-
+  raster('./../../Data/CDD/day_of_25/day_25_drought_impact_shortgrass_steppe.tif')
+day_25_drought_sgs <- data.frame(rasterToPoints(day_25_drought_sgs))
+day_25_drought_sgs <- day_25_drought_sgs %>%
+  dplyr::rename('day_25' = 'day_25_drought_impact_shortgrass_steppe')
+#day_25_drought_sgs$ecoregion <- 'shortgrass_steppe'
+
+quantile(day_25_drought_sgs$day_25,probs = c(0.25,0.5,0.50))
+
+#
+#
+
+#northern mixed prairies
+day_25_drought_nmp <-
+  raster('./../../Data/CDD/day_of_25/day_25_drought_impact_northern_mixed_prairies.tif')
+day_25_drought_nmp <- data.frame(rasterToPoints(day_25_drought_nmp))
+day_25_drought_nmp <- day_25_drought_nmp %>%
+  dplyr::rename('day_25' = 'day_25_drought_impact_northern_mixed_prairies')
+#day_25_drought_nmp$ecoregion <- 'northern_mixed_prairies'
+
+quantile(day_25_drought_nmp$day_25,probs = c(0.25,0.5,0.75))
+
+#compare distributions
+compare_day_25 <- ks_test_bootstrap(day_25_drought_nmp,day_25_drought_sgs)
+hist(compare_day_25$test.statistic)
+quantile(compare_day_25$test.statistic,probs= c(0.01,0.5))
+
+#look at correlation
+day_25_all <- rbind(day_25_drought_nmp,day_25_drought_sgs)
+cor.test(day_25_all$y,day_25_all$day_25,method='spearman',exact=FALSE)
+
+
 #-------------------------------------------------------------------------------
 # compare distribution of seasonality of precip ------
 

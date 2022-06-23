@@ -415,8 +415,7 @@ library(sp)
 
 #drought impact to day of 50 C uptake
 
-
-#shrotgrass steppe 
+#shortgrass steppe 
 point_data_50_sgs <- as(day_50_drought_sgs, 'SpatialPointsDataFrame')
 
 TheVariogram_50_sgs = variogram(day_50_drought_impact_shortgrass_steppe ~1,
@@ -432,6 +431,8 @@ FittedModel_50_sgs
 
 plot(TheVariogram_50_sgs, model=FittedModel_50_sgs,xlab='Distance (km)',
      ylab = 'Semivariance',cex=1,lwd=2,col='black')
+abline(v=100)
+?abline
 
 #NMP
 point_data_50_nmp <- as(day_50_drought_nmp, 'SpatialPointsDataFrame')
@@ -881,7 +882,7 @@ cum_sum_quadrature <- function(x){
 
 #import SGS
 #mean
-growth_curve_absolute_mean_sgs <- 
+growth_curve_absolute_mean_sgs_1km <- 
   read_csv('./../../Data/growth_curves/average_growth_curve_shortgrass_steppe.csv')
 #head(growth_curve_absolute_mean_sgs,1)
 
@@ -1365,6 +1366,62 @@ mtext('Day of year',side=1,line=4.5,cex=2.25)
 mtext(expression("Change in NDVI"),side=2,line=5,adj = 3, cex=2.5)
 mtext('b',side=3,line=0.5,cex=2,adj=0.0)
 lines(abs_change~doy,data=growth_drynamics_ndvi_nmp,type='l',col='white',lwd=4)
+
+dev.off()
+
+
+# 1 km subset plot ------
+
+
+#absolute change in C uptake/GPP through time
+
+#import sgs
+growth_drynamics_absolute_sgs_1km <- 
+  read_csv('./../../Data/growth_dynamics/one_km_subset/drought_gpp_reduction_absolute_shortgrass_steppe.csv')
+#head(growth_drynamics_absolute_sgs_1km,1)
+
+#import NMP
+growth_drynamics_absolute_nmp <- 
+  read_csv('./../../Data/growth_dynamics/one_km_subset/drought_gpp_reduction_absolute_northern_mixed_prairies.csv')
+#head(growth_drynamics_absolute_nmp_1km,1)
+
+#filepath
+png(height = 3000,width=3000,res=300,'Figures/multi_panel_gpp_impacts_absolute_1km.png')
+
+#setup
+par(mfrow=c(2,1),cex = 0.5,lwd = 0.5,oma=c(3.2,9,1,1),mar = c(3,2.25,3,3))
+
+#sgs
+plot(abs_change~doy,data=growth_drynamics_absolute_sgs_1km,type='l',
+     xlab='',ylab='',las=1,cex.axis=2,ylim=c(-26,5))
+rect(151,-70,243,350,col = 'grey95')
+rect(60,-70,151,350,col = 'grey')
+polygon(c(growth_drynamics_absolute_sgs_1km$doy,rev(growth_drynamics_absolute_sgs_1km$doy)),
+        c(growth_drynamics_absolute_sgs_1km$ci_75,rev(growth_drynamics_absolute_sgs_1km$ci_25)),
+        col = "black", border = F)
+text(100, -20, "Spring",cex=3)
+text(200, -5, "Summer",cex=3)
+text(275, -20, "Fall",cex=3)
+text(200, 1, "Median carbon uptake",cex=2)
+abline(h=0,col='black',lty='dashed')
+mtext('Shortgrass steppe',side=3,line=0.5,cex=1.5)
+mtext('a',side=3,line=0.5,cex=2,adj=0.0)
+lines(abs_change~doy,data=growth_drynamics_absolute_sgs_1km,type='l',col='white',lwd=2)
+
+#nmp
+plot(abs_change~doy,data=growth_drynamics_absolute_nmp,type='l',
+     xlab='',ylab='',las=1,cex.axis=2,ylim=c(-35,10))
+rect(151,-70,243,350,col = 'grey95')
+rect(60,-70,151,350,col = 'grey')
+polygon(c(growth_drynamics_absolute_nmp$doy,rev(growth_drynamics_absolute_nmp$doy)),
+        c(growth_drynamics_absolute_nmp$ci_25,rev(growth_drynamics_absolute_nmp$ci_75)),
+        col = "black", border = F)
+abline(h=0,col='black',lty='dashed')
+mtext('Northern mixed prairies',side=3,line=0.5,cex=1.5)
+mtext('Day of year',side=1,line=4.5,cex=2.5)
+mtext(expression("Change in carbon uptake "(~g~C~m^-2~'16 days')),side=2,line=4,adj = -0.1, cex=2.5)
+mtext('b',side=3,line=0.5,cex=2,adj=0.0)
+lines(abs_change~doy,data=growth_drynamics_absolute_nmp,type='l',col='white',lwd=4)
 
 dev.off()
 

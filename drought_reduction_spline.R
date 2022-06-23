@@ -3,7 +3,6 @@
 #get % reduction in GPP throughout the growing season
 
 # setup----
-#library(plotrix)
 plan(multisession, workers = 10)
 options(future.globals.maxSize = 8000 * 1024^2) #https://github.com/satijalab/seurat/issues/1845
 period_list <- seq(1, 15, 1) #set periods

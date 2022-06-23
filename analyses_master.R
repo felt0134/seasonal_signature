@@ -9,8 +9,8 @@ library(progressr)
 #pick which ecoregion to runthe script for. You could loop and run each ecoregion
 #in one batch but some of these take a while and it may be nice to the output for each.
 
-#Ecoregion = 'shortgrass_steppe'
-Ecoregion = 'northern_mixed_prairies' 
+Ecoregion = 'shortgrass_steppe'
+#Ecoregion = 'northern_mixed_prairies' 
 #Ecoregion = 'nebraska_sandhills'
 
 # day at which 25%, 50%, and 75% of growth has occurred during average and drought years -----
@@ -48,9 +48,9 @@ source('seasonal_precip_temp_analysis.R')
 # 1km subset analyses ------
 
 
+source('growth_curve_splines_1km_subset.R')
 
 source('drought_reduction_spline_1km_subset.R')
-source('growth_curve_splines_1km_subset.R')
 
 
 #-------------------------------------------------------------------------------
