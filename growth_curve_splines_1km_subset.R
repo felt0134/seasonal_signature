@@ -1,7 +1,5 @@
 #get splines of growth curves 
 
-library(plotrix)
-
 
 # setup----
 plan(multisession, workers = 10)

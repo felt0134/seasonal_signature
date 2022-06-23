@@ -1335,70 +1335,59 @@ rm(distributionsm,driest_year_map,driest_year_map_df,driest_year_map_plot,
 
 
 #-------------------------------------------------------------------------------
-# growth curves (impacts through time) NDVI subset -----
+# growth dynamics NDVI subset (Updated june 2022) -----
   
-  #growth dynamics NDVI
-  
-  #SGS
-  growth_drynamics_ndvi_sgs <- 
-    read_csv('./../../Data/growth_dynamics/drought_ndvi_reduction_shortgrass_steppe.csv')
-  head(growth_drynamics_ndvi_sgs,1)
-  
-  growth_drynamics_ndvi_sgs$upper <- growth_drynamics_ndvi_sgs$perc_change + growth_drynamics_ndvi_sgs$ci_99
-  growth_drynamics_ndvi_sgs$lower <- growth_drynamics_ndvi_sgs$perc_change - growth_drynamics_ndvi_sgs$ci_99
-  
-  #northern mixed prairies
-  growth_drynamics_ndvi_nmp <- 
-    read_csv('./../../Data/growth_dynamics/drought_ndvi_reduction_northern_mixed_prairies.csv')
-  head(growth_drynamics_ndvi_sgs,1)
-  
-  growth_drynamics_ndvi_sgs$upper <- growth_drynamics_ndvi_sgs$perc_change + growth_drynamics_ndvi_sgs$ci_99
-  growth_drynamics_ndvi_sgs$lower <- growth_drynamics_ndvi_sgs$perc_change - growth_drynamics_ndvi_sgs$ci_99
-  
-  
-  #NMP
-  growth_drynamics_ndvi_nmp <- 
-    read_csv('./../../Data/growth_dynamics/drought_ndvi_reduction_northern_mixed_prairies.csv')
-  head(growth_drynamics_ndvi_nmp,1)
-  
-  growth_drynamics_ndvi_nmp$upper <- growth_drynamics_ndvi_nmp$perc_change + growth_drynamics_ndvi_nmp$ci_99
-  growth_drynamics_ndvi_nmp$lower <- growth_drynamics_ndvi_nmp$perc_change - growth_drynamics_ndvi_nmp$ci_99
-  
-  
-  png(height = 1500,width=3000,res=300,'Figures/multi_panel_growth_curves_NDVI')
-  
-  par(mfrow=c(1,2),cex = 0.5,lwd = 0.5,oma=c(3.2,6,1,1),mar = c(3,1.25,3,3))
-  
-  plot(abs_change~doy,data=growth_drynamics_ndvi_sgs,type='l',
-       xlab='',ylab='',las=1,ylim=c(-35,1))
-  rect(151,-70,243,350,col = 'grey95')
-  rect(60,-70,151,350,col = 'grey')
-  polygon(c(growth_drynamics_ndvi_sgs$doy,rev(growth_drynamics_ndvi_sgs$doy)),
-          c(growth_drynamics_ndvi_sgs$lower,rev(growth_drynamics_ndvi_sgs$upper)),
-          col = "black", border = F)
-  mtext('Shortgrass steppe',side=3,line=0.5,cex=1.25)
-  text(100, -20, "Spring",cex=1.5)
-  text(200, -20, "Summer",cex=1.5)
-  text(275, -20, "Fall",cex=1.5)
-  abline(h=0,col='black',lty='dashed')
-  mtext('a',side=3,line=0.5,cex=1.5,adj=-0.05)
-  mtext('% Change in NDVI',side=2,line=3,cex=1.75)
-  
-  
-  plot(abs_change~doy,data=growth_drynamics_ndvi_nmp,type='l',
-       xlab='',ylab='',las=1,ylim=c(-25,40))
-  rect(151,-70,243,350,col = 'grey95')
-  rect(60,-70,151,350,col = 'grey')
-  polygon(c(growth_drynamics_ndvi_nmp$doy,rev(growth_drynamics_ndvi_nmp$doy)),
-          c(growth_drynamics_ndvi_nmp$lower,rev(growth_drynamics_ndvi_nmp$upper)),
-          col = "black", border = F)
-  mtext('Northern Mixed prairies',side=3,line=0.5,cex=1.25)
-  mtext('b',side=3,line=0.5,cex=1.5,adj=-0.05)
-  abline(h=0,col='black',lty='dashed')
-  mtext('Julian day of year',side=1,line=4,adj=-1,cex=1.75)
+#growth dynamics NDVI
 
-  
-  dev.off()
+#SGS
+growth_drynamics_ndvi_sgs <- 
+  read_csv('./../../Data/growth_dynamics/drought_ndvi_reduction_absolute_shortgrass_steppe.csv')
+head(growth_drynamics_ndvi_sgs,1)
+
+#northern mixed prairies
+growth_drynamics_ndvi_nmp <- 
+  read_csv('./../../Data/growth_dynamics/drought_ndvi_reduction_absolute_northern_mixed_prairies.csv')
+head(growth_drynamics_ndvi_nmp,1)
+
+#filepath
+png(height = 3000,width=3000,res=300,'Figures/multi_panel_growth_curves_NDVI')
+
+#setup
+par(mfrow=c(2,1),cex = 0.5,lwd = 0.5,oma=c(3.2,9,1,1),mar = c(3,2.25,3,3))
+
+#sgs
+plot(abs_change~doy,data=growth_drynamics_ndvi_sgs,type='l',
+     xlab='',ylab='',las=1,cex.axis=2,ylim=c(-.15,.01))
+rect(151,-70,243,350,col = 'grey95')
+rect(60,-70,151,350,col = 'grey')
+polygon(c(growth_drynamics_ndvi_sgs$doy,rev(growth_drynamics_ndvi_sgs$doy)),
+        c(growth_drynamics_ndvi_sgs$ci_75,rev(growth_drynamics_ndvi_sgs$ci_25)),
+        col = "black", border = F)
+text(100, -.1, "Spring",cex=3)
+text(200, -.03, "Summer",cex=3)
+text(275, -.020, "Fall",cex=3)
+text(200, .005, "Median NDVI",cex=2)
+abline(h=0,col='black',lty='dashed')
+mtext('Shortgrass steppe',side=3,line=0.5,cex=1.5)
+mtext('a',side=3,line=0.5,cex=2,adj=0.0)
+lines(abs_change~doy,data=growth_drynamics_ndvi_sgs,type='l',col='white',lwd=2)
+
+#nmp
+plot(abs_change~doy,data=growth_drynamics_ndvi_nmp,type='l',
+     xlab='',ylab='',las=1,cex.axis=2,ylim=c(-.15,.06))
+rect(151,-70,243,350,col = 'grey95')
+rect(60,-70,151,350,col = 'grey')
+polygon(c(growth_drynamics_ndvi_nmp$doy,rev(growth_drynamics_ndvi_nmp$doy)),
+        c(growth_drynamics_ndvi_nmp$ci_25,rev(growth_drynamics_ndvi_nmp$ci_75)),
+        col = "black", border = F)
+abline(h=0,col='black',lty='dashed')
+mtext('Northern mixed prairies',side=3,line=0.5,cex=1.5)
+mtext('Day of year',side=1,line=4.5,cex=2.25)
+mtext(expression("Change in NDVI"),side=2,line=5,adj = 3, cex=2.5)
+mtext('b',side=3,line=0.5,cex=2,adj=0.0)
+lines(abs_change~doy,data=growth_drynamics_ndvi_nmp,type='l',col='white',lwd=4)
+
+dev.off()
   
 #-------------------------------------------------------------------------------
 # growth dynamics absolute (updated 6/15/2022) ------

@@ -1342,9 +1342,9 @@ rect(60,-70,151,350,col = 'grey')
 polygon(c(growth_drynamics_ndvi_sgs$doy,rev(growth_drynamics_ndvi_sgs$doy)),
         c(growth_drynamics_ndvi_sgs$ci_75,rev(growth_drynamics_ndvi_sgs$ci_25)),
         col = "black", border = F)
-text(100, -20, "Spring",cex=3)
-text(200, -5, "Summer",cex=3)
-text(275, -20, "Fall",cex=3)
+text(100, -.1, "Spring",cex=3)
+text(200, -.03, "Summer",cex=3)
+text(275, -.020, "Fall",cex=3)
 text(200, .005, "Median NDVI",cex=2)
 abline(h=0,col='black',lty='dashed')
 mtext('Shortgrass steppe',side=3,line=0.5,cex=1.5)
@@ -1353,7 +1353,7 @@ lines(abs_change~doy,data=growth_drynamics_ndvi_sgs,type='l',col='white',lwd=2)
 
 #nmp
 plot(abs_change~doy,data=growth_drynamics_ndvi_nmp,type='l',
-     xlab='',ylab='',las=1,cex.axis=2,ylim=c(-.15,.01))
+     xlab='',ylab='',las=1,cex.axis=2,ylim=c(-.15,.06))
 rect(151,-70,243,350,col = 'grey95')
 rect(60,-70,151,350,col = 'grey')
 polygon(c(growth_drynamics_ndvi_nmp$doy,rev(growth_drynamics_ndvi_nmp$doy)),
@@ -1361,8 +1361,8 @@ polygon(c(growth_drynamics_ndvi_nmp$doy,rev(growth_drynamics_ndvi_nmp$doy)),
         col = "black", border = F)
 abline(h=0,col='black',lty='dashed')
 mtext('Northern mixed prairies',side=3,line=0.5,cex=1.5)
-mtext('Day of year',side=1,line=4.5,cex=2.5)
-mtext(expression("Change in NDVI"),side=2,line=4,adj = -0.1, cex=2.5)
+mtext('Day of year',side=1,line=4.5,cex=2.25)
+mtext(expression("Change in NDVI"),side=2,line=5,adj = 3, cex=2.5)
 mtext('b',side=3,line=0.5,cex=2,adj=0.0)
 lines(abs_change~doy,data=growth_drynamics_ndvi_nmp,type='l',col='white',lwd=4)
 
