@@ -1832,14 +1832,14 @@ seasonality_summary <- function(Ecoregion,climate,season){
   colnames(seasonal_mean) <- c('x','y','mean','drought')
   # head(seasonal_mean,1)
   
-  #percent decrease 
-  seasonal_mean$perc_decrease <- 
+  #percent change 
+  seasonal_mean$perc_change <- 
     round(((seasonal_mean$drought - seasonal_mean$mean)/
              seasonal_mean$mean)*100,2)
-  #hist(seasonal_mean$perc_decrease_seasonal)
+  #hist(seasonal_mean$perc_change_seasonal)
   
-  #absolute decrease 
-  seasonal_mean$abs_decrease <- 
+  #absolute change 
+  seasonal_mean$abs_change <- 
     seasonal_mean$drought - seasonal_mean$mean
   
   head(seasonal_mean,1)
@@ -1847,8 +1847,8 @@ seasonality_summary <- function(Ecoregion,climate,season){
   #make meaningful column names
   colnames(seasonal_mean) <-
     c('x','y',paste0(season,'_',climate,'_mean'),
-      paste0(season,'_',climate,'_drought'),paste0('perc_decrease_',season,'_',climate),
-      paste0('abs_decrease_',season,'_',climate))
+      paste0(season,'_',climate,'_drought'),paste0('perc_change_',season,'_',climate),
+      paste0('abs_change_',season,'_',climate))
   
   seasonal_mean$ecoregion <- Ecoregion
   

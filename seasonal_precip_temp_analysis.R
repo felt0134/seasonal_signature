@@ -5,8 +5,6 @@
 #note this script compares the extreme driest year to all other years 
 #excluding the extreme drought year
 
-Ecoregion = 'shortgrass_steppe'
-#Ecoregion = 'northern_mixed_prairies' 
 
 # spring and summer precipitation -----
 
@@ -68,22 +66,6 @@ spring_summer_temp <- merge(spring_temp,summer_temp,by = c('x','y','ecoregion'))
 
 rm(spring_temp,summer_temp)
 
-spring_summer_temp$mean_total <- spring_summer_temp$spring_temperature_mean + 
-  spring_summer_temp$summer_temperature_mean
-
-spring_summer_temp$drought_total <- spring_summer_temp$summer_temperature_drought + 
-  spring_summer_temp$spring_temperature_drought
-
-
-spring_summer_temp$spring_prop_average <- spring_summer_temp$spring_temperature_mean/spring_summer_temp$mean_total
-#hist(spring_summer_temp$spring_prop_average)
-
-spring_summer_temp$spring_prop_drought <- spring_summer_temp$spring_temperature_drought/spring_summer_temp$drought_total
-#hist(spring_summer_temp$spring_prop_drought,col='red',add=T)
-
-spring_summer_temp$change_spring_prop <- (spring_summer_temp$spring_prop_drought -
-                                           spring_summer_temp$spring_prop_average)*100
-#hist(spring_summer_temp$change_spring_prop)
 
 #export
 write.csv(spring_summer_temp,

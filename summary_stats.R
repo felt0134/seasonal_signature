@@ -3,6 +3,7 @@
 
 
 # Overview -----
+#-------------------------------------------------------------------------------
 # driest years ------
 
 #Three most common 'driest years'
@@ -34,6 +35,7 @@ driest_year_nmp_count$perc <- round((driest_year_nmp_count$ppt_min/nrow(driest_y
 
 rm(driest_year_nmp)
 
+#-------------------------------------------------------------------------------
 # change in growing season precipitation during drought  -----
 Ecoregion <- 'shortgrass_steppe'
 driest_year_sgs <- 
@@ -95,13 +97,13 @@ drought_reduction_nmp$perc_reduction <-
   ((drought_reduction_nmp$ppt_min - drought_reduction_nmp$ppt)/
   drought_reduction_nmp$ppt)*100
 
-nmp_precip_change_rel <- quantile(drought_reduction_nmp$perc_reduction,c(.25,0.5,0.95))
+nmp_precip_change_rel <- quantile(drought_reduction_nmp$perc_reduction,c(.25,0.5,0.75))
 
 #absolute
 drought_reduction_nmp$abs_reduction <- 
   (drought_reduction_nmp$ppt_min - drought_reduction_nmp$ppt)
 
-nmp_precip_change_abs <- quantile(drought_reduction_nmp$abs_reduction,c(.25,0.5,0.95))
+nmp_precip_change_abs <- quantile(drought_reduction_nmp$abs_reduction,c(.25,0.5,0.75))
 
 #cleanup
 rm(mean_precip_nmp,driest_year_nmp,drought_reduction_nmp)
@@ -305,43 +307,51 @@ drought_growth_impact_NDVI_sgs %>%
 
 
 #-------------------------------------------------------------------------------
-# climate seasonality -------
+# seasonal changes in precipitation  -------
 
 #shortgrass steppe
 Ecoregion <- 'shortgrass_steppe'
-source('seasonal_precip_temp_analysis.R')
-#942/2
-#abs and relative change in spring ppt
-quantile(test_spring_ppt_drought$perc_decrease,c(0.01,0.5,0.99))
-#50th = 70.8% reduction
+seasonal_precip_sgs <- 
+  read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/seasonal_change_PPT.csv'))
+head(seasonal_precip_sgs,1)
 
-quantile(test_spring_ppt_drought$abs_decrease,c(0.01,0.5,0.99))
-# 50th = 75.4 mm
+#abs change in spring ppt
+quantile(seasonal_precip_sgs$abs_change_spring_precipitation,c(0.25,0.5,0.75))
 
-#abs and relative decline in summer ppt
-quantile(test_summer_ppt_drought$perc_decrease,c(0.01,0.5,0.99))
-#50th = 59.2% reduction
+#abs change in summer ppt
+quantile(seasonal_precip_sgs$abs_change_summer_precipitation,c(0.25,0.5,0.75))
 
-quantile(test_summer_ppt_drought$abs_decrease,c(0.01,0.5,0.99))
-#50th = 106.22 mm 
+#percent change in spring ppt
+quantile(seasonal_precip_sgs$perc_change_spring_precipitation,c(0.25,0.5,0.75))
 
-#change in the % of spring precip during drought
-quantile(spring_summer_precip_drought$change_in_perc_spring,c(0.01,0.5,0.99),na.rm=T)
-#-7.6%
+#percent change in spring ppt
+quantile(seasonal_precip_sgs$perc_change_summer_precipitation,c(0.25,0.5,0.75))
 
-#abs and relative change in spring temp
-quantile(test_spring_temp_drought$perc_change,c(0.01,0.5,0.99))
-#50th = 7.7%
 
-quantile(test_spring_temp_drought$abs_change,c(0.01,0.5,0.99))
-#50th = 1 degree
+#
+#
 
-#abs and relative change in summer temp
-quantile(test_summer_temp_drought$perc_change,c(0.01,0.5,0.99))
-#50th = 9.1%
 
-quantile(test_summer_temp_drought$abs_change,c(0.01,0.5,0.99))
-#50th = 2 degree
+#northern mixed prairies
+Ecoregion <- 'northern_mixed_prairies'
+seasonal_precip_nmp <- 
+  read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/Precipitation/seasonal_change_PPT.csv'))
+head(seasonal_precip_nmp,1)
+
+#abs change in spring ppt
+quantile(seasonal_precip_nmp$abs_change_spring_precipitation,c(0.25,0.5,0.75))
+
+#abs change in summer ppt
+quantile(seasonal_precip_nmp$abs_change_summer_precipitation,c(0.25,0.5,0.75))
+
+#percent change in spring ppt
+quantile(seasonal_precip_nmp$perc_change_spring_precipitation,c(0.25,0.5,0.75))
+
+#percent change in spring ppt
+quantile(seasonal_precip_nmp$perc_change_summer_precipitation,c(0.25,0.5,0.75))
+
+
+
 
 #filter summer and spring abs and relative for VPD
 vpd_change %>%
@@ -494,6 +504,106 @@ rm(driest_year, test_spring_ppt_drought, test_spring_temp_drought,
 
 
 #-------------------------------------------------------------------------------
+# seasonal changes in temperature -----
+
+#shortgrass steppe
+Ecoregion <- 'shortgrass_steppe'
+seasonal_temp_sgs <- 
+  read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/temperature/seasonal_change_temperature.csv'))
+head(seasonal_temp_sgs,1)
+
+#abs change in spring temp
+quantile(seasonal_temp_sgs$abs_change_spring_temperature,c(0.25,0.5,0.75))
+
+#abs change in summer temp
+quantile(seasonal_temp_sgs$abs_change_summer_temperature,c(0.25,0.5,0.75))
+
+#percent change in spring temp
+quantile(seasonal_temp_sgs$perc_change_spring_temperature,c(0.25,0.5,0.75))
+
+#percent change in spring temp
+quantile(seasonal_temp_sgs$perc_change_summer_temperature,c(0.25,0.5,0.75))
+
+
+#
+#
+
+
+#northern mixed prairies
+Ecoregion <- 'northern_mixed_prairies'
+seasonal_temp_nmp <- 
+  read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/temperature/seasonal_change_temperature.csv'))
+head(seasonal_temp_nmp,1)
+
+#abs change in spring temp
+quantile(seasonal_temp_nmp$abs_change_spring_temperature,c(0.25,0.5,0.75))
+
+#abs change in summer temp
+quantile(seasonal_temp_nmp$abs_change_summer_temperature,c(0.25,0.5,0.75))
+
+#percent change in spring temp
+quantile(seasonal_temp_nmp$perc_change_spring_temperature,c(0.25,0.5,0.75))
+
+#percent change in spring temp
+quantile(seasonal_temp_nmp$perc_change_summer_temperature,c(0.25,0.5,0.75))
+
+#-------------------------------------------------------------------------------
+#seasonal change in VPD -------
+
+#shortgrass steppe
+Ecoregion <- 'shortgrass_steppe'
+seasonal_vpd_sgs <- 
+  read.csv(paste0( './../../Data/Climate/Ecoregion/',
+                   Ecoregion,
+                   '/PRISM/VPD_change.csv'))
+head(seasonal_vpd_sgs,1)
+
+#subset by season
+seasonal_vpd_sgs_spring <- subset(seasonal_vpd_sgs,season == 'spring')
+seasonal_vpd_sgs_summer <- subset(seasonal_vpd_sgs,season == 'summer')
+
+#abs change in spring vpd
+quantile(seasonal_vpd_sgs_spring$abs_change,c(0.25,0.5,0.75))
+
+#abs change in summer vpd
+quantile(seasonal_vpd_sgs_summer$abs_change,c(0.25,0.5,0.75))
+
+#percent change in spring vpd
+quantile(seasonal_vpd_sgs_spring$perc_change,c(0.25,0.5,0.75))
+
+#percent change in spring vpd
+quantile(seasonal_vpd_sgs_summer$perc_change,c(0.25,0.5,0.75))
+
+
+#
+#
+
+
+#northern mixed prairies
+Ecoregion <- 'northern_mixed_prairies'
+seasonal_vpd_nmp <- 
+  read.csv(paste0( './../../Data/Climate/Ecoregion/',
+                   Ecoregion,
+                   '/PRISM/VPD_change.csv'))
+head(seasonal_vpd_nmp,1)
+
+#subset by season
+seasonal_vpd_nmp_spring <- subset(seasonal_vpd_nmp,season == 'spring')
+seasonal_vpd_nmp_summer <- subset(seasonal_vpd_nmp,season == 'summer')
+
+#abs change in spring vpd
+quantile(seasonal_vpd_nmp_spring$abs_change,c(0.25,0.5,0.75))
+
+#abs change in summer vpd
+quantile(seasonal_vpd_nmp_summer$abs_change,c(0.25,0.5,0.75))
+
+#percent change in spring vpd
+quantile(seasonal_vpd_nmp_spring$perc_change,c(0.25,0.5,0.75))
+
+#percent change in spring vpd
+quantile(seasonal_vpd_nmp_summer$perc_change,c(0.25,0.5,0.75))
+
+#-------------------------------------------------------------------------------
 # follow-up analysis of amount of GPP by season and max GPP ------
 
 #shortgrass steppe
@@ -515,6 +625,7 @@ summer_gpp = end_summer$mean - spring_gpp
 summer_gpp/spring_gpp
 #1.4
 
+#see how this changes during drought
 drought_growth_curve_sgs <- read.csv(paste0('./../../Data/growth_curves/drought_growth_curve_',Ecoregion,'.csv'))
 end_spring_drought <- drought_growth_curve_sgs %>%
   dplyr::filter(doy=='151') #march 6

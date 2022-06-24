@@ -1,6 +1,7 @@
 
 
-#master analysis script that calls on other scripts 
+#master analysis script that calls on other scripts. The ultimate outputs are
+#datasets.
 
 #get data and track progress
 library(future.apply)
@@ -9,8 +10,8 @@ library(progressr)
 #pick which ecoregion to runthe script for. You could loop and run each ecoregion
 #in one batch but some of these take a while and it may be nice to the output for each.
 
-Ecoregion = 'shortgrass_steppe'
-#Ecoregion = 'northern_mixed_prairies' 
+#Ecoregion = 'shortgrass_steppe'
+Ecoregion = 'northern_mixed_prairies' 
 #Ecoregion = 'nebraska_sandhills'
 
 # day at which 25%, 50%, and 75% of growth has occurred during average and drought years -----
