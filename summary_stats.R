@@ -177,41 +177,57 @@ nmp_temp_change_abs <- quantile(temp_drought_nmp$abs_change,c(0.25,0.5,0.75))
 rm(temp_drought_nmp)
 
 #-------------------------------------------------------------------------------
-# Cumulative C uptake -----
-
-#estimated end of season % and absolute reduction in cumulative GPP
+#-------------------------------------------------------------------------------
+# Cumulative C uptake (new) ------
 
 #shortgrass steppe
-Ecoregion <- 'shortgrass_steppe'
-drought_growth_curve_sgs <- read.csv(paste0('./../../Data/growth_curves/drought_growth_curve_',Ecoregion,'.csv'))
-growth_curve_sgs <- read.csv(paste0('./../../Data/growth_curves/average_growth_curve_',Ecoregion,'.csv'))
+max_total_reduction_sgs_df <- 
+  read.csv('./../../Data/growth_dynamics/max_total_reduction_shortgrass_steppe.csv')
+head(max_total_reduction_sgs_df,1)
 
-#absolute difference in total C uptake
-max(growth_curve_sgs$mean) - max(drought_growth_curve_sgs$mean)
-#159.3
+#total reduction
+total_reduction_sgs <- max_total_reduction_sgs_df %>%
+  dplyr::filter(type=='total')
+quantile(total_reduction_sgs$reduction,c(0.25,0.5,0.75))
+quantile(total_reduction_sgs$perc_reduction,c(0.25,0.5,0.75))
 
-#relative
-(max(drought_growth_curve_sgs$mean)- max(growth_curve_sgs$mean))/max(growth_curve_sgs$mean)
-#44.8%
+#max reduction
+max_reduction_sgs <- max_total_reduction_sgs_df %>%
+  dplyr::filter(type=='max')
+quantile(max_reduction_sgs$reduction,c(0.25,0.5,0.75))
+quantile(max_reduction_sgs$perc_reduction,c(0.25,0.5,0.75))
+quantile(max_reduction_sgs$doy,c(0.25,0.5,0.75))
 
-#
-#
+#max increase
+min_reduction_sgs <- max_total_reduction_sgs_df %>%
+  dplyr::filter(type=='min')
+quantile(min_reduction_sgs$reduction,c(0.25,0.5,0.75))
+quantile(min_reduction_sgs$perc_reduction,c(0.25,0.5,0.75))
 
 #northern mixed prairies
-Ecoregion <- 'northern_mixed_prairies'
-drought_growth_curve_nmp <- read.csv(paste0('./../../Data/growth_curves/drought_growth_curve_',Ecoregion,'.csv'))
-growth_curve_nmp <- read.csv(paste0('./../../Data/growth_curves/average_growth_curve_',Ecoregion,'.csv'))
+max_total_reduction_nmp_df <- 
+  read.csv('./../../Data/growth_dynamics/max_total_reduction_northern_mixed_prairies.csv')
+head(max_total_reduction_nmp_df,1)
 
-#absolute
-max(growth_curve_nmp$mean) - max(drought_growth_curve_nmp$mean)
-#78.5
+#total reduction
+total_reduction_nmp <- max_total_reduction_nmp_df %>%
+  dplyr::filter(type=='total')
+quantile(total_reduction_nmp$reduction,c(0.25,0.5,0.75))
+quantile(total_reduction_nmp$perc_reduction,c(0.25,0.5,0.75))
 
-#relative
-(max(drought_growth_curve_nmp$mean)- max(growth_curve_nmp$mean))/max(growth_curve_nmp$mean)
-#18.8%
+#max reduction
+max_reduction_nmp <- max_total_reduction_nmp_df %>%
+  dplyr::filter(type=='max')
+quantile(max_reduction_nmp$reduction,c(0.25,0.5,0.75))
+quantile(max_reduction_nmp$perc_reduction,c(0.25,0.5,0.75))
+quantile(max_reduction_nmp$doy,c(0.25,0.5,0.75))
 
-rm(drought_growth_curve_sgs,growth_curve_sgs,drought_growth_curve_nmp,
-   growth_curve_nmp)
+#max increase
+min_reduction_nmp <- max_total_reduction_nmp_df %>%
+  dplyr::filter(type=='min')
+quantile(min_reduction_nmp$reduction,c(0.25,0.5,0.75))
+quantile(min_reduction_nmp$perc_reduction,c(0.25,0.5,0.75))
+
 
 
 #-------------------------------------------------------------------------------
@@ -841,7 +857,7 @@ day_25_drought_sgs <- day_25_drought_sgs %>%
   dplyr::rename('day_25' = 'day_25_drought_impact_shortgrass_steppe')
 #day_25_drought_sgs$ecoregion <- 'shortgrass_steppe'
 
-quantile(day_25_drought_sgs$day_25,probs = c(0.25,0.5,0.50))
+quantile(day_25_drought_sgs$day_25,probs = c(0.25,0.5,0.75))
 
 #
 #

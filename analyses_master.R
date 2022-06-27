@@ -61,3 +61,9 @@ source('drought_reduction_spline_1km_subset.R')
 source('drought_reduction_spline_NDVI.R')
 
 #-------------------------------------------------------------------------------
+# get the max and total C uptake reduction from drought -------
+
+
+source('max_total_reduction.R')
+
+

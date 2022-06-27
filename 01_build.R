@@ -2,7 +2,7 @@
 #setup workspace
 
 #check version
-R.version
+#R.version
 
 #clearworkspace
 rm(list=ls())
@@ -19,3 +19,7 @@ setwd(dirname(current_path))
 #load functions
 source('02_Functions.R')
 
+# to do:
+
+# create a script to exctract the peak and total reductions for each pixel so
+# you can make a map of this

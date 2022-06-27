@@ -92,59 +92,6 @@ format_temp_df <- function(x) {
 #-------------------------------------------------------------------------------
 # calculate day of 25%, 50%, and 90% growth (% of cumulative GPP) for all years ------
 
-#day of 90% growth
-get_90_gpp <- function(i) {
-  #subset to a given pixel
-  growth_id <- gpp_df %>%
-    dplyr::filter(id_value == i)
-  
-  x <- unique(growth_id %>% pull(x))
-  y <- unique(growth_id %>% pull(y))
-  
-  growth_id <- aggregate(gpp ~ doy, mean, data = growth_id)
-  
-  #for that pixel, get cumulative GPP throughout the year
-  growth_id_cmulative <-
-    data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
-  growth_id_cmulative$gpp_3 <-
-    100 * (growth_id_cmulative$gpp_2 / max(growth_id_cmulative$gpp_2))
-  
-  rm(growth_id)
-  
-  #create spline model of growth curve
-  gpp.doy.spl <-
-    with(growth_id_cmulative, smooth.spline(doy, gpp_3))
-  #lines(gpp.doy.spl, col = "blue")
-  
-  rm(growth_id_cmulative)
-  
-  #run model through a sequence of days
-  doy <- data.frame(seq(from = 65, to = 297, by = 1))
-  gpp_predicted <- data.frame(predict(gpp.doy.spl, doy))
-  colnames(gpp_predicted) <- c('day', 'gpp_perc')
-  
-  #get day of year where roughly 90% of cumulative growth has occurred and turn into dataframe
-  gpp_predicted_90 <- gpp_predicted %>%
-    dplyr::filter(gpp_perc < 90.1)
-  
-  rm(gpp_predicted)
-  
-  doy_90 <-
-    max(gpp_predicted_90$day) #this is a rough approximation
-  
-  doy_90_df <- data.frame(doy_90)
-  colnames(doy_90_df) <- c('doy_90')
-  doy_90_df$x <- x
-  doy_90_df$y <- y
-  
-  doy_90_df <- doy_90_df[c(2, 3, 1)]
-  
-  return(doy_90_df)
-  
-  
-  
-}
-
 day_75_gpp_no_drought <- function(i) {
   
   #subset to a given pixel
@@ -485,7 +432,10 @@ day_75_gpp_drought <- function(i) {
   growth_id  <- growth_id %>%
     filter(ppt_sum < min_ppt)
   
-  growth_id <- aggregate(gpp ~ doy, median, data = growth_id)
+  growth_id <- growth_id %>%
+    arrange(doy)
+  
+  #growth_id <- aggregate(gpp ~ doy, median, data = growth_id)
   
   #for that pixel, get cumulative GPP throughout the year
   growth_id<- data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
@@ -555,7 +505,10 @@ day_50_gpp_drought <- function(i) {
   growth_id  <- growth_id %>%
     filter(ppt_sum < min_ppt)
   
-  growth_id <- aggregate(gpp ~ doy, median, data = growth_id)
+  growth_id <- growth_id %>%
+    arrange(doy)
+  
+ # growth_id <- aggregate(gpp ~ doy, median, data = growth_id)
   
   #for that pixel, get cumulative GPP throughout the year
   growth_id <- data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
@@ -625,7 +578,10 @@ day_25_gpp_drought <- function(i) {
   growth_id  <- growth_id %>%
     filter(ppt_sum < min_ppt)
   
-  growth_id <- aggregate(gpp ~ doy, median, data = growth_id)
+  growth_id <- growth_id %>%
+    arrange(doy)
+  
+  #growth_id <- aggregate(gpp ~ doy, median, data = growth_id)
   
   #for that pixel, get cumulative GPP throughout the year
   growth_id<- data.frame(growth_id, gpp_2 = cumsum(growth_id$gpp))
@@ -1107,10 +1063,12 @@ get_drought_growth_curve_absolute_spline <- function(i) {
   ppt_id  <- ppt_id %>%
     filter(ppt < min_ppt) %>%
     rename('ppt_min' = 'ppt')
-  
+
   gpp_ppt_id  <- merge(ppt_id, gpp_ppt_id, by = c('x', 'y', 'id_value', 'year'))
+  gpp_ppt_id <- gpp_ppt_id %>%
+    arrange(doy)
   
-  gpp_ppt_id  <- aggregate(gpp ~ doy, median, data = gpp_ppt_id)
+  #gpp_ppt_id  <- aggregate(gpp ~ doy, median, data = gpp_ppt_id) #this messes with daily estimates
   
   #for that pixel, get cumulative GPP throughout the year
   gpp_ppt_id <- data.frame(gpp_ppt_id, gpp_2 = cumsum(gpp_ppt_id$gpp))
@@ -1895,5 +1853,127 @@ ks_test_bootstrap <- function(data_1,data_2){
   return(d_df)
   
 }
+#-------------------------------------------------------------------------------
+# get max and total C uptake reductions ------
 
+
+
+get_max_total_reduction  <- function(i) {
+  
+  #subset to a given pixel
+  growth_id <- ppt_gpp %>%
+    dplyr::filter(id_value == i)
+  
+  #ID lat/lon up front
+  x <- unique(growth_id %>% pull(x))
+  y <- unique(growth_id %>% pull(y))
+  
+  ppt_sum <- aggregate(ppt ~ year,sum,data=growth_id)
+  colnames(ppt_sum) <- c('year','ppt_sum')
+  
+  growth_id <- merge(growth_id,ppt_sum,by=c('year'))
+  
+  
+  #get year with lowest precip
+  min_ppt <- min(ppt_sum$ppt_sum) 
+  
+  #subset to years above this value
+  growth_id_2  <- growth_id %>%
+    dplyr::filter(ppt_sum > min_ppt)
+  
+  #subset to years above below value
+  growth_id_drought  <- growth_id %>%
+    dplyr::filter(ppt_sum == min_ppt)
+  
+  growth_id_drought <- growth_id_drought %>%
+    arrange(doy)
+  
+  #average year cumulative
+  
+  #now do average growth curve
+  growth_id_2 <- aggregate(gpp ~ doy, median, data = growth_id_2)
+  #plot(gpp~doy,growth_id)
+  
+  #growth_id_drought <- aggregate(gpp ~ doy, median, data = growth_id_drought)
+  
+  #for that pixel, get cumulative GPP throughout the year
+  growth_id_cmulative <-
+    data.frame(growth_id_2, gpp_2 = cumsum(growth_id_2$gpp))
+  
+  #create spline model of average cumulative growth curve
+  gpp_doy_spl_cumulative <-
+    with(growth_id_cmulative, smooth.spline(doy, gpp_2))
+  
+  #create a spline model for growth dynamics
+  gpp_doy_spl <-
+    with(growth_id_2, smooth.spline(doy, gpp))
+  
+  #now do same for drought year
+  growth_id_cmulative_drought <-
+    data.frame(growth_id_drought, gpp_2 = cumsum(growth_id_drought$gpp))
+  
+  gpp_doy_spl_cumulative_drought <-
+    with(growth_id_cmulative_drought, smooth.spline(doy, gpp_2))
+  
+  gpp_doy_spl_drought <-
+    with(growth_id_drought, smooth.spline(doy, gpp))
+  
+  
+  #get abs and % difference between drought and normal years for total GPP/C uptake
+  doy_df_cumulative_difference <- data.frame(predict(gpp_doy_spl_cumulative_drought,297)$y - 
+                                               predict(gpp_doy_spl_cumulative,297)$y)
+  colnames(doy_df_cumulative_difference) <- 'reduction'
+  doy_df_cumulative_difference$perc_reduction <- 
+    ((predict(gpp_doy_spl_cumulative_drought,297)$y - predict(gpp_doy_spl_cumulative,297)$y)/
+    predict(gpp_doy_spl_cumulative,297)$y)*100
+  doy_df_cumulative_difference$doy <- 297
+  doy_df_cumulative_difference$type <- 'total'
+  doy_df_cumulative_difference <- doy_df_cumulative_difference %>%
+    dplyr::select(doy,reduction,perc_reduction,type)
+  
+  #get abs and % maximum reduction
+  doy_df_max_diff_average <- data.frame(predict(gpp_doy_spl,seq(73,297,by=1)))
+  colnames(doy_df_max_diff_average) <- c('doy','average_gpp')
+  doy_df_max_diff_drought <- data.frame(predict(gpp_doy_spl_drought,seq(73,297,by=1)))
+  colnames(doy_df_max_diff_drought) <- c('doy','drought_gpp')
+  doy_df_max_diff_average_drought <- merge(doy_df_max_diff_average,doy_df_max_diff_drought,
+                                           by = 'doy')
+  doy_df_max_diff_average_drought$reduction <- 
+    doy_df_max_diff_average_drought$drought_gpp - doy_df_max_diff_average_drought$average_gpp
+  
+  doy_df_max_diff_average_drought$perc_reduction <- 
+    ((doy_df_max_diff_average_drought$drought_gpp - doy_df_max_diff_average_drought$average_gpp)/
+    doy_df_max_diff_average_drought$average_gpp)*100
+  
+  max <- max(doy_df_max_diff_average_drought$reduction)
+  min <- min(doy_df_max_diff_average_drought$reduction)
+  
+  min_reduction <- doy_df_max_diff_average_drought %>%
+    select(doy,reduction,perc_reduction) %>%
+    dplyr::filter(reduction==max) 
+  min_reduction$type <- 'min'
+  
+  max_reduction <- doy_df_max_diff_average_drought %>%
+    select(doy,reduction,perc_reduction) %>%
+    dplyr::filter(reduction==min) 
+  max_reduction$type <- 'max'
+  
+  max_min_reduction <- rbind(max_reduction,min_reduction)
+  max_min_total_reduction <- rbind(max_min_reduction, doy_df_cumulative_difference)
+  max_min_total_reduction$x <- x
+  max_min_total_reduction$y <- y
+  
+  max_min_total_reduction <- max_min_total_reduction %>%
+    dplyr::select(x,y,doy,type,reduction,perc_reduction)
+  
+  #drought year cumulative
+  
+  
+  #create dataframe of cumulative C uptake by day for aerage year
+  
+  
+  return(max_min_total_reduction)
+  
+  
+}
 
