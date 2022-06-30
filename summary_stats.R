@@ -177,8 +177,7 @@ nmp_temp_change_abs <- quantile(temp_drought_nmp$abs_change,c(0.25,0.5,0.75))
 rm(temp_drought_nmp)
 
 #-------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------
-# Cumulative C uptake (new) ------
+# Changes to cumulative and maximum C uptake (new) ------
 
 #shortgrass steppe
 max_total_reduction_sgs_df <- 
@@ -227,11 +226,12 @@ min_reduction_nmp <- max_total_reduction_nmp_df %>%
   dplyr::filter(type=='min')
 quantile(min_reduction_nmp$reduction,c(0.25,0.5,0.75))
 quantile(min_reduction_nmp$perc_reduction,c(0.25,0.5,0.75))
+quantile(min_reduction_nmp$doy,c(0.25,0.5,0.75))
 
 
 
 #-------------------------------------------------------------------------------
-# C uptake through time ------
+# C uptake through time (old) ------
 
 #maximum estimated gpp enhancement for NMP (% and absolute), and when this happens (Julian day)
 

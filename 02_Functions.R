@@ -1977,3 +1977,96 @@ get_max_total_reduction  <- function(i) {
   
 }
 
+#-------------------------------------------------------------------------------
+# get max NDVI reductions ------
+
+
+
+get_max_total_reduction_NDVI  <- function(i) {
+  
+  #subset to a given pixel
+  growth_id <- ppt_ndvi %>%
+    dplyr::filter(id_value == i)
+  
+  #ID lat/lon up front
+  x <- unique(growth_id %>% pull(x))
+  y <- unique(growth_id %>% pull(y))
+  
+  ppt_sum <- aggregate(ppt ~ year,sum,data=growth_id)
+  colnames(ppt_sum) <- c('year','ppt_sum')
+  
+  growth_id <- merge(growth_id,ppt_sum,by=c('year'))
+  
+  #get year with lowest precip
+  min_ppt <- min(ppt_sum$ppt_sum) 
+  
+  #subset to years above this value
+  growth_id_2  <- growth_id %>%
+    dplyr::filter(ppt_sum > min_ppt)
+  
+  #subset to years above below value
+  growth_id_drought  <- growth_id %>%
+    dplyr::filter(ppt_sum == min_ppt)
+  
+  growth_id_drought <- growth_id_drought %>%
+    arrange(doy)
+  
+  #create a spline model for growth dynamics
+  ndvi_doy_spl <-
+    with(growth_id_2, smooth.spline(doy, ndvi))
+  
+  #now do same for drought year
+  growth_id_cmulative_drought <-
+    data.frame(growth_id_drought, ndvi_2 = cumsum(growth_id_drought$ndvi))
+  
+  ndvi_doy_spl_cumulative_drought <-
+    with(growth_id_cmulative_drought, smooth.spline(doy, ndvi_2))
+  
+  ndvi_doy_spl_drought <-
+    with(growth_id_drought, smooth.spline(doy, ndvi))
+  
+  #get abs and % maximum reduction
+  doy_df_max_diff_average <- data.frame(predict(ndvi_doy_spl,seq(73,297,by=1)))
+  colnames(doy_df_max_diff_average) <- c('doy','average_ndvi')
+  doy_df_max_diff_drought <- data.frame(predict(ndvi_doy_spl_drought,seq(73,297,by=1)))
+  colnames(doy_df_max_diff_drought) <- c('doy','drought_ndvi')
+  doy_df_max_diff_average_drought <- merge(doy_df_max_diff_average,doy_df_max_diff_drought,
+                                           by = 'doy')
+  doy_df_max_diff_average_drought$reduction <- 
+    doy_df_max_diff_average_drought$drought_ndvi - doy_df_max_diff_average_drought$average_ndvi
+  
+  doy_df_max_diff_average_drought$perc_reduction <- 
+    ((doy_df_max_diff_average_drought$drought_ndvi - doy_df_max_diff_average_drought$average_ndvi)/
+       doy_df_max_diff_average_drought$average_ndvi)*100
+  
+  max <- max(doy_df_max_diff_average_drought$reduction)
+  min <- min(doy_df_max_diff_average_drought$reduction)
+  
+  min_reduction <- doy_df_max_diff_average_drought %>%
+    select(doy,reduction,perc_reduction) %>%
+    dplyr::filter(reduction==max) 
+  min_reduction$type <- 'min'
+  
+  max_reduction <- doy_df_max_diff_average_drought %>%
+    select(doy,reduction,perc_reduction) %>%
+    dplyr::filter(reduction==min) 
+  max_reduction$type <- 'max'
+  
+  max_min_reduction <- rbind(max_reduction,min_reduction)
+  max_min_reduction$x <- x
+  max_min_reduction$y <- y
+  
+  max_min_reduction <- max_min_reduction %>%
+    dplyr::select(x,y,doy,type,reduction,perc_reduction)
+  
+  #drought year cumulative
+  
+  
+  #create dataframe of cumulative C uptake by day for aerage year
+  
+  
+  return(max_min_reduction)
+  
+  
+}
+

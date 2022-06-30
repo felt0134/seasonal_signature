@@ -2159,3 +2159,92 @@ rm(max_total_reduction_nmp_df,max_total_reduction_sgs_df,
    peak_abs_reduction_rbind,peak_abs_reduction_pdf,vp,peak_abs_reduction)
 
 
+
+# correlate VPD with NDVI change (in progress) -------
+
+
+ecoregion_list <- c('shortgrass_steppe','northern_mixed_prairies')
+vpd_gpp_list <- list()
+for(i in ecoregion_list){
+Ecoregion = i
+seasonal_vpd <- 
+  read.csv(paste0( './../../Data/Climate/Ecoregion/',
+                   Ecoregion,
+                   '/PRISM/VPD_change.csv'))
+#head(seasonal_vpd_nmp,1)
+
+seasonal_vpd <- seasonal_vpd %>%
+  dplyr::select(x,y,abs_change,season) %>%
+  dplyr::filter(season == 'summer') %>%
+  dplyr::select(x,y,abs_change)
+
+#seasonal_vpd_sgs_nmp <- rbind(seasonal_vpd_nmp,seasonal_vpd_sgs)
+
+#subset by season
+# seasonal_vpd_sgs_spring <- subset(seasonal_vpd_sgs,season == 'spring')
+# seasonal_vpd_sgs_summer <- subset(seasonal_vpd_sgs,season == 'summer')
+
+
+
+#import C uptake datasets
+max_total_reduction <- 
+  read.csv(paste0('./../../Data/growth_dynamics/max_total_reduction_NDVI_',Ecoregion,'.csv'))
+#head(max_total_reduction_sgs_df,1)
+
+
+# max_total_reduction_nmp_df <- 
+#   read.csv('./../../Data/growth_dynamics/max_total_reduction_northern_mixed_prairies.csv')
+# 
+# max_total_reduction_sgs_nmp <- rbind(max_total_reduction_sgs_df,max_total_reduction_nmp_df)
+
+#import and get total for sgs
+peak_abs_reduction <- max_total_reduction %>%
+  dplyr::filter(type == 'max') %>%
+  dplyr::filter(doy < 297) %>%
+  dplyr::filter(doy > 73) %>%
+  dplyr::select(x,y,reduction)
+
+#convert to raster and resample
+peak_abs_reduction <- rasterFromXYZ(peak_abs_reduction)
+seasonal_vpd <- rasterFromXYZ(seasonal_vpd)
+#plot(seasonal_vpd_sgs)
+
+peak_abs_reduction <- resample(peak_abs_reduction,seasonal_vpd)
+
+#convert back to dataframe and merge
+peak_abs_reduction <- data.frame(rasterToPoints(peak_abs_reduction))
+seasonal_vpd  <- data.frame(rasterToPoints(seasonal_vpd))
+
+max_total_reduction_vpd <- merge(peak_abs_reduction,
+                                     seasonal_vpd,by = c('x','y'))
+
+max_total_reduction_vpd$ecoregion <- Ecoregion
+
+vpd_gpp_list[[i]] <- max_total_reduction_vpd
+
+}
+
+vpd_gpp_df <- list_to_df(vpd_gpp_list)
+
+#plot(reduction ~ abs_change,data = vpd_gpp_df )
+
+ggplot(vpd_gpp_df,aes(abs_change,reduction)) +
+  geom_point()+
+  stat_smooth(method='lm') +
+  facet_wrap(~ecoregion,scale='free',ncol = 1) +
+  xlab('Increase in maximum vapor pressure deficit (kPa)') +
+  ylab('Maximum reduction in NDVI')
+
+
+
+# import NDVI
+
+growth_drynamics_ndvi_sgs <- 
+  read_csv('./../../Data/growth_dynamics/drought_ndvi_reduction_absolute_shortgrass_steppe.csv')
+head(growth_drynamics_ndvi_sgs,1)
+
+
+vpd_ndvi_sgs <- merge(seasonal_vpd_sgs,growth_drynamics_ndvi_sgs)
+
+
+

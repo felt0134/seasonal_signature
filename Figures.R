@@ -86,7 +86,7 @@ day_75_sgs_nmp_drought_map <-
                color = "black", size = 0.1,fill=NA) +
   geom_raster(data=day_75_drought_df, mapping=aes(x = x, y = y, fill = layer)) + 
   coord_equal() +
-  scale_fill_scico('Effect of drought on day at which\n75% of total C uptake occurs (days)',
+  scale_fill_scico('Effect of drought by day at which\n75% of total C uptake occurs (days)',
                    palette = 'roma',direction = -1,midpoint = 0) +
   xlab('') +
   ylab('') +
@@ -135,7 +135,7 @@ drought_day75_pdf <- ggplot(day_75_drought_nmp_sgs_2_df, aes(x = day_75, fill = 
     'Shortgrass steppe' = 'green4'
   )) +
   geom_vline(xintercept = 0,color='black') +
-  xlab("Effect of drought on day at which\n75% of total C uptake occurs (days)") +
+  xlab("Effect of drought on day by which\n75% of total C uptake occurs (days)") +
   ylab('Probability density') +
   theme(
     axis.text.x = element_text(color = 'black', size = 7),
@@ -194,7 +194,7 @@ day_75_lat_plot <- ggplot(day_75_drought_nmp_sgs_2_df, aes(x = y, y = day_75,col
   geom_hline(yintercept = 0,size=2,color='grey') +
   stat_smooth(method='lm',color='black',size=2) +
   #geom_vline(xintercept = 0,color='red') +
-  ylab("Effect of drought on day at which\n75% of total C uptake occurs (days)") +
+  ylab("Effect of drought on day by which\n75% of total C uptake occurs (days)") +
   xlab('Latitude') +
   annotate("text", x=46, y=40, label= "Delayed") +
   annotate("text", x=46, y=-50, label= "Advanced") +
@@ -264,7 +264,7 @@ day_50_sgs_nmp_drought_map <-
                color = "black", size = 0.1,fill=NA) +
   geom_raster(data=day_50_drought_df, mapping=aes(x = x, y = y, fill = layer)) + 
   coord_equal() +
-  scale_fill_scico('Effect of drought on day at which\nhalf of total C uptake occurs (days)',
+  scale_fill_scico('Effect of drought on day by which\nhalf of total C uptake occurs (days)',
                    palette = 'roma',direction = -1,midpoint = 0) +
   xlab('') +
   ylab('') +
@@ -314,7 +314,7 @@ drought_day50_pdf <- ggplot(day_50_drought_nmp_sgs_2_df, aes(x = day_50, fill = 
     'Shortgrass steppe' = 'green4'
   )) +
   geom_vline(xintercept = 0,color='black') +
-  xlab("Effect of drought on day at which\nhalf of total C uptake occurs (days)") +
+  xlab("Effect of drought on day by which\nhalf of total C uptake occurs (days)") +
   ylab('Probability density') +
   theme(
     axis.text.x = element_text(color = 'black', size = 7),
@@ -373,7 +373,7 @@ day_50_lat_plot <- ggplot(day_50_drought_nmp_sgs_2_df, aes(x = y, y = day_50,col
   geom_hline(yintercept = 0,size=2,color='grey') +
   stat_smooth(method='lm',color='black',size=2) +
   #geom_vline(xintercept = 0,color='red') +
-  ylab('Effect of drought on day at which half of\ntotal carbon uptake is achieved (days)') +
+  ylab('Effect of drought by day by which half of\ntotal carbon uptake is achieved (days)') +
   xlab('Latitude') +
   annotate("text", x=46, y=40, label= "Delayed") +
   annotate("text", x=46, y=-50, label= "Advanced") +
@@ -438,7 +438,7 @@ day_25_sgs_nmp_drought_map <-
                color = "black", size = 0.1,fill=NA) +
   geom_raster(data=day_25_drought_df, mapping=aes(x = x, y = y, fill = layer)) + 
   coord_equal() +
-  scale_fill_scico('Effect of drought on day at which\n25% of total C uptake occurs (days)',
+  scale_fill_scico('Effect of drought on day by which\n25% of total C uptake occurs (days)',
                    palette = 'roma',direction=-1,midpoint = 0) +
   xlab('') +
   ylab('') +
@@ -487,7 +487,7 @@ drought_day25_pdf <- ggplot(day_25_drought_nmp_sgs_2_df, aes(x = day_25, fill = 
     'Shortgrass steppe' = 'green4'
   )) +
   geom_vline(xintercept = 0,color='black') +
-  xlab("Effect of drought on day at which\n25% of total C uptake occurs (days)") +
+  xlab("Effect of drought on day by which\n25% of total C uptake occurs (days)") +
   ylab('Probability density') +
   theme(
     axis.text.x = element_text(color = 'black', size = 7),
@@ -546,7 +546,7 @@ day_25_lat_plot <- ggplot(day_25_drought_nmp_sgs_2_df, aes(x = y, y = day_25,col
   geom_hline(yintercept = 0,size=2,color='grey') +
   stat_smooth(method='lm',color='black',size=2) +
   #geom_vline(xintercept = 0,color='red') +
-  ylab("Effect of drought on day at which\n25% of total C uptake occurs (days)") +
+  ylab("Effect of drought on day by which\n25% of total C uptake occurs (days)") +
   xlab('Latitude') +
   annotate("text", x=46, y=40, label= "Delayed") +
   annotate("text", x=46, y=-50, label= "Advanced") +
@@ -2401,3 +2401,4 @@ dev.off()
 rm(max_total_reduction_nmp_df,max_total_reduction_sgs_df,
    peak_abs_reduction_map,peak_abs_reduction_nmp,peak_abs_reduction_sgs,
    peak_abs_reduction_rbind,peak_abs_reduction_pdf,vp,peak_abs_reduction)
+#-------------------------------------------------------------------------------

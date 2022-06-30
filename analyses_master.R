@@ -65,5 +65,6 @@ source('drought_reduction_spline_NDVI.R')
 
 
 source('max_total_reduction.R')
+source('max_total_reduction_NDVI.R')
 
 
