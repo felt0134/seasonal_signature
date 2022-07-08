@@ -2220,31 +2220,65 @@ max_total_reduction_vpd <- merge(peak_abs_reduction,
 
 max_total_reduction_vpd$ecoregion <- Ecoregion
 
+if(Ecoregion=='shortgrass_steppe'){
+  
+max_total_reduction_vpd$ecoregion <- gsub('shortgrass_steppe','Shortgrass steppe',max_total_reduction_vpd$ecoregion)
+max_total_reduction_vpd$ecoregion_2 <- gsub('Shortgrass steppe','a',max_total_reduction_vpd$ecoregion)
+  
+}else{
+  
+  max_total_reduction_vpd$ecoregion <- gsub('northern_mixed_prairies','Northern mixed prairies',
+                                            max_total_reduction_vpd$ecoregion)
+  max_total_reduction_vpd$ecoregion_2 <- gsub('Northern mixed prairies','b',max_total_reduction_vpd$ecoregion)
+  
+}
+
+print(Ecoregion)
+print(summary(lm(reduction~abs_change,data=max_total_reduction_vpd)))
+
 vpd_gpp_list[[i]] <- max_total_reduction_vpd
 
 }
 
+#summer r-squared
+#SGS: 0.40
+#NMP: 0.38
+
+#spring r-squared
+#SGS: 0.15
+#NMP: 0.17
+
+#slopes are comparable
+
+#convert to df
 vpd_gpp_df <- list_to_df(vpd_gpp_list)
 
-#plot(reduction ~ abs_change,data = vpd_gpp_df )
+#labeler
+eco_names <- as_labeller(
+  c( "a" = "Shortgrass steppe", "b" = 'Northern mixed prairies'))
 
 ggplot(vpd_gpp_df,aes(abs_change,reduction)) +
-  geom_point()+
-  stat_smooth(method='lm') +
-  facet_wrap(~ecoregion,scale='free',ncol = 1) +
+  geom_point(pch=1,size=3)+
+  stat_smooth(method='lm',color='black',size=0.5) +
+  facet_wrap(~ecoregion_2,ncol=1,labeller = eco_names,scales='free') +
   xlab('Increase in maximum vapor pressure deficit (kPa)') +
-  ylab('Maximum reduction in NDVI')
-
-
-
-# import NDVI
-
-growth_drynamics_ndvi_sgs <- 
-  read_csv('./../../Data/growth_dynamics/drought_ndvi_reduction_absolute_shortgrass_steppe.csv')
-head(growth_drynamics_ndvi_sgs,1)
-
-
-vpd_ndvi_sgs <- merge(seasonal_vpd_sgs,growth_drynamics_ndvi_sgs)
-
-
+  ylab('Maximum reduction in NDVI') +
+  theme(
+    axis.text.x = element_text(color = 'black', size = 13),
+    #angle=25,hjust=1),
+    axis.text.y = element_text(color = 'black', size = 13),
+    axis.title = element_text(color = 'black', size = 25),
+    axis.ticks = element_line(color = 'black'),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 15),
+    legend.position = c(0.6, 0.65),
+    #legend.position = 'none',
+    strip.background = element_rect(fill = "white"),
+    strip.text = element_text(size = 15),
+    panel.background = element_rect(fill = NA),
+    panel.border = element_blank(),
+    #make the borders clear in prep for just have two axes
+    axis.line.x = element_line(colour = "black"),
+    axis.line.y = element_line(colour = "black"))
 

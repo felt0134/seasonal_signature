@@ -19,7 +19,4 @@ setwd(dirname(current_path))
 #load functions
 source('02_Functions.R')
 
-# to do:
-
-# create a script to exctract the peak and total reductions for each pixel so
-# you can make a map of this
+#to do: add r^2 to vpd-ndvi plot and add it as second panel to VPD change plot
