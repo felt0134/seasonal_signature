@@ -1339,13 +1339,15 @@ dev.off()
        xlab='',ylab='',las=1,cex.axis=2,ylim=c(-26,5))
   rect(151,-70,243,350,col = 'grey95')
   rect(60,-70,151,350,col = 'grey')
+  #rect(168,-70,226,350,col=adjustcolor("red",alpha.f=0.50))
   polygon(c(growth_drynamics_absolute_sgs$doy,rev(growth_drynamics_absolute_sgs$doy)),
           c(growth_drynamics_absolute_sgs$ci_75,rev(growth_drynamics_absolute_sgs$ci_25)),
           col = "black", border = F)
   text(100, -20, "Spring",cex=3)
-  text(200, -5, "Summer",cex=3)
+  text(201, -5, "Summer",cex=3)
   text(275, -20, "Fall",cex=3)
-  text(200, 1, "Median carbon uptake",cex=2)
+  text(201, 1, "Median carbon uptake",cex=2.5)
+  #text(173, 3, "Range of peak reductions",cex=1.5)
   abline(h=0,col='black',lty='dashed')
   mtext('Shortgrass steppe',side=3,line=0.5,cex=1.5)
   mtext('a',side=3,line=0.5,cex=2,adj=0.0)
@@ -1356,13 +1358,14 @@ dev.off()
        xlab='',ylab='',las=1,cex.axis=2,ylim=c(-35,10))
   rect(151,-70,243,350,col = 'grey95')
   rect(60,-70,151,350,col = 'grey')
+  #rect(171,-70,187,350,col=adjustcolor("red",alpha.f=0.50))
   polygon(c(growth_drynamics_absolute_nmp$doy,rev(growth_drynamics_absolute_nmp$doy)),
           c(growth_drynamics_absolute_nmp$ci_25,rev(growth_drynamics_absolute_nmp$ci_75)),
           col = "black", border = F)
   abline(h=0,col='black',lty='dashed')
   mtext('Northern mixed prairies',side=3,line=0.5,cex=1.5)
   mtext('Day of year',side=1,line=4.5,cex=2.5)
-  mtext(expression("Change in carbon uptake "(~g~C~m^-2~'16 days')),side=2,line=4,adj = -0.1, cex=2.5)
+  mtext(expression("Drought impact to carbon uptake "(g~C~m^-2~'16 days')),side=2,line=4,adj = -0.1, cex=2.25)
   mtext('b',side=3,line=0.5,cex=2,adj=0.0)
   lines(abs_change~doy,data=growth_drynamics_absolute_nmp,type='l',col='white',lwd=4)
   
@@ -2058,7 +2061,7 @@ max_reduction_doy_pdf <- ggplot(max_reduction_doy_rbind, aes(x = doy, fill = eco
     'Northern mixed prairies' = 'steelblue2',
     'Shortgrass steppe' = 'green4'
   )) +
-  #geom_vline(xintercept = 0,color='black') +
+  geom_vline(xintercept = 230,color='black') +
   xlab("Day of maximum reduction in carbon uptake") +
   ylab('Probability density') +
   theme(

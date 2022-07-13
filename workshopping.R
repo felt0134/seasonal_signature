@@ -2282,3 +2282,348 @@ ggplot(vpd_gpp_df,aes(abs_change,reduction)) +
     axis.line.x = element_line(colour = "black"),
     axis.line.y = element_line(colour = "black"))
 
+# peak reduction in carbon uptake figure (%) (updated 7/13/2022 - make main figure) ------
+
+
+#import both datasets
+max_total_reduction_sgs_df <- 
+  read.csv('./../../Data/growth_dynamics/max_total_reduction_shortgrass_steppe.csv')
+
+max_total_reduction_nmp_df <- 
+  read.csv('./../../Data/growth_dynamics/max_total_reduction_northern_mixed_prairies.csv')
+
+
+
+#day of peak reduction
+
+
+#import and get total for sgs
+max_reduction_doy_sgs <- max_total_reduction_sgs_df %>%
+  dplyr::filter(type == 'max') %>%
+  dplyr::select(x,y,doy) %>%
+  dplyr::filter(doy > 73) %>%
+  dplyr::filter(doy < 297)
+
+max_reduction_doy_sgs <- rasterFromXYZ(max_reduction_doy_sgs)
+crs(max_reduction_doy_sgs) <- "+proj=longlat +datum=WGS84"
+
+#import and get total for nmp
+max_reduction_doy_nmp <- max_total_reduction_nmp_df %>%
+  dplyr::filter(type == 'max') %>%
+  select(x,y,doy) %>%
+  dplyr::filter(doy > 73) %>%
+  dplyr::filter(doy < 297)
+
+max_reduction_doy_nmp <- rasterFromXYZ(max_reduction_doy_nmp)
+crs(max_reduction_doy_nmp) <- "+proj=longlat +datum=WGS84"
+
+#combine
+max_reduction_doy <- merge(max_reduction_doy_nmp,max_reduction_doy_sgs,tolerance = 0.20)
+
+max_reduction_doy <-projectRaster(max_reduction_doy, crs='+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96
++        +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs')
+max_reduction_doy <- data.frame(rasterToPoints(max_reduction_doy))
+
+max_reduction_doy_map <-
+  ggplot() +
+  geom_polygon(data=states_all_sites_tidy, mapping=aes(x = long, y = lat,group=group),
+               color = "black", size = 0.1,fill=NA) +
+  geom_raster(data=max_reduction_doy, mapping=aes(x = x, y = y, fill = layer)) + 
+  coord_equal() +
+  scale_fill_scico('Day of peak reduction\nin carbon uptake',
+                   palette = 'batlow',direction = 1) +
+  xlab('') +
+  ylab('') +
+  scale_x_continuous(expand=c(0,0)) +
+  scale_y_continuous(expand=c(0,0)) +
+  coord_fixed(xlim=c(-1500000,0), ylim=c(9e+05,3100000)) + #crop 
+  theme(
+    axis.text.x = element_blank(), #angle=25,hjust=1),
+    axis.text.y = element_blank(),
+    axis.title.x = element_text(color='black',size=10),
+    axis.title.y = element_text(color='black',size=10),
+    axis.ticks = element_blank(),
+    legend.key = element_blank(),
+    legend.position = 'top',
+    strip.background =element_rect(fill="white"),
+    strip.text = element_text(size=10),
+    panel.background = element_rect(fill=NA),
+    panel.border = element_blank(), #make the borders clear in prep for just have two axes
+    axis.line.x = element_blank(),
+    axis.line.y = element_blank())
+
+
+#now do PDFs 
+
+max_reduction_doy_nmp <- data.frame(rasterToPoints(max_reduction_doy_nmp))
+max_reduction_doy_nmp$ecoregion <- 'Northern mixed prairies'
+
+max_reduction_doy_sgs <- data.frame(rasterToPoints(max_reduction_doy_sgs))
+max_reduction_doy_sgs$ecoregion <- 'Shortgrass steppe'
+
+max_reduction_doy_rbind <- rbind(max_reduction_doy_nmp,max_reduction_doy_sgs)
+
+#peak reduction day of year PDF
+max_reduction_doy_pdf <- ggplot(max_reduction_doy_rbind, aes(x = doy, fill = ecoregion)) +
+  scale_y_continuous(expand = c(0,0)) +
+  #scale_y_continuous(expand = c(0, 0), limits = c(0, 1.02)) +
+  geom_density(color = 'black', alpha = 0.5, aes(y = ..scaled..)) +
+  scale_fill_manual(values = c(
+    'Northern mixed prairies' = 'steelblue2',
+    'Shortgrass steppe' = 'green4'
+  )) +
+  #geom_vline(xintercept = 230,color='black') +
+  xlab("Day of peak reduction") +
+  ylab('Probability density') +
+  theme(
+    axis.text.x = element_text(color = 'black', size = 10),
+    #angle=25,hjust=1),
+    axis.text.y = element_text(color = 'black', size = 10),
+    axis.title = element_text(color = 'black', size = 10),
+    axis.ticks = element_line(color = 'black'),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 7),
+    #legend.position = c(0.82, 0.7),
+    legend.position = 'top',
+    strip.background = element_rect(fill = "white"),
+    strip.text = element_text(size = 10),
+    panel.background = element_rect(fill = NA),
+    panel.border = element_blank(),
+    #make the borders clear in prep for just have two axes
+    axis.line.x = element_line(colour = "black"),
+    axis.line.y = element_line(colour = "black"))
+
+
+#make and save the inset plot
+library(grid)
+vp <- viewport(width = 0.44, height = 0.39, x = 0.23,y=0.27)
+
+#executing the inset, you create a function the utlizes all the previous code
+full <- function() {
+  print(max_reduction_doy_map)
+  print(max_reduction_doy_pdf , vp = vp)
+}
+
+png(height = 1700,width=2000,res=300,'Figures/day_of_max_reduction.png')
+
+full()
+
+dev.off()
+
+#cleanup
+rm(max_reduction,max_reduction_doy,max_reduction_doy_map,
+   max_reduction_doy_nmp,max_reduction_doy_pdf,max_reduction_doy_rbind,
+   max_reduction_doy_sgs,max_reduction_map,max_reduction_nmp,
+   max_reduction_pdf,max_reduction_rbind,max_redution_sgs,
+   max_total_reduction_nmp_df,max_total_reduction_sgs_df,p123,max_reduction_sgs)
+
+
+
+
+# VPD change during drought by season (updated 7/13/2022 - make main figure) ------
+
+#import
+Ecoregion <- 'shortgrass_steppe'
+seasonal_vpd_sgs <- read.csv(paste0(
+  './../../Data/Climate/Ecoregion/',
+  Ecoregion,
+  '/PRISM/VPD_change.csv'
+)) 
+
+seasonal_vpd_sgs$ecoregion <- 'Shortgrass steppe'
+seasonal_vpd_sgs$ecoregion_2 <- 'a'
+
+Ecoregion <- 'northern_mixed_prairies'
+seasonal_vpd_nmp <- read.csv(paste0(
+  './../../Data/Climate/Ecoregion/',
+  Ecoregion,
+  '/PRISM/VPD_change.csv'
+)) 
+
+seasonal_vpd_nmp$ecoregion <- 'Northern mixed prairies'
+seasonal_vpd_nmp$ecoregion_2 <- 'b'
+
+seasonal_vpd_sgs_nmp <- rbind(seasonal_vpd_nmp,seasonal_vpd_sgs)
+head(seasonal_vpd_sgs_nmp,1)
+
+eco_names <- as_labeller(
+  c( "a" = "Shortgrass steppe", "b" = 'Northern mixed prairies'))
+
+vpd_change <- ggplot(seasonal_vpd_sgs_nmp, aes(x = abs_change, fill = season)) +
+  facet_wrap(~ecoregion_2,ncol=1,labeller = eco_names) +
+  #scale_y_continuous(expand = c(0,0),limits = c(0,1.02)) +
+  #scale_x_continuous(expand = c(0,0),limits = c(-1.5,0.6)) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 1.02)) +
+  #scale_x_continuous(expand = c(0, 0), limits = c(230, 281)) +
+  geom_density(color = 'black', alpha = 0.5, aes(y = ..scaled..)) +
+  geom_vline(xintercept = 0,color='red') +
+  scale_fill_manual(values = c(
+    'spring' = 'black',
+    'summer' = 'white'
+  )) +
+  xlab('Drought increase in average \ndaily maximum VPD (kPa)') +
+  ylab('Probability density') +
+  theme(
+    axis.text.x = element_text(color = 'black', size = 13),
+    #angle=25,hjust=1),
+    axis.text.y = element_text(color = 'black', size = 13),
+    axis.title = element_text(color = 'black', size = 25),
+    axis.ticks = element_line(color = 'black'),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 15),
+    legend.position = c(0.6, 0.65),
+    #legend.position = 'none',
+    strip.background = element_rect(fill = "white"),
+    strip.text = element_text(size = 15),
+    panel.background = element_rect(fill = NA),
+    panel.border = element_blank(),
+    #make the borders clear in prep for just have two axes
+    axis.line.x = element_line(colour = "black"),
+    axis.line.y = element_line(colour = "black"))
+
+#save to file
+png(height = 3000,width=2750,res=300,'Figures/vpd_change.png')
+
+print(vpd_change)
+
+dev.off()
+
+#NDVI correlation with this change
+
+ecoregion_list <- c('shortgrass_steppe','northern_mixed_prairies')
+vpd_gpp_list <- list()
+for(i in ecoregion_list){
+  Ecoregion = i
+  seasonal_vpd <- 
+    read.csv(paste0( './../../Data/Climate/Ecoregion/',
+                     Ecoregion,
+                     '/PRISM/VPD_change.csv'))
+  #head(seasonal_vpd_nmp,1)
+  
+  seasonal_vpd <- seasonal_vpd %>%
+    dplyr::select(x,y,abs_change,season) %>%
+    dplyr::filter(season == 'summer') %>%
+    dplyr::select(x,y,abs_change)
+  
+  #seasonal_vpd_sgs_nmp <- rbind(seasonal_vpd_nmp,seasonal_vpd_sgs)
+  
+  #subset by season
+  # seasonal_vpd_sgs_spring <- subset(seasonal_vpd_sgs,season == 'spring')
+  # seasonal_vpd_sgs_summer <- subset(seasonal_vpd_sgs,season == 'summer')
+  
+  
+  
+  #import C uptake datasets
+  max_total_reduction <- 
+    read.csv(paste0('./../../Data/growth_dynamics/max_total_reduction_NDVI_',Ecoregion,'.csv'))
+  #head(max_total_reduction_sgs_df,1)
+  
+  
+  # max_total_reduction_nmp_df <- 
+  #   read.csv('./../../Data/growth_dynamics/max_total_reduction_northern_mixed_prairies.csv')
+  # 
+  # max_total_reduction_sgs_nmp <- rbind(max_total_reduction_sgs_df,max_total_reduction_nmp_df)
+  
+  #import and get total for sgs
+  peak_abs_reduction <- max_total_reduction %>%
+    dplyr::filter(type == 'max') %>%
+    dplyr::filter(doy < 297) %>%
+    dplyr::filter(doy > 73) %>%
+    dplyr::select(x,y,reduction)
+  
+  #convert to raster and resample
+  peak_abs_reduction <- rasterFromXYZ(peak_abs_reduction)
+  seasonal_vpd <- rasterFromXYZ(seasonal_vpd)
+  #plot(seasonal_vpd_sgs)
+  
+  peak_abs_reduction <- resample(peak_abs_reduction,seasonal_vpd)
+  
+  #convert back to dataframe and merge
+  peak_abs_reduction <- data.frame(rasterToPoints(peak_abs_reduction))
+  seasonal_vpd  <- data.frame(rasterToPoints(seasonal_vpd))
+  
+  max_total_reduction_vpd <- merge(peak_abs_reduction,
+                                   seasonal_vpd,by = c('x','y'))
+  
+  max_total_reduction_vpd$ecoregion <- Ecoregion
+  
+  if(Ecoregion=='shortgrass_steppe'){
+    
+    max_total_reduction_vpd$ecoregion <- gsub('shortgrass_steppe','Shortgrass steppe',max_total_reduction_vpd$ecoregion)
+    max_total_reduction_vpd$ecoregion_2 <- gsub('Shortgrass steppe','a',max_total_reduction_vpd$ecoregion)
+    
+  }else{
+    
+    max_total_reduction_vpd$ecoregion <- gsub('northern_mixed_prairies','Northern mixed prairies',
+                                              max_total_reduction_vpd$ecoregion)
+    max_total_reduction_vpd$ecoregion_2 <- gsub('Northern mixed prairies','b',max_total_reduction_vpd$ecoregion)
+    
+  }
+  
+  print(Ecoregion)
+  print(summary(lm(reduction~abs_change,data=max_total_reduction_vpd)))
+  
+  vpd_gpp_list[[i]] <- max_total_reduction_vpd
+  
+}
+
+#summer r-squared
+#SGS: 0.40
+#NMP: 0.38
+
+#spring r-squared
+#SGS: 0.15
+#NMP: 0.17
+
+#slopes are comparable
+
+#convert to df
+vpd_gpp_df <- list_to_df(vpd_gpp_list)
+
+#labeler
+eco_names <- as_labeller(
+  c( "a" = "Shortgrass steppe", "b" = 'Northern mixed prairies'))
+
+library(ggpubr)
+?stat_cor
+ndvi_vpd_plot <- ggplot(vpd_gpp_df,aes(abs_change,reduction)) +
+  geom_point(pch=1,size=2)+
+  stat_smooth(method='lm',color='black',size=0.5) +
+  stat_cor(aes(label=..rr.label..), label.y.npc = 'bottom', label.x.npc = 'left') +
+  facet_wrap(~ecoregion_2,ncol=1,labeller = eco_names,scales='free') +
+  xlab('Drought increase in summer \nVPD (kPa)') +
+  ylab('Maximum reduction in NDVI') +
+  # annotate(geom = 'text', x = 0, y = -.20, 
+  #          label = bquote("R^2 == 0.40"), parse = TRUE) +
+  # annotate(geom = 'text', x = 0, y = -.30, 
+  #          label = bquote("R^2 == 0.40"), parse = TRUE) +
+  theme(
+    axis.text.x = element_text(color = 'black', size = 13),
+    #angle=25,hjust=1),
+    axis.text.y = element_text(color = 'black', size = 13),
+    axis.title = element_text(color = 'black', size = 25),
+    axis.ticks = element_line(color = 'black'),
+    legend.key = element_blank(),
+    legend.title = element_blank(),
+    legend.text = element_text(size = 15),
+    legend.position = c(0.6, 0.65),
+    #legend.position = 'none',
+    strip.background = element_rect(fill = "white"),
+    strip.text = element_text(size = 15),
+    panel.background = element_rect(fill = NA),
+    panel.border = element_blank(),
+    #make the borders clear in prep for just have two axes
+    axis.line.x = element_line(colour = "black"),
+    axis.line.y = element_line(colour = "black"))
+
+
+library(patchwork)
+
+png(height = 3000,width=4000,res=300,'Figures/vpd_ndvi_change.png')
+
+p123 <- vpd_change + ndvi_vpd_plot + plot_layout(ncol = 2)
+p123 + plot_annotation(tag_levels = "a")
+
+dev.off()
