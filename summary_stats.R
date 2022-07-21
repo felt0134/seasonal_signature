@@ -840,14 +840,14 @@ point_data_50_nmp <- as(day_50_drought_nmp, 'SpatialPointsDataFrame')
 
 nmp.dists <- as.matrix(dist(cbind(day_50_drought_nmp_df$x,day_50_drought_nmp_df$y)))
 
-sgs.dists.inv <- 1/sgs.dists
-diag(sgs.dists.inv) <- 0
+nmp.dists.inv <- 1/nmp.dists
+diag(nmp.dists.inv) <- 0
 
-Moran.I(day_50_drought_sgs_df$day_50_drought_impact_shortgrass_steppe,sgs.dists.inv,
+Moran.I(day_50_drought_nmp_df$day_50_drought_impact_northern_mixed_prairies,nmp.dists.inv,
         alternative = "two.sided")
 
 #significant
-#coefficient = 0.15
+#coefficient = 0.20
 
 rm(day_50_drought_sgs_df,sgs.dists,sgs.dists.inv)
 
