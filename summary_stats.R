@@ -795,11 +795,27 @@ cor.test(day_50_all$y,day_50_all$day_50 ,method='spearman',exact=FALSE)
 #0.34
 
 #variogram analysis
+library(ape)
 
 #sgs
 day_50_drought_sgs <-
   raster('./../../Data/CDD/day_of_50/day_50_drought_impact_shortgrass_steppe.tif')
-point_data_50_sgs <- as(day_50_drought_sgs, 'SpatialPointsDataFrame')
+day_50_drought_sgs_df <- data.frame(rasterToPoints(day_50_drought_sgs))
+point_data_50_sgs <- as(day_50_drought_sgs_df,
+                        'SpatialPointsDataFrame')
+
+sgs.dists <- as.matrix(dist(cbind(day_50_drought_sgs_df$x,day_50_drought_sgs_df$y)))
+
+sgs.dists.inv <- 1/sgs.dists
+diag(sgs.dists.inv) <- 0
+
+Moran.I(day_50_drought_sgs_df$day_50_drought_impact_shortgrass_steppe,sgs.dists.inv,
+        alternative = "two.sided")
+
+#significant
+#coefficient = 0.15
+
+rm(day_50_drought_sgs_df,sgs.dists,sgs.dists.inv)
 
 TheVariogram_50_sgs = variogram(day_50_drought_impact_shortgrass_steppe ~1,
                                 data = point_data_50_sgs,width = 10)
@@ -819,8 +835,21 @@ FittedModel_50_sgs
 #northern mixed prairies
 day_50_drought_nmp <-
   raster('./../../Data/CDD/day_of_50/day_50_drought_impact_northern_mixed_prairies.tif')
-
+day_50_drought_nmp_df <- data.frame(rasterToPoints(day_50_drought_nmp))
 point_data_50_nmp <- as(day_50_drought_nmp, 'SpatialPointsDataFrame')
+
+nmp.dists <- as.matrix(dist(cbind(day_50_drought_nmp_df$x,day_50_drought_nmp_df$y)))
+
+sgs.dists.inv <- 1/sgs.dists
+diag(sgs.dists.inv) <- 0
+
+Moran.I(day_50_drought_sgs_df$day_50_drought_impact_shortgrass_steppe,sgs.dists.inv,
+        alternative = "two.sided")
+
+#significant
+#coefficient = 0.15
+
+rm(day_50_drought_sgs_df,sgs.dists,sgs.dists.inv)
 
 TheVariogram_50_nmp = variogram(day_50_drought_impact_northern_mixed_prairies ~1,
                                 data = point_data_50_nmp,width = 10)
