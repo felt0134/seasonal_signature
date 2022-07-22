@@ -597,29 +597,15 @@ library(plotrix)
 
 # day of 50% C uptake
 
-#advance of day 50 sgs
-day_50_sgs <- raster('./../../Data/CDD/day_of_50/day_50_shortgrass_steppe.tif')
+#sgs
 day_50_drought_sgs <-
-  raster('./../../Data/CDD/day_of_50/day_50_droughtshortgrass_steppe.tif')
-day_50_drought_sgs <- stack(day_50_drought_sgs, day_50_sgs)
-day_50_drought_sgs_2 <-
-  day_50_drought_sgs$day_50_droughtshortgrass_steppe -
-  day_50_drought_sgs$day_50_shortgrass_steppe
+  raster('./../../Data/CDD/day_of_50/day_50_drought_impact_shortgrass_steppe.tif')
+day_50_drought_sgs <- data.frame(rasterToPoints(day_50_drought_sgs))
 
-day_50_drought_sgs <- data.frame(rasterToPoints(day_50_drought_sgs_2))
-
-
-
-#advance of day 50 nmp
-day_50_nmp <- raster('./../../Data/CDD/day_of_50/day_50_northern_mixed_prairies.tif')
+#nmp
 day_50_drought_nmp <-
-  raster('./../../Data/CDD/day_of_50/day_50_droughtnorthern_mixed_prairies.tif')
-day_50_drought_nmp <- stack(day_50_drought_nmp, day_50_nmp)
-day_50_drought_nmp_2 <-
-  day_50_drought_nmp$day_50_droughtnorthern_mixed_prairies -
-  day_50_drought_nmp$day_50_northern_mixed_prairies
-
-day_50_drought_nmp <- data.frame(rasterToPoints(day_50_drought_nmp_2))
+  raster('./../../Data/CDD/day_of_50/day_50_drought_impact_northern_mixed_prairies.tif')
+day_50_drought_nmp <- data.frame(rasterToPoints(day_50_drought_nmp))
 
 ks_test_bootstrap <- function(data_1,data_2){
 
@@ -630,15 +616,12 @@ for(i in 1:1000){
 day_50_drought_nmp_rand <- day_50_drought_nmp %>%
   dplyr::sample_n(100)
 
-
-hist(day_50_drought_nmp_rand$layer)
-
 day_50_drought_sgs_rand <- day_50_drought_sgs %>%
   dplyr::sample_n(100)
-hist(day_50_drought_sgs_rand$layer)
-plot(y~x,day_50_drought_sgs_rand)
 
-test <- ks.test(day_50_drought_sgs_rand$layer,day_50_drought_nmp_rand$layer,exact=F)
+
+test <- ks.test(day_50_drought_sgs_rand$day_50_drought_impact_shortgrass_steppe,
+                day_50_drought_nmp_rand$day_50_drought_impact_northern_mixed_prairies,exact=F)
 D <- data.frame(test$statistic)
 
 d_list[[i]] <- D
@@ -1669,7 +1652,7 @@ rm(max_total_reduction_nmp_df,max_total_reduction_sgs_df,
    total_reduction_map,total_reduction_nmp,total_reduction_sgs,
    total_reduction_rbind,total_reduction_pdf,vp,total_reduction)
 
-# peak reduction figure (%) ------
+# day of peak reduction figure (%) ------
 
 
 #import both datasets

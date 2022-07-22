@@ -228,7 +228,28 @@ quantile(min_reduction_nmp$reduction,c(0.25,0.5,0.75))
 quantile(min_reduction_nmp$perc_reduction,c(0.25,0.5,0.75))
 quantile(min_reduction_nmp$doy,c(0.25,0.5,0.75))
 
+#compare distributions
+d_list_reduction <- list()
+for(i in 1:1000){
+  
+  #get random subset of 100 for each
+  total_reduction_nmp_rand <- total_reduction_nmp %>%
+    dplyr::sample_n(100)
 
+  total_reduction_sgs_rand <- total_reduction_sgs %>%
+    dplyr::sample_n(100)
+
+  test <- ks.test(total_reduction_sgs_rand$reduction,total_reduction_nmp_rand$reduction,exact=F)
+  D <- data.frame(test$statistic)
+  
+  d_list_reduction[[i]] <- D
+  
+}
+
+d_list_reduction_df <- do.call('rbind',d_list_reduction)
+hist(d_list_reduction_df$test.statistic)
+mean(d_list_reduction_df$test.statistic)
+ci_99(d_list_reduction_df$test.statistic)
 
 #-------------------------------------------------------------------------------
 # C uptake through time (old) ------
@@ -343,6 +364,31 @@ quantile(seasonal_precip_sgs$perc_change_spring_precipitation,c(0.25,0.5,0.75))
 #percent change in spring ppt
 quantile(seasonal_precip_sgs$perc_change_summer_precipitation,c(0.25,0.5,0.75))
 
+#change in prop of spring ppt
+quantile(seasonal_precip_sgs$change_spring_prop,c(0.25,0.5,0.75),na.rm=T)
+test <- t.test(seasonal_precip_sgs$change_spring_pro,alternative='greater')
+test$statistic
+
+#boostrapped t.test
+sgs_t_vals <- list()
+for(i in 1:1000){
+  
+  
+#get random subset of 100
+  seasonal_precip_sgs_rand <- seasonal_precip_sgs %>%
+    dplyr::sample_n(100)
+  
+  t_test <- t.test(seasonal_precip_sgs_rand$change_spring_pro)
+  t_value <- t_test$statistic
+  
+  sgs_t_vals[[i]] <- t_value
+  
+}
+
+sgs_t_vals_df <- list_to_df(sgs_t_vals)
+hist(sgs_t_vals_df$t)
+ci_99(sgs_t_vals_df$t)
+mean(sgs_t_vals_df$t)
 
 #
 #
@@ -366,158 +412,31 @@ quantile(seasonal_precip_nmp$perc_change_spring_precipitation,c(0.25,0.5,0.75))
 #percent change in spring ppt
 quantile(seasonal_precip_nmp$perc_change_summer_precipitation,c(0.25,0.5,0.75))
 
+#change in prop of spring ppt
+quantile(seasonal_precip_nmp$change_spring_prop,c(0.25,0.5,0.75),na.rm=T)
 
 
+nmp_t_vals <- list()
+for(i in 1:1000){
+  
+  
+  #get random subset of 100
+  seasonal_precip_nmp_rand <- seasonal_precip_nmp %>%
+    dplyr::sample_n(100)
+  
+  t_test <- t.test(seasonal_precip_nmp_rand$change_spring_pro)
+  t_value <- t_test$statistic
+  
+  nmp_t_vals[[i]] <- t_value
+  
+}
 
-#filter summer and spring abs and relative for VPD
-vpd_change %>%
-  filter(season=='summer') %>%
-  summarise(quantile(perc_change,c(0.01,0.50,0.99)))
-#50th = 28
+nmp_t_vals_df <- list_to_df(nmp_t_vals)
+hist(nmp_t_vals_df$t)
+ci_99(nmp_t_vals_df$t)
+mean(nmp_t_vals_df$t)
 
-vpd_change %>%
-  filter(season=='spring') %>%
-  summarise(quantile(perc_change,c(0.01,0.50,0.99)))
-#50th = 22
-
-vpd_change %>%
-  filter(season=='summer') %>%
-  summarise(quantile(abs_change,c(0.01,0.50,0.99)))
-#50th = 9.7
-
-vpd_change %>%
-  filter(season=='spring') %>%
-  summarise(quantile(abs_change,c(0.01,0.50,0.99)))
-#50th = 4.4
-
-
-
-##
-
-#northern mixed prairies
-Ecoregion = 'northern_mixed_prairies'
-source('seasonal_precip_temp_analysis.R')
-
-#abs and relative change in spring ppt
-quantile(test_spring_ppt_drought$perc_decrease,c(0.01,0.5,0.99))
-#50th = -47.9% reduction
-
-quantile(test_spring_ppt_drought$abs_decrease,c(0.01,0.5,0.99))
-# 50th = -71.2 mm
-
-#shift in proportion of spring precip
-quantile(spring_summer_precip_drought$change_in_perc_spring,c(0.01,0.5,0.99),na.rm=T)
-# 50th = 6.5
-#hist(spring_summer_precip_drought$change_in_perc_spring)
-
-#abs and relative decline in summer ppt
-quantile(test_summer_ppt_drought$perc_decrease,c(0.01,0.5,0.99))
-#50th = -57.6% reduction
-
-quantile(test_summer_ppt_drought$abs_decrease,c(0.01,0.5,0.99))
-#50th = -80.9 mmm
-#80.9 - 71.2 = 9.7 mm
-
-#abs and relative change in spring temp
-quantile(test_spring_temp_drought$perc_change,c(0.01,0.5,0.99))
-#50th = 21.4%
-
-quantile(test_spring_temp_drought$abs_change,c(0.01,0.5,0.99))
-#50th = 1.2 degree
-
-#abs and relative change in summer temp
-quantile(test_summer_temp_drought$perc_change,c(0.01,0.5,0.99))
-#50th = 6.8%
-
-quantile(test_summer_temp_drought$abs_change,c(0.01,0.5,0.99))
-#50th = 1.3 degree
-
-vpd_change %>%
-  filter(season=='summer') %>%
-  summarise(quantile(perc_change,c(0.01,0.50,0.99)))
-#50th = 22
-
-vpd_change %>%
-  filter(season=='spring') %>%
-  summarise(quantile(perc_change,c(0.01,0.50,0.99)))
-#50th = 14
-
-vpd_change %>%
-  filter(season=='summer') %>%
-  summarise(quantile(abs_change,c(0.01,0.50,0.99)))
-#50th = 6.2
-
-vpd_change %>%
-  filter(season=='spring') %>%
-  summarise(quantile(abs_change,c(0.01,0.50,0.99)))
-#50th=1.5
-
-#6.2/1.5
-
-
-#look at the % of summer and spring precip during dry and normal years
-
-#merge spring and summer precip
-head(test_spring_ppt_drought)
-spring_summer_precip_drought <- 
-  merge(test_spring_ppt_drought[c(1:6)],test_summer_ppt_drought[c(1:6)],
-        by=c('x','y','year','annual_precip'))
-head(spring_summer_precip_drought,1)
-
-#get % spring during normal year and dry year
-spring_summer_precip_drought$perc_spring_normal <-
-  ((spring_summer_precip_drought$spring_precip)/
-  (spring_summer_precip_drought$spring_precip + spring_summer_precip_drought$summer_precip))*100
-
-spring_summer_precip_drought$perc_spring_drought <-
-  ((spring_summer_precip_drought$spring_precip_drought)/
-     (spring_summer_precip_drought$spring_precip_drought + spring_summer_precip_drought$summer_precip_drought))*100
-
-hist(spring_summer_precip_drought$perc_spring_drought)
-hist(spring_summer_precip_drought$perc_spring_normal,add=T,col='blue')
-
-spring_summer_precip_drought$perc_spring_normal <-
-  ((spring_summer_precip_drought$spring_precip)/
-     (spring_summer_precip_drought$spring_precip + spring_summer_precip_drought$summer_precip))*100
-
-#get % summer precip during normal and dry year
-spring_summer_precip_drought$perc_summer_drought <-
-  ((spring_summer_precip_drought$summer_precip_drought)/
-     (spring_summer_precip_drought$spring_precip_drought + spring_summer_precip_drought$summer_precip_drought))*100
-
-spring_summer_precip_drought$perc_summer_normal <-
-  ((spring_summer_precip_drought$summer_precip)/
-     (spring_summer_precip_drought$spring_precip + spring_summer_precip_drought$summer_precip))*100
-
-#changes in % of spring precip
-hist(spring_summer_precip_drought$perc_spring_drought)
-hist(spring_summer_precip_drought$perc_spring_normal,add=T,col='blue')
-
-#changes in seasonality of spring precip
-spring_summer_precip_drought$change_in_perc_spring <-
-  spring_summer_precip_drought$perc_spring_drought - 
-  spring_summer_precip_drought$perc_spring_normal
-
-hist(spring_summer_precip_drought$change_in_perc_spring)
-summary(spring_summer_precip_drought$change_in_perc_spring)
-
-#changes in % of summer precip
-hist(spring_summer_precip_drought$perc_summer_drought)
-hist(spring_summer_precip_drought$perc_summer_normal,add=T,col='blue')
-
-#changes in seasonality of summer precip
-spring_summer_precip_drought$change_in_perc_summer <-
-  spring_summer_precip_drought$perc_summer_drought - 
-  spring_summer_precip_drought$perc_summer_normal
-
-hist(spring_summer_precip_drought$change_in_perc_summer)
-summary(spring_summer_precip_drought$change_in_perc_summer)
-
-
-
-rm(driest_year, test_spring_ppt_drought, test_spring_temp_drought,
-   test_summer_ppt_drought, test_summer_temp_drought,vpd_change)
-
+library(plotrix)
 
 #-------------------------------------------------------------------------------
 # seasonal changes in temperature -----
@@ -758,7 +677,7 @@ cor.test(day_75_drought_sgs_nmp$y,day_75_drought_sgs_nmp$day_75 ,method='spearma
 
 
 #-------------------------------------------------------------------------------
-# compare distribution of day 50 (in progress) ------
+# compare distribution of day 50 by ecoregion ------
 
 
 #shortgrass stppe
@@ -925,7 +844,7 @@ below_zero <- spring_summer_precip_drought %>%
   nrow(below_zero)/n_samples
   
 
-t.test(spring_summer_precip_drought$change_in_perc_summer)
+t_test <- t.test(spring_summer_precip_drought$change_in_perc_summer)
 
 hist(spring_summer_precip_drought$change_in_perc_spring)
 hist(spring_summer_precip_drought$change_in_perc_summer,add=T,col='red')
