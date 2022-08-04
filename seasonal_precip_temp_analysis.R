@@ -24,6 +24,7 @@ spring_summer_ppt <- merge(spring_ppt,summer_ppt,by = c('x','y','ecoregion'))
 
 rm(spring_ppt,summer_ppt)
 
+#follow-up to look at the change in the proportion of spring precip
 spring_summer_ppt$mean_total <- spring_summer_ppt$spring_precipitation_mean + 
   spring_summer_ppt$summer_precipitation_mean
 
@@ -60,6 +61,7 @@ spring_temp <- seasonality_summary(Ecoregion = Ecoregion,
 summer_temp <- seasonality_summary(Ecoregion = Ecoregion,
                                   climate = 'temperature',
                                   season = 'summer')
+
 
 #combine
 spring_summer_temp <- merge(spring_temp,summer_temp,by = c('x','y','ecoregion'))

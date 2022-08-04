@@ -18,5 +18,3 @@ setwd(dirname(current_path))
 
 #load functions
 source('02_Functions.R')
-
-#to do: add r^2 to vpd-ndvi plot and add it as second panel to VPD change plot

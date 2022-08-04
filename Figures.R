@@ -41,7 +41,7 @@ states_all_sites <- sp::spTransform(states_all_sites,
 
 #prep for ggplotting
 #https://stackoverflow.com/questions/62435609/plot-shapefile-with-ggplot2
-states_all_sites_df <- fortify(states_all_sites)
+#states_all_sites_df <- fortify(states_all_sites)
 states_all_sites_tidy <- tidy(states_all_sites)
 
 # Recategorizes data as required for plotting
@@ -2411,7 +2411,7 @@ rm(max_total_reduction_nmp_df,max_total_reduction_sgs_df,
    peak_abs_reduction_map,peak_abs_reduction_nmp,peak_abs_reduction_sgs,
    peak_abs_reduction_rbind,peak_abs_reduction_pdf,vp,peak_abs_reduction)
 #-------------------------------------------------------------------------------
-# VPD change during drought by season and NDVI response (updated 7/13/2022 - make main figure) ------
+# VPD change during drought by season and NDVI response (updated 7/13/2022) ------
 
 #import
 Ecoregion <- 'shortgrass_steppe'
@@ -2473,12 +2473,6 @@ vpd_change <- ggplot(seasonal_vpd_sgs_nmp, aes(x = abs_change, fill = season)) +
     axis.line.x = element_line(colour = "black"),
     axis.line.y = element_line(colour = "black"))
 
-#save to file
-png(height = 3000,width=2750,res=300,'Figures/vpd_change.png')
-
-print(vpd_change)
-
-dev.off()
 
 #NDVI correlation with this change
 
@@ -3125,3 +3119,5 @@ rm(max_reduction_doy,max_reduction_doy_map,max_reduction_doy_nmp,
 
 
 
+
+#-------------------------------------------------------------------------------

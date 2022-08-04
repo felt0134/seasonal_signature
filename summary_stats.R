@@ -1,6 +1,6 @@
 
 # key summary statistics
-
+library(plotrix)
 
 # Overview -----
 #-------------------------------------------------------------------------------
@@ -469,6 +469,7 @@ Ecoregion <- 'northern_mixed_prairies'
 seasonal_temp_nmp <- 
   read.csv(paste0('./../../Data/Climate/Ecoregion/',Ecoregion,'/temperature/seasonal_change_temperature.csv'))
 head(seasonal_temp_nmp,1)
+#summary(seasonal_temp_nmp)
 
 #abs change in spring temp
 quantile(seasonal_temp_nmp$abs_change_spring_temperature,c(0.25,0.5,0.75))
@@ -706,23 +707,27 @@ quantile(day_50_drought_nmp$day_50,probs = c(0.25,0.5,0.75))
 #compare distributions
 compare_day_50 <- ks_test_bootstrap(day_50_drought_nmp,day_50_drought_sgs)
 hist(compare_day_50$test.statistic)
-quantile(compare_day_50$test.statistic,probs= c(0.01,0.5))
+mean(compare_day_50$test.statistic)
+ci_99(compare_day_50$test.statistic)
 
 #look at correlation
 day_50_all <- rbind(day_50_drought_nmp,day_50_drought_sgs)
 cor.test(day_50_all$y,day_50_all$day_50 ,method='spearman',exact=FALSE)
 #0.34
 
+#
+#
+
 #variogram analysis
 library(ape)
+library(gstat)
 
 #sgs
 day_50_drought_sgs <-
   raster('./../../Data/CDD/day_of_50/day_50_drought_impact_shortgrass_steppe.tif')
-day_50_drought_sgs_df <- data.frame(rasterToPoints(day_50_drought_sgs))
-point_data_50_sgs <- as(day_50_drought_sgs_df,
-                        'SpatialPointsDataFrame')
 
+#test for autocorrelation
+day_50_drought_sgs_df <- data.frame(rasterToPoints(day_50_drought_sgs))
 sgs.dists <- as.matrix(dist(cbind(day_50_drought_sgs_df$x,day_50_drought_sgs_df$y)))
 
 sgs.dists.inv <- 1/sgs.dists
@@ -731,18 +736,22 @@ diag(sgs.dists.inv) <- 0
 Moran.I(day_50_drought_sgs_df$day_50_drought_impact_shortgrass_steppe,sgs.dists.inv,
         alternative = "two.sided")
 
+rm(day_50_drought_sgs_df,sgs.dists,sgs.dists.inv)
+
 #significant
 #coefficient = 0.15
 
-rm(day_50_drought_sgs_df,sgs.dists,sgs.dists.inv)
+#variogram
+point_data_50_sgs <- as(day_50_drought_sgs,
+                        'SpatialPointsDataFrame')
 
 TheVariogram_50_sgs = variogram(day_50_drought_impact_shortgrass_steppe ~1,
-                                data = point_data_50_sgs,width = 10)
+                                data = point_data_50_sgs,width = 5)
 
 summary(TheVariogram_50_sgs)
 plot(TheVariogram_50_sgs)
 
-TheVariogramModel_50_sgs <- vgm(psill=300, model="Exp", nugget=50, range=100)
+TheVariogramModel_50_sgs <- vgm(psill=300, model="Exp", nugget=40, range=100)
 plot(TheVariogram_50_sgs, model=TheVariogramModel_50_sgs) 
 FittedModel_50_sgs <- fit.variogram(TheVariogram_50_sgs, model=TheVariogramModel_50_sgs)
 FittedModel_50_sgs
@@ -754,9 +763,9 @@ FittedModel_50_sgs
 #northern mixed prairies
 day_50_drought_nmp <-
   raster('./../../Data/CDD/day_of_50/day_50_drought_impact_northern_mixed_prairies.tif')
-day_50_drought_nmp_df <- data.frame(rasterToPoints(day_50_drought_nmp))
-point_data_50_nmp <- as(day_50_drought_nmp, 'SpatialPointsDataFrame')
 
+#test for spatial autocorrelation
+day_50_drought_nmp_df <- data.frame(rasterToPoints(day_50_drought_nmp))
 nmp.dists <- as.matrix(dist(cbind(day_50_drought_nmp_df$x,day_50_drought_nmp_df$y)))
 
 nmp.dists.inv <- 1/nmp.dists
@@ -770,13 +779,15 @@ Moran.I(day_50_drought_nmp_df$day_50_drought_impact_northern_mixed_prairies,nmp.
 
 rm(day_50_drought_sgs_df,sgs.dists,sgs.dists.inv)
 
+#variogram
+point_data_50_nmp <- as(day_50_drought_nmp, 'SpatialPointsDataFrame')
 TheVariogram_50_nmp = variogram(day_50_drought_impact_northern_mixed_prairies ~1,
-                                data = point_data_50_nmp,width = 10)
+                                data = point_data_50_nmp,width = 5)
 
 summary(TheVariogram_50_nmp)
 plot(TheVariogram_50_nmp)
 
-TheVariogramModel_50_nmp <- vgm(psill=300, model="Exp", nugget=50, range=100)
+TheVariogramModel_50_nmp <- vgm(psill=50, model="Exp", nugget=5, range=100)
 plot(TheVariogram_50_nmp, model=TheVariogramModel_50_nmp) 
 FittedModel_50_nmp <- fit.variogram(TheVariogram_50_nmp, model=TheVariogramModel_50_nmp)
 FittedModel_50_nmp

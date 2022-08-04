@@ -2516,17 +2516,17 @@ for(i in ecoregion_list){
   # #formatting names
   # max_total_reduction_vpd$ecoregion <- Ecoregion
   # 
-  if(Ecoregion=='shortgrass_steppe'){
-
-  model_output_sgs
-
-  }else{
-
-    max_total_reduction_vpd$ecoregion <- gsub('northern_mixed_prairies','Northern mixed prairies',
-                                              max_total_reduction_vpd$ecoregion)
-    max_total_reduction_vpd$ecoregion_2 <- gsub('Northern mixed prairies','b',max_total_reduction_vpd$ecoregion)
-
-  }
+  # if(Ecoregion=='shortgrass_steppe'){
+  # 
+  # model_output_sgs
+  # 
+  # }else{
+  # 
+  #   max_total_reduction_vpd$ecoregion <- gsub('northern_mixed_prairies','Northern mixed prairies',
+  #                                             max_total_reduction_vpd$ecoregion)
+  #   max_total_reduction_vpd$ecoregion_2 <- gsub('Northern mixed prairies','b',max_total_reduction_vpd$ecoregion)
+  # 
+  # }
   
   print(Ecoregion)
   print('vpd')
@@ -2536,7 +2536,7 @@ for(i in ecoregion_list){
   print('precip')
   print(summary(lm(reduction~abs_change_summer_precipitation,data=seasonal_climate_ndvi)))
   
-  test <- tab_model(lm(reduction~abs_change_summer_precipitation,data=seasonal_climate_ndvi))
+  #test <- tab_model(lm(reduction~abs_change_summer_precipitation,data=seasonal_climate_ndvi))
         
   
   #vpd_gpp_list[[i]] <- max_total_reduction_vpd
@@ -2559,4 +2559,11 @@ vpd_gpp_df <- list_to_df(vpd_gpp_list)
 library(sjPlot)
 test <- tab_model(lm(reduction~abs_change,data=seasonal_climate_ndvi))
 
-# comparing summer vpd change to precip and temperature change and ndvi responses
+# comparing summer vpd change to precip and temperature change and ndvi responses----
+
+#paste0('./../../Data/Climate/Ecoregion/northern_mixed_prairies/Temperature,'/',season,'/'   
+
+raster('./../../Data/Climate/Ecoregion/northern_mixed_prairies/Temperature/summer/summer_temp_2012_northern_mixed_prairies.tif')
+
+raster('./../../Data/Climate/Ecoregion/northern_mixed_prairies/Temperature/spring/spring_temp_2012_northern_mixed_prairies.tif')
+
