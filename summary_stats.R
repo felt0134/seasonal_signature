@@ -3,6 +3,29 @@
 library(plotrix)
 
 # Overview -----
+# mean ppt and temp ------
+
+#mean temp
+sgs_temp <- import_temp('shortgrass_steppe','tmean',value=T)
+sgs_temp <- aggregate(average_temp ~ x + y, mean, data = sgs_temp)
+summary(sgs_temp)
+
+nmp_temp <- import_temp('northern_mixed_prairies','tmean',value=T)
+nmp_temp <- aggregate(average_temp ~ x + y, mean, data = nmp_temp)
+summary(nmp_temp)
+
+#mean precip
+ppt_gpp_sgs <- readr::read_csv('./../../Data/GPP/Ecoregion/shortgrass_steppe/ppt_gpp_combined.csv')
+ppt_gpp_sgs <- aggregate(ppt ~ x + y + year, sum, data = ppt_gpp_sgs)
+ppt_gpp_sgs <- aggregate(ppt ~ x + y, mean, data = ppt_gpp_sgs)
+summary(ppt_gpp_sgs)
+
+ppt_gpp_nmp <- readr::read_csv('./../../Data/GPP/Ecoregion/northern_mixed_prairies/ppt_gpp_combined.csv')
+ppt_gpp_nmp <- aggregate(ppt ~ x + y + year, sum, data = ppt_gpp_nmp)
+ppt_gpp_nmp <- aggregate(ppt ~ x + y, mean, data = ppt_gpp_nmp)
+summary(ppt_gpp_nmp)
+
+
 #-------------------------------------------------------------------------------
 # driest years ------
 
@@ -250,98 +273,6 @@ d_list_reduction_df <- do.call('rbind',d_list_reduction)
 hist(d_list_reduction_df$test.statistic)
 mean(d_list_reduction_df$test.statistic)
 ci_99(d_list_reduction_df$test.statistic)
-
-#-------------------------------------------------------------------------------
-# C uptake through time (old) ------
-
-#maximum estimated gpp enhancement for NMP (% and absolute), and when this happens (Julian day)
-
-#northern mixed prairies
-Ecoregion <- 'northern_mixed_prairies'
-drought_growth_impact_nmp <- read.csv(paste0('./../../Data/growth_dynamics/drought_gpp_reduction_',Ecoregion,'.csv'))
-drought_growth_impact_nmp %>% dplyr::filter(perc_change == max(drought_growth_impact_nmp$perc_change))
-#day 85 83.32%
-
-drought_growth_impact_absolute_nmp <- read.csv( paste0('./../../Data/growth_dynamics/drought_gpp_reduction_absolute_',Ecoregion,'.csv'))
-drought_growth_impact_absolute_nmp %>% dplyr::filter(abs_change == max(drought_growth_impact_absolute_nmp$abs_change))
-#day 128 6
-
-drought_growth_impact_absolute_nmp %>% dplyr::filter(abs_change == min(drought_growth_impact_absolute_nmp$abs_change))
-#day 185 -22.9
-
-#maximum GPP reduction for SGS and NMP (% and absolute) and when this happens (day)
-drought_growth_impact_nmp %>% dplyr::filter(perc_change == min(drought_growth_impact_nmp$perc_change))
-#day 193 43.9%
-
-#
-#
-
-#shortgrass steppe
-Ecoregion <- 'shortgrass_steppe'
-drought_growth_impact_sgs <- read.csv(paste0('./../../Data/growth_dynamics/drought_gpp_reduction_',Ecoregion,'.csv'))
-drought_growth_impact_sgs %>% dplyr::filter(perc_change == min(drought_growth_impact_sgs$perc_change))
-#day 184 -66.4
-
-#look at absolute differences in GPP through time
-drought_growth_impact_absolute_sgs <- 
-  read.csv(paste0('./../../Data/growth_dynamics/drought_gpp_reduction_absolute_',Ecoregion,'.csv'))
-drought_growth_impact_absolute_sgs %>% dplyr::filter(abs_change == min(drought_growth_impact_absolute_sgs$abs_change))
-#day 176: -18.6
-
-#split up by season
-
-#SGS
-
-#meteorological spring for GPP
-drought_growth_impact_sgs %>%
-  dplyr::filter(doy > 59) %>%
-  dplyr::filter(doy < 152) %>%
-  summarise(median(perc_change))
-#-6.4%
-
-#summer for GPP
-drought_growth_impact_sgs %>%
-  dplyr::filter(doy > 151) %>%
-  dplyr::filter(doy < 244) %>%
-  summarise(median(perc_change))
-# -62.4%
-
-#NMP
-
-#meteorological spring for GPP
-drought_growth_impact_nmp %>%
-  dplyr::filter(doy > 59) %>%
-  dplyr::filter(doy < 152) %>%
-  summarise(median(perc_change))
-#-26.4%
-
-#summer for GPP
-drought_growth_impact_nmp %>%
-  dplyr::filter(doy > 151) %>%
-  dplyr::filter(doy < 244) %>%
-  summarise(median(perc_change))
-# -62.4%
-
-#Now do NDVI
-
-#SGS
-drought_growth_impact_NDVI_sgs <- 
-  read_csv('./../../Data/growth_dynamics/drought_ndvi_reduction_shortgrass_steppe.csv')
-
-#meteorological spring for NDVI
-drought_growth_impact_NDVI_sgs %>%
-  dplyr::filter(doy > 59) %>%
-  dplyr::filter(doy < 152) %>%
-  summarise(median(perc_change))
-#-12.7%
-
-#meteorological summer for NDVI
-drought_growth_impact_NDVI_sgs %>%
-  dplyr::filter(doy > 151) %>%
-  dplyr::filter(doy < 244) %>%
-  summarise(median(perc_change))
-#-31.2%
-
 
 #-------------------------------------------------------------------------------
 # seasonal changes in precipitation  -------

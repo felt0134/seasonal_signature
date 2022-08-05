@@ -672,7 +672,7 @@ list_to_df <- function(x) {
 #import the temp rasters from file, using the format function
 import_temp <- function(Ecoregion, temp, value) {
   #i = 2003
-  
+
   filepath_2 <-
     dir(
       paste0(
@@ -684,10 +684,12 @@ import_temp <- function(Ecoregion, temp, value) {
       ),
       full.names = T
     )
+  
+  #relic of old code
   if (value == T) {
-    test <- lapply(filepath_2, format_temp_df, max_min = T)
+    test <- lapply(filepath_2, format_temp_df)
   } else{
-    test <- lapply(filepath_2, format_temp_df, max_min = F)
+    test <- lapply(filepath_2, format_temp_df)
   }
   
   test <- list_to_df(test)
