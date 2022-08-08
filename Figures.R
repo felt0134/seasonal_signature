@@ -637,7 +637,7 @@ lines(mean ~ doy, growth_curve_absolute_mean_sgs,col='black',pch=19,lwd=1.25)
 # points(178, 176,pch=19,cex=3)
 # text(170, 97, "June 6th",cex=1)
 # points(157,102,pch=19,cex=3)
-legend(75, 350, legend=c("Average year", "Drought year"),         #alpha legend: 0.015, 150
+legend(75, 350, legend=c("Non-drought years", "Drought year"),         #alpha legend: 0.015, 150
        col=c("black", "red"), lty=1.1,lwd=4,cex=1.25,box.lty=0)
 # legend(175, 90, legend=c("50% of total production"),         #alpha legend: 0.015, 150
 #        col=c("black"), pch=19,box.lty=0,cex=2)
@@ -670,7 +670,7 @@ mtext('Julian day of year',side=1,line=3.75,cex=1.25)
 #mtext('GPP',side=2,line=2.5,cex=1.5)
 mtext('Northern mixed prairies',side=3,line=0.5,cex=1)
 mtext('b',side=3,line=0.5,cex=1,adj=-0.05)
-mtext(expression("Cumulative carbon uptake " (g~C~m^-2)),side=2,line=4.5,adj=-.15,cex=1.25)
+mtext(expression("Cumulative carbon uptake " (g~C~m^-2)),side=2,line=4.5,adj= -.20,cex=1.25)
 
 dev.off()
 
