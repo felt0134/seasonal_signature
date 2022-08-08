@@ -415,7 +415,7 @@ quantile(seasonal_temp_nmp$perc_change_spring_temperature,c(0.25,0.5,0.75))
 quantile(seasonal_temp_nmp$perc_change_summer_temperature,c(0.25,0.5,0.75))
 
 #-------------------------------------------------------------------------------
-#seasonal change in VPD -------
+# seasonal change in VPD -------
 
 #shortgrass steppe
 Ecoregion <- 'shortgrass_steppe'
@@ -672,24 +672,32 @@ rm(day_50_drought_sgs_df,sgs.dists,sgs.dists.inv)
 #significant
 #coefficient = 0.15
 
-#variogram
+#variogram analysis
 point_data_50_sgs <- as(day_50_drought_sgs,
                         'SpatialPointsDataFrame')
 
-TheVariogram_50_sgs = variogram(day_50_drought_impact_shortgrass_steppe ~1,
+TheVariogram_50_sgs = gstat::variogram(day_50_drought_impact_shortgrass_steppe ~1,
                                 data = point_data_50_sgs,width = 5)
 
 summary(TheVariogram_50_sgs)
 plot(TheVariogram_50_sgs)
 
-TheVariogramModel_50_sgs <- vgm(psill=300, model="Exp", nugget=40, range=100)
-plot(TheVariogram_50_sgs, model=TheVariogramModel_50_sgs) 
-FittedModel_50_sgs <- fit.variogram(TheVariogram_50_sgs, model=TheVariogramModel_50_sgs)
-FittedModel_50_sgs
-#Range = 50.1 km
+#nugget: 50
+#psill: 350
+#range: 300
 
-# plot(TheVariogram_50_sgs, model=FittedModel_50_sgs,xlab='Distance (km)',
-#      ylab = 'Semivariance',cex=1,lwd=2,col='black')
+FittedModel_50_sgs = gstat::fit.variogram(object = TheVariogram_50_sgs,
+                                          model = gstat::vgm(psill = 350,
+                                                      nugget = 40,
+                                                      range = 300,
+                                                      model = 'Exp'))
+summary(FittedModel_50_sgs)
+plot(TheVariogram_50_sgs,model=FittedModel_50_sgs)
+
+#Modeled range parameter = 44.7
+#range at saturation of psill: 44.7*3 = 134.1 km
+
+rm(day_50_drought_sgs,FittedModel_50_sgs,point_data_50_sgs,TheVariogram_50_sgs)
 
 #northern mixed prairies
 day_50_drought_nmp <-
@@ -708,31 +716,33 @@ Moran.I(day_50_drought_nmp_df$day_50_drought_impact_northern_mixed_prairies,nmp.
 #significant
 #coefficient = 0.20
 
-rm(day_50_drought_sgs_df,sgs.dists,sgs.dists.inv)
+rm(day_50_drought_nmp_df,nmp.dists,nmp.dists.inv)
 
 #variogram
 point_data_50_nmp <- as(day_50_drought_nmp, 'SpatialPointsDataFrame')
 TheVariogram_50_nmp = variogram(day_50_drought_impact_northern_mixed_prairies ~1,
-                                data = point_data_50_nmp,width = 5)
+                                data = point_data_50_nmp,width = 10)
 
 summary(TheVariogram_50_nmp)
 plot(TheVariogram_50_nmp)
 
-TheVariogramModel_50_nmp <- vgm(psill=50, model="Exp", nugget=5, range=100)
-plot(TheVariogram_50_nmp, model=TheVariogramModel_50_nmp) 
-FittedModel_50_nmp <- fit.variogram(TheVariogram_50_nmp, model=TheVariogramModel_50_nmp)
-FittedModel_50_nmp
+#nugget: 10
+#psill: 80
+#range: 400
 
-# plot(TheVariogram_50_nmp, model=FittedModel_50_nmp,xlab='Distance (km)',
-#      ylab = 'Semivariance',cex=1,lwd=2,col='black')
+FittedModel_50_nmp = gstat::fit.variogram(object = TheVariogram_50_nmp,
+                                          model = gstat::vgm(psill = 10,
+                                                             nugget = 80,
+                                                             range = 450,
+                                                             model = 'Exp'))
+summary(FittedModel_50_nmp)
+plot(TheVariogram_50_nmp,model=FittedModel_50_nmp)
 
-# #make a quick figure of this here
-# par(mfrow=c(2,1),cex = 0.5,lwd = 0.5,oma=c(3.2,9,1,1),mar = c(3,2.25,3,3))
-# 
-# plot(TheVariogram_50_sgs, model=FittedModel_50_sgs,xlab='Distance (km)',
-#      ylab = 'Semivariance',cex=1,lwd=2,col='black')
-# plot(TheVariogram_50_nmp, model=FittedModel_50_nmp,xlab='Distance (km)',
-#      ylab = 'Semivariance',cex=1,lwd=2,col='black')
+#Modeled range parameter = 161.7
+#range at saturation of psill: 161.7*3 =  km
+
+rm(day_50_drought_nmp,FittedModel_50_nmp,point_data_50_nmp,TheVariogram_50_nmp)
+
 
 
 #-------------------------------------------------------------------------------
@@ -921,3 +931,5 @@ area_nmp<-length(cell_size)*median(cell_size)
 area_nmp + area_sgs
 #629483.8
 
+
+#-------------------------------------------------------------------------------

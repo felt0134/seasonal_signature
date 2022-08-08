@@ -1013,7 +1013,7 @@ polygon(c(growth_drynamics_absolute_nmp_1km$doy,rev(growth_drynamics_absolute_nm
 abline(h=0,col='black',lty='dashed')
 mtext('Northern mixed prairies',side=3,line=0.5,cex=1.5)
 mtext('Day of year',side=1,line=4.5,cex=2.5)
-mtext(expression("Drought impact to carbon uptake "(g~C~m^-2~'16 days')),side=2,line=4,adj = -0.1, cex=2.25)
+mtext(expression("Drought impact to carbon uptake "(g~C~m^-2~'16 days'^-1)),side=2,line=4,adj = -0.05, cex=2.25)
 mtext('b',side=3,line=0.5,cex=2,adj=0.0)
 lines(abs_change~doy,data=growth_drynamics_absolute_nmp_1km,type='l',col='white',lwd=4)
 
@@ -1244,7 +1244,8 @@ driest_year_map_df$layer <- round(driest_year_map_df$layer)
   
   #p123 <- (distributions/ driest_years_barchat)|driest_year_map_plot
   p123 <- distributions + driest_years_barchat + driest_year_map_plot 
-  p123 + plot_annotation(tag_levels = "a")
+  p123 + plot_annotation(tag_levels = "a")  &
+    theme(plot.tag = element_text(size = 20))
   
   dev.off()
   
@@ -2571,7 +2572,7 @@ eco_names <- as_labeller(
   c( "a" = "Shortgrass steppe", "b" = 'Northern mixed prairies'))
 
 library(ggpubr)
-?stat_cor
+
 ndvi_vpd_plot <- ggplot(vpd_gpp_df,aes(abs_change,reduction)) +
   geom_point(pch=1,size=2)+
   stat_smooth(method='lm',color='black',size=0.5) +
@@ -2579,10 +2580,10 @@ ndvi_vpd_plot <- ggplot(vpd_gpp_df,aes(abs_change,reduction)) +
   facet_wrap(~ecoregion_2,ncol=1,labeller = eco_names,scales='free') +
   xlab('Drought increase in summer \nVPD (kPa)') +
   ylab('Maximum reduction in NDVI') +
-  # annotate(geom = 'text', x = 0, y = -.20, 
-  #          label = bquote("R^2 == 0.40"), parse = TRUE) +
-  # annotate(geom = 'text', x = 0, y = -.30, 
-  #          label = bquote("R^2 == 0.40"), parse = TRUE) +
+  # geom_text(
+  #   data = vpd_gpp_df,
+  #   mapping = aes(x = -Inf, y = Inf,label = ecoregion_2,size=10),
+  #   hjust = 0, vjust = 1,size=10) +
   theme(
     axis.text.x = element_text(color = 'black', size = 13),
     #angle=25,hjust=1),
@@ -2602,15 +2603,17 @@ ndvi_vpd_plot <- ggplot(vpd_gpp_df,aes(abs_change,reduction)) +
     axis.line.x = element_line(colour = "black"),
     axis.line.y = element_line(colour = "black"))
 
-
+?geom_text
 library(patchwork)
 
 png(height = 3000,width=4000,res=300,'Figures/vpd_ndvi_change.png')
 
 p123 <- vpd_change + ndvi_vpd_plot + plot_layout(ncol = 2)
-p123 + plot_annotation(tag_levels = "a")
+p123 + plot_annotation(tag_levels = "a") &
+                       theme(plot.tag = element_text(size = 30))
 
 dev.off()
+
 
 
 #-------------------------------------------------------------------------------
